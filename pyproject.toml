@@ -1,0 +1,20 @@
+[project]
+name = "table-for-n"
+version = "0.1.0"
+description = "Table for N — one table, N people, one agent books the restaurant. How many of them actually ate? An interactive lab on agent eval and the self-evolving loop, with ADK."
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk[eval,gcp]==2.9.2",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-dotenv>=1.0",
+    "google-cloud-aiplatform[agent-engines]>=1.100,<2",
+    "google-cloud-bigquery>=3.30",
+]
+
+[tool.setuptools]
+packages = ["host", "metrics", "kitchen", "loop"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

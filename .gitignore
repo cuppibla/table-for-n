@@ -1,0 +1,21 @@
+# secrets and local state — never committed
+.env
+host/.env
+*.db
+*.db-journal
+runs/
+site/out/
+site/node_modules/
+site/.next/
+site/tsconfig.tsbuildinfo
+site/next-env.d.ts
+.venv/
+__pycache__/
+*.pyc
+.adk/
+**/.adk/
+gepa_run/
+*.log
+!instructions/gepa_run_log*.txt
+.DS_Store
+*.egg-info/
