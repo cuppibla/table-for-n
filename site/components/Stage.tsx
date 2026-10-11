@@ -75,7 +75,7 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
   const climbRows = course.n === 5 && f.kind === "loop"
     ? f.climbs.map((c) => ({ k: `R${c.round}`, v: c.score, l: c.score.toFixed(2) + (f.gate?.decision === "SHIP" && c === f.climbs[f.climbs.length - 1] ? " ✓" : "") }))
     : course.n === 3 && honestExams.length
-      ? honestExams.slice(-3).map((e) => ({ k: e.instruction.slice(0, 6), v: (e.passed || 0) / 8, l: `${e.passed}/8${(e.passed || 0) >= 5 ? " ✓" : ""}` }))
+      ? honestExams.slice(-3).map((e) => ({ k: e.instruction === "optimized" ? "yours" : e.instruction, v: (e.passed || 0) / 8, l: `${e.passed}/8${(e.passed || 0) >= 5 ? " ✓" : ""}` }))
       : [];
 
   return (

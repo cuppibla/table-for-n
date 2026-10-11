@@ -33,6 +33,13 @@ export function useEvents(): Folded {
   useEffect(() => {
     let es: EventSource | null = null;
     let dead = false;
+    // ?still=1 — capture mode: read the log once instead of holding a stream open,
+    // so a headless browser can take a picture of the page.
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("still") === "1") {
+      fetch(eventsUrl().replace(/\/events$/, "/log")).then((r) => r.json())
+        .then((d: { events: Ev[] }) => { setLog(d.events); setConnected(true); }).catch(() => setConnected(false));
+      return () => { dead = true; };
+    }
     const open = () => {
       if (dead) return;
       es = new EventSource(eventsUrl());

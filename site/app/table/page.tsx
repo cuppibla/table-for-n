@@ -37,7 +37,10 @@ export default function TablePage() {
 
   useEffect(() => {
     try { setName(localStorage.getItem("tfn.name") || ""); setPartyState(localStorage.getItem("tfn.party") || "p1"); } catch { /* ignore */ }
-    const want = parseInt(new URLSearchParams(window.location.search).get("ch") || "", 10);
+    const qs = new URLSearchParams(window.location.search);
+    if (qs.get("console") === "1") setView("console");          // capture mode
+    if (qs.get("check") === "1") setCheck(true);
+    const want = parseInt(qs.get("ch") || "", 10);
     try {
       const c = want >= 1 && want <= 7 ? want : parseInt(localStorage.getItem(CH_KEY) || "1", 10);
       if (c >= 1 && c <= 7) setCourse(c);

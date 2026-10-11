@@ -63,7 +63,11 @@ def make(name: str, party_ids: list[str]) -> dict:
 
 if __name__ == "__main__":
     for name, ids in [("parties_train", world.TRAIN), ("parties_val", world.HOLDOUT)]:
-        path = os.path.join(ROOT, "exam", f"{name}.evalset.json")
-        with open(path, "w") as f:
-            json.dump(make(name, ids), f, indent=2)
-        print(f"wrote {os.path.relpath(path, ROOT)}  ({len(ids)} cases, golden answers in)")
+        data = make(name, ids)
+        # exam/ is where the page and `adk eval` read them by path; `adk optimize`
+        # resolves eval set IDS inside the agent's own folder, so host/ gets a copy.
+        for folder in ("exam", "host"):
+            path = os.path.join(ROOT, folder, f"{name}.evalset.json")
+            with open(path, "w") as f:
+                json.dump(data, f, indent=2)
+            print(f"wrote {os.path.relpath(path, ROOT)}  ({len(ids)} cases, golden answers in)")
