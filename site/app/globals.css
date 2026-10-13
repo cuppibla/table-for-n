@@ -40,6 +40,11 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .btn.hot { color: #fff; background: var(--tomato); border-color: #B84A2E; }
 .btn.gold { color: #4a3208; background: linear-gradient(180deg,#F6DEA0,var(--mustard)); border-color: var(--mustard-deep); }
 .btn:disabled { opacity: .5; cursor: default; }
+.btn.nudge { border-color: var(--olive); color: var(--olive-ink); animation: armed-olive 1.4s ease-in-out infinite; }
+@keyframes armed-olive { 0%,100% { box-shadow: 0 0 0 2px rgba(111,127,63,.35); } 50% { box-shadow: 0 0 0 5px rgba(111,127,63,.15); } }
+.wbnudge { max-width: 420px; font-size: 12px; line-height: 1.35; color: var(--olive-ink); background: #F3F5E6; border: 1px dashed rgba(111,127,63,.5); border-radius: 10px; padding: 6px 10px; cursor: pointer; animation: riseIn .3s ease both; }
+.wbhint { font-size: 12.5px; line-height: 1.45; color: #E8E3D4; background: rgba(163,174,110,.14); border: 1px dashed rgba(163,174,110,.5); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; }
+.wbhint span { font-family: var(--font-mono), monospace; font-size: 10px; letter-spacing: .16em; color: #A3AE6E; margin-right: 6px; }
 @keyframes riseIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes ring { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.12); opacity: 0; } }
 @keyframes armed { 0%,100% { box-shadow: 0 0 0 2px var(--mustard), 0 0 14px rgba(217,164,65,.45); } 50% { box-shadow: 0 0 0 4px var(--mustard), 0 0 24px rgba(217,164,65,.7); } }
