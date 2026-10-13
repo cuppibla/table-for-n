@@ -3,7 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getBrief, getEnv, getJob, install, setEnv, startJob, type Exam, type Job, type Progress } from "@/lib/api";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
-const passedOf = (e?: Exam) => ((e?.parties || []) as PartyRow[]).filter((r) => r.status === "PASSED").map((r) => r.party);
+// older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
+const BAR: Record<string, number> = { everyone_ate: 0.9, rating: 0.85, text: 0.3 };
+const verdict = (r: PartyRow, judge: string) => r.status || (r.score === null || r.score === undefined ? null : r.score >= (BAR[judge] ?? 0.9) ? "PASSED" : "FAILED");
+const rowsOf = (e?: Exam): PartyRow[] => ((e?.parties || []) as PartyRow[]).map((r) => ({ ...r, status: verdict(r, e?.judge || "everyone_ate") }));
+const passedOf = (e?: Exam) => rowsOf(e).filter((r) => r.status === "PASSED").map((r) => r.party);
 import type { Folded } from "@/lib/useEvents";
 import { CLOSING, COURSES, type Course as C } from "@/lib/courses";
 import Editor from "./Editor";
@@ -64,7 +68,7 @@ function Log({ job }: { job: Job | null }) {
 
 function Tile({ label, exam, cls }: { label: string; exam: Exam | undefined; cls?: string }) {
   const ok = exam && (exam.failed || 0) === 0;
-  const rows = (exam?.parties || []) as PartyRow[];
+  const rows = rowsOf(exam);
   return (
     <div className={"result " + (cls || (exam ? (ok ? "pass" : "fail") : ""))}>
       {label}<b>{exam ? `${exam.passed} / ${(exam.passed || 0) + (exam.failed || 0)}` : "—"}</b>
