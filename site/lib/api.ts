@@ -16,7 +16,10 @@ const post = <T,>(path: string, body: unknown, method = "POST") =>
   j<T>(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
 export type Exam = { ts?: number; judge: string; criteria: string[]; instruction: string; passed: number | null; failed: number | null;
-  hungry: number | null; seats: number | null; parties?: { party: string; restaurant: string; time: string; score: number; hungry: number | null }[] };
+  hungry: number | null; seats: number | null; parties?: { party: string; restaurant: string; time: string; score: number; hungry: number | null; answer?: string | null }[] };
+export type FlightSummary = { ts?: number; n: number; comparator_passed: number; checker_passed: number; llm_passed: number; llm_unanswered: number;
+  fed_but_failed_text: string[]; hungry_but_passed_text: string[]; llm_disagrees: string[]; instruction: string; from_exam_ts: number | null; ms: number;
+  same_as_last: { comparator: boolean; checker: boolean; llm: boolean } | null };
 export type Progress = {
   code: { criteria: string[]; honest_on_exam: boolean; instruction: string; instruction_chars: number; edge: boolean; engine: string;
     library: Record<string, boolean> };
@@ -26,6 +29,11 @@ export type Progress = {
   last_exam: Exam | null; exams: Exam[];
   loops: { ts?: number; rounds: number; decision: string | null; score: number | null; closed: boolean; edge: boolean }[];
   harvest: { minted: number; skipped: number; ts: number | null };
+  rooms: { ts: number; party: string; picked: string[]; actual: string[]; hit: string[]; missed: string[]; extra: string[] }[];
+  walks: { ts: number; party: string; restaurant: string; restaurant_name: string; time: string; score: number; passed: boolean; threshold: number;
+    guessed: number; correct: number; seats: number; us: number; detail: WalkSeat[]; checks: string[] }[];
+  flights: (FlightSummary & { rows?: FlightRow[] })[];
+  pytests: { ts: number; rc: number | null; green: boolean; line: string; judge: string; criteria: string[]; instruction: string }[];
   last_booking: Record<string, unknown> | null;
   optimized: boolean; mode: string; error: string | null;
 };
@@ -47,6 +55,25 @@ export type Job = { kind: string; state: "idle" | "running" | "done" | "error"; 
 export const startJob = (kind: string, opts: Record<string, unknown> = {}) => post<Job>("/job", { kind, ...opts });
 export const getJob = (kind: string) => j<Job>(`/job?kind=${kind}`);
 export const stopJob = (kind: string) => j<{ stopped: boolean }>(`/job?kind=${kind}`, { method: "DELETE" });
+
+// course II · 🔎 the rooms
+export type Room = { id: string; name: string; rating: number; price: number; tag: string; time: string; score: number; feeds_everyone: boolean; hungry: string[]; whys: string[] };
+export type RoomsReply = { party: string; rooms: Room[]; feeds_everyone: number; across_holdout: Record<string, number> };
+export const getRooms = (party: string) => j<RoomsReply>(`/rooms?party=${party}`);
+export const countRooms = (party: string, picked: string[]) => post<RoomsReply & { actual: string[]; hit: string[]; missed: string[]; extra: string[] }>("/rooms", { party, picked });
+
+// course III · 🍽 the walk
+export type WalkSeat = { id: string; name: string; label: string; ate: boolean; why: string; check: string; predicted?: boolean | null; correct?: boolean | null };
+export type WalkReply = { party: string; restaurant: string | null; restaurant_name?: string; time: string | null; checks: string[];
+  people: { id: string; name: string; label: string }[]; seats: WalkSeat[]; score: number; passed: boolean; threshold: number; correct: number; guessed: number; us: number };
+export const getWalk = (party: string) => j<WalkReply>(`/walk?party=${party}`);
+export const walkTable = (party: string, restaurant: string, time: string, predicted: Record<string, boolean>) => post<WalkReply>("/walk", { party, restaurant, time, predicted });
+
+// course IV · ⚖ the flight
+export type Verdict = { score: number; passed: boolean; needs: string; why: string; restaurant?: string; time?: string; ms?: number };
+export type FlightRow = { party: string; answer: string; golden: string; comparator: Verdict; checker: Verdict; llm: Verdict & { passed: boolean | null; score: number | null } };
+export type FlightReply = { rows: FlightRow[]; summary: FlightSummary };
+export const judgeFlight = () => post<FlightReply>("/flight", {});
 
 export type Env = { HOST_ENGINE: string; project: string; mode: string };
 export const getEnv = () => j<Env>("/env");

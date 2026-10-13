@@ -31,22 +31,28 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
   const examNow = f.exam || (examEp ? null : null);
 
   const num = useMemo<[string, string, string]>(() => {
-    const n = course.n;
     const loop = p?.loops?.[p.loops.length - 1];
     const gate = honestExams.filter((e) => ["winner", "optimized"].includes(e.instruction)).slice(-1)[0];
     const r = exams.filter((e) => e.judge === "rating" && e.instruction === "hacked").slice(-1)[0];
     const h = honestExams.filter((e) => e.instruction === "hacked").slice(-1)[0];
     const lb = p?.last_booking as { hungry?: number } | null;
-    if (n === 1) return ["hungry", "?", ""];
-    if (n === 2) return p?.code?.honest_on_exam
+    const k = course.key;
+    const rooms = p?.rooms?.[p.rooms.length - 1];
+    const fl = p?.flights?.[p.flights.length - 1];
+    if (k === "booking") return ["hungry", "?", ""];
+    if (k === "comparator") return lastText
+      ? ["exam", `${lastText.passed}/8 · no reasons${rooms ? ` · ${rooms.actual.length} right answer${rooms.actual.length === 1 ? "" : "s"}` : ""}`, "bad"]
+      : ["exam", "not run yet", ""];
+    if (k === "judge") return p?.code?.honest_on_exam
       ? (lastHonest ? ["exam", `${lastHonest.passed}/8 · ${lastHonest.hungry} hungry`, "good"] : ["exam", "run it", ""])
-      : (lastText ? ["exam", `${lastText.passed}/8 · no reasons`, "bad"] : ["exam", "not run yet", ""]);
-    if (n === 3) return gate ? ["holdout", `${gate.passed}/8${(gate.passed || 0) >= 5 ? " · SHIP" : ""}`, (gate.passed || 0) >= 5 ? "good" : "bad"]
+      : ["exam", "your judge is not on it yet", "bad"];
+    if (k === "flight") return fl ? ["three judges", `${fl.comparator_passed} · ${fl.checker_passed} · ${fl.llm_passed} of ${fl.n}`, "good"] : ["three judges", "—", ""];
+    if (k === "rewrite") return gate ? ["holdout", `${gate.passed}/8${(gate.passed || 0) >= 5 ? " · SHIP" : ""}`, (gate.passed || 0) >= 5 ? "good" : "bad"]
       : [`holdout`, lastHonest ? `${lastHonest.passed}/8` : "—", "bad"];
-    if (n === 4) return ["exam", `★ ${r ? r.passed : "–"}/8 · honest ${h ? h.passed : "–"}/8`, r && h ? "bad" : ""];
-    if (n === 5) return ["rounds", loop ? `${loop.rounds} · ${loop.decision || "stalled"}` : "—", loop?.decision === "SHIP" ? "good" : "bad"];
+    if (k === "other") return ["exam", `★ ${r ? r.passed : "–"}/8 · honest ${h ? h.passed : "–"}/8`, r && h ? "bad" : ""];
+    if (k === "loop") return ["rounds", loop ? `${loop.rounds} · ${loop.decision || "stalled"}` : "—", loop?.decision === "SHIP" ? "good" : "bad"];
     return ["hungry tonight", lb?.hungry === undefined ? "—" : String(lb.hungry), lb?.hungry === 0 ? "good" : "bad"];
-  }, [course.n, p, exams, honestExams, lastHonest, lastText]);
+  }, [course.key, p, exams, honestExams, lastHonest, lastText]);
 
   const whys = seats.filter((s) => s.ate === false && s.why).map((s) => `${s.name}: ${s.why}`);
   const judgeLine = scored
@@ -71,9 +77,9 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
         : { big: <>— <span className="dim">/ {N}</span></>, pill: "", line: <><b>{examEp ? "the exam" : "table for " + N}</b><br /><span className="mono" style={{ fontSize: 10, color: "var(--faint)" }}>{examEp ? "running…" : "not booked yet"}</span></> };
 
   const unlaid = !f.pick && !f.exam;
-  const climbRows = course.n === 5 && f.kind === "loop"
+  const climbRows = course.key === "loop" && f.kind === "loop"
     ? f.climbs.map((c) => ({ k: `R${c.round}`, v: c.score, l: c.score.toFixed(2) + (f.gate?.decision === "SHIP" && c === f.climbs[f.climbs.length - 1] ? " ✓" : "") }))
-    : course.n === 3 && honestExams.length
+    : course.key === "rewrite" && honestExams.length
       ? honestExams.slice(-3).map((e) => ({ k: e.instruction === "optimized" ? "yours" : e.instruction, v: (e.passed || 0) / 8, l: `${e.passed}/8${(e.passed || 0) >= 5 ? " ✓" : ""}` }))
       : [];
 
@@ -111,7 +117,7 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
           )}
           {climbRows.length > 0 && (
             <div className="climb">
-              <div className="k">{course.n === 5 ? "ROUNDS" : "HOLDOUT · 8 PARTIES"}</div>
+              <div className="k">{course.key === "loop" ? "ROUNDS" : "HOLDOUT · 8 PARTIES"}</div>
               {climbRows.map((r, i) => <div key={i} className={"row" + (r.v >= 0.6 ? " ship" : "")}><span>{r.k}</span><span className="bar"><i style={{ width: `${Math.round(r.v * 100)}%` }} /></span><b>{r.l}</b></div>)}
             </div>
           )}
@@ -158,8 +164,8 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
         </div>
       </div>
       <div className="controls">
-        <button className="btn hot" onClick={onBook} disabled={booking || f.running || course.n === 1} title={course.n === 1 ? "course I books in the workbench" : ""}>
-          {course.n === 1 ? "📋 Book — in the workbench" : booking ? "📋 booking…" : "📋 Book the table"}
+        <button className="btn hot" onClick={onBook} disabled={booking || f.running || course.key === "booking"} title={course.key === "booking" ? "course I books in the workbench" : ""}>
+          {course.key === "booking" ? "📋 Book — in the workbench" : booking ? "📋 booking…" : "📋 Book the table"}
         </button>
         <select value={party} onChange={(e) => setParty(e.target.value)}>
           {PARTIES.map((id) => <option key={id} value={id}>party · {id}</option>)}

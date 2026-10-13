@@ -76,8 +76,12 @@ async def start(kind: str, **opts) -> Job:
 async def _run(job: Job) -> None:
     penv = dict(os.environ, PYTHONUNBUFFERED="1", PYTHONPATH=str(ROOT), **job.extra_env)
     try:
+        # stdin=DEVNULL matters: `bash table.sh` runs in a terminal, uvicorn
+        # inherits that tty, and so would `adk eval` — which, on a machine that
+        # has never answered ADK's telemetry question, stops to ask it on a
+        # tty and waits forever. No tty, no question (ADK checks isatty()).
         job.proc = await asyncio.create_subprocess_exec(
-            *job.argv, cwd=str(ROOT), env=penv,
+            *job.argv, cwd=str(ROOT), env=penv, stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
         assert job.proc.stdout is not None
         while True:
@@ -140,6 +144,10 @@ def _criteria(cfg: Path) -> list[str]:
         return []
 
 
+def _text_of(content: dict | None) -> str:
+    return "".join(p.get("text", "") for p in ((content or {}).get("parts") or []))
+
+
 def _parties(log_text: str, receipts: list[dict]) -> list[dict]:
     """One row per party: the verdict ADK wrote (any metric) + our receipt (seats)."""
     import world
@@ -151,8 +159,11 @@ def _parties(log_text: str, receipts: list[dict]) -> list[dict]:
             data = json.loads(Path(m.group(1)).read_text())
             for c in data.get("eval_case_results", []):
                 om = (c.get("overall_eval_metric_results") or [{}])[0]
+                per = (c.get("eval_metric_result_per_invocation") or [{}])[0]
                 verdicts[c.get("eval_id")] = {"status": {1: "PASSED", 2: "FAILED"}.get(c.get("final_eval_status"), "NOT_EVALUATED"),
-                                              "score": om.get("score"), "metric": om.get("metric_name")}
+                                              "score": om.get("score"), "metric": om.get("metric_name"),
+                                              # the answer ADK graded, kept so course IV can grade it again three ways
+                                              "answer": _text_of((per.get("actual_invocation") or {}).get("final_response"))}
         except (json.JSONDecodeError, OSError):
             pass
     order = list(world.HOLDOUT) + [p for p in list(verdicts) + list(by_party) if p not in world.HOLDOUT]
@@ -163,6 +174,7 @@ def _parties(log_text: str, receipts: list[dict]) -> list[dict]:
             continue
         seats_ = r.get("seats", []) if r.get("metric") == "everyone_ate" else None
         out.append({"party": pid, "status": v.get("status"), "score": v.get("score", r.get("score")),
+                    "answer": (v.get("answer") or "")[:700] or None,
                     "restaurant": r.get("restaurant"), "time": r.get("time"),
                     "hungry": sum(1 for x in seats_ if not x.get("ate")) if seats_ is not None else None,
                     "whys": [f"{x.get('name')}: {x.get('why')}" for x in (seats_ or []) if not x.get("ate")]})
@@ -190,6 +202,32 @@ def _finish_exam(job: Job) -> None:
     if job.rc == 0 and passed:
         state.push("exams", {k: v for k, v in job.summary.items() if k != "parties"} | {"parties": parties})
     events.emit("exam_scored", **{k: v for k, v in job.summary.items() if k != "parties"})
+
+
+# ── pytest — the third way to run the same exam ──────────────────────────────
+def _pytest(**_) -> Job:
+    """tests/test_host.py: AgentEvaluator on the same evalset, the same
+    eval_config.json, writing to the same .adk/eval_history as `adk eval`.
+    A failing exam fails the build — that is the whole point of this door."""
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    receipts = RUNS / "pytest" / f"{stamp}.jsonl"
+    receipts.parent.mkdir(parents=True, exist_ok=True)
+    criteria = _criteria(ROOT / "exam" / "eval_config.json")
+    ran = "rating" if "rating" in criteria else "everyone_ate" if "everyone_ate" in criteria else "text"
+    job = Job("pytest", [PY, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_host.py"],
+              extra_env={"TABLE_RECEIPTS": str(receipts)},
+              meta={"judge": ran, "criteria": criteria, "instruction": instruction_kind(), "receipts": str(receipts.relative_to(ROOT))})
+    job.episode = events.start_episode("pytest", criteria=criteria, instruction=job.meta["instruction"])
+    return job
+
+
+def _finish_pytest(job: Job) -> None:
+    text = "\n".join(job.log)
+    m = re.search(r"(\d+) (passed|failed)", text)
+    job.summary = {"rc": job.rc, "green": job.rc == 0, "line": m.group(0) if m else (text.strip().splitlines() or ["?"])[-1][:120],
+                   "judge": job.meta["judge"], "criteria": job.meta["criteria"], "instruction": job.meta["instruction"]}
+    state.push("pytests", {k: v for k, v in job.summary.items()})
+    events.emit("pytest_done", **job.summary)
 
 
 # ── optimize ─────────────────────────────────────────────────────────────────
@@ -307,9 +345,9 @@ def _noop(job: Job) -> None:
     job.summary = {"rc": job.rc}
 
 
-BUILDERS = {"exam": _exam, "optimize": _optimize, "loop": _loop, "deploy": _deploy,
+BUILDERS = {"exam": _exam, "pytest": _pytest, "optimize": _optimize, "loop": _loop, "deploy": _deploy,
             "traffic": _traffic, "pipe": _pipe, "harvest": _harvest}
-FINISHERS = {"exam": _finish_exam, "optimize": _finish_optimize, "loop": _finish_loop, "deploy": _finish_deploy,
+FINISHERS = {"exam": _finish_exam, "pytest": _finish_pytest, "optimize": _finish_optimize, "loop": _finish_loop, "deploy": _finish_deploy,
              "traffic": _noop, "pipe": _noop, "harvest": _finish_harvest}
 
 

@@ -188,26 +188,30 @@ def seated_at(rest: dict, chosen_min: int) -> int:
     return max(chosen_min, _t(rest["earliest"])) + rest["queue_min"]
 
 
-def ate(person_id: str, rest: dict, chosen_min: int) -> tuple[bool, str]:
-    """Did this one person actually get dinner? Returns (ate, why)."""
+CHECKS = ("diet", "allergy", "spice", "budget", "walk", "timing")   # the six checks, in order
+
+
+def ate_detail(person_id: str, rest: dict, chosen_min: int) -> tuple[bool, str, str]:
+    """Did this one person actually get dinner? Returns (ate, why, check) —
+    `check` is which of the six checks it stopped at ("" when they ate)."""
     p = PEOPLE[person_id]
     name = p["name"]
     notes = rest["notes"]
 
     if p.get("diet") == "vegetarian" and not rest["veg"]:
-        return False, notes.get("veg", "no vegetarian main on the menu")
+        return False, notes.get("veg", "no vegetarian main on the menu"), "diet"
     if p.get("diet") == "vegan" and not rest["vegan"]:
-        return False, notes.get("vegan", notes.get("veg", "nothing vegan on the menu"))
+        return False, notes.get("vegan", notes.get("veg", "nothing vegan on the menu")), "diet"
     if p.get("allergy") == "nut" and not rest["nut_safe"]:
-        return False, notes.get("nut", "kitchen can't guarantee nut-free")
+        return False, notes.get("nut", "kitchen can't guarantee nut-free"), "allergy"
     if p.get("allergy") == "shellfish" and not rest["shellfish_safe"]:
-        return False, notes.get("shellfish", "kitchen can't guarantee shellfish-free")
+        return False, notes.get("shellfish", "kitchen can't guarantee shellfish-free"), "allergy"
     if "max_spice" in p and not rest["spice_optional"] and _SPICE[rest["spice"]] > _SPICE[p["max_spice"]]:
-        return False, notes.get("spice", f"everything comes {rest['spice']} — {name} can't do spicy")
+        return False, notes.get("spice", f"everything comes {rest['spice']} — {name} can't do spicy"), "spice"
     if "budget" in p and rest["price"] > p["budget"]:
-        return False, f"~${rest['price']}/person against {name}'s ${p['budget']} budget"
+        return False, f"~${rest['price']}/person against {name}'s ${p['budget']} budget", "budget"
     if "max_walk" in p and rest["walk_min"] > p["max_walk"]:
-        return False, f"{rest['walk_min']}-min walk — past {name}'s {p['max_walk']}-min limit"
+        return False, f"{rest['walk_min']}-min walk — past {name}'s {p['max_walk']}-min limit", "walk"
 
     seated = seated_at(rest, chosen_min)
     arrive = _t(p.get("arrives", DAY_START))
@@ -215,18 +219,60 @@ def ate(person_id: str, rest: dict, chosen_min: int) -> tuple[bool, str]:
     last_order = _t(rest.get("last_order", "21:30"))
     if max(seated, arrive) > last_order:
         return False, (f"kitchen takes last orders at {_fmt(last_order)} — "
-                       f"{name} isn't at the table until {_fmt(max(seated, arrive))}")
+                       f"{name} isn't at the table until {_fmt(max(seated, arrive))}"), "timing"
     overlap = min(seated + DINNER_FULL, leave) - max(seated, arrive)
     if overlap < DINNER_MIN:
         if leave < _t(DAY_END):
             line = f" (the {rest['queue_min']}-min line)" if rest["queue_min"] else ""
             return False, (f"{name} has to leave by {p['leaves']}; "
-                           f"the table isn't seated until {_fmt(seated)}{line}")
+                           f"the table isn't seated until {_fmt(seated)}{line}"), "timing"
         if arrive > _t(DAY_START):
             return False, (f"{name} can't arrive before {p['arrives']}; "
-                           f"a {_fmt(seated)} seating is wrapping up by {_fmt(seated + DINNER_FULL)}")
-        return False, f"under {DINNER_MIN} minutes at the table"
-    return True, "ate"
+                           f"a {_fmt(seated)} seating is wrapping up by {_fmt(seated + DINNER_FULL)}"), "timing"
+        return False, f"under {DINNER_MIN} minutes at the table", "timing"
+    return True, "ate", ""
+
+
+def ate(person_id: str, rest: dict, chosen_min: int) -> tuple[bool, str]:
+    """Did this one person actually get dinner? Returns (ate, why)."""
+    ok, why, _check = ate_detail(person_id, rest, chosen_min)
+    return ok, why
+
+
+def walk(party_ids: list[str], restaurant_id: str, time_str: str) -> list[dict]:
+    """everyone_ate, one seat at a time, with the check each seat stopped at.
+    The same function the exam runs — laid out so a person can follow it."""
+    rest = RESTAURANTS[restaurant_id]
+    chosen = _t(time_str)
+    out = []
+    for pid in party_ids:
+        ok, why, check = ate_detail(pid, rest, chosen)
+        p = PEOPLE[pid]
+        out.append({"id": pid, "name": p["name"], "label": p["label"], "ate": ok, "why": why, "check": check})
+    return out
+
+
+def rooms(party_ids: list[str], step_min: int = 15) -> list[dict]:
+    """How many right answers does this dinner have? Every restaurant, at its
+    best seating for THIS party: the honest score, who is hungry, and why.
+    Pure lookup — ten rooms, a few booking times each, no model anywhere."""
+    out = []
+    for rid, rest in RESTAURANTS.items():
+        best = None
+        t0, t1 = _t(rest["earliest"]), _t(rest.get("last_order", "21:30"))
+        for chosen in range(t0, t1 + 1, step_min):
+            score, seats = everyone_ate(party_ids, rid, _fmt(chosen))
+            if best is None or score > best[0]:
+                best = (score, _fmt(chosen), seats)
+            if score == 1.0:
+                break
+        score, when, seats = best
+        out.append({"id": rid, "name": rest["name"], "rating": rest["rating"], "price": rest["price"],
+                    "tag": rest["tag"], "time": when, "score": round(score, 2),
+                    "feeds_everyone": score == 1.0,
+                    "hungry": [s["name"] for s in seats if not s["ate"]],
+                    "whys": [f"{s['name']}: {s['why']}" for s in seats if not s["ate"]]})
+    return out
 
 
 def everyone_ate(party_ids: list[str], restaurant_id: str, time_str: str) -> tuple[float, list[dict]]:

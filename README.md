@@ -3,18 +3,21 @@
 One table. N people. One agent books the restaurant. **How many of them actually ate?**
 
 An interactive lab on **agent evaluation** and the **self-evolving loop**, built on the
-[Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Six courses, one page:
-you build the judge, let the agent rewrite itself, swap the judge and watch the number lie,
-and close the loop.
+[Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Eight courses, one page:
+you watch a comparator fail a good dinner, build the judge and walk a table yourself, put
+three judges on the same answers, let the agent rewrite itself, swap the judge and watch
+the number lie, and close the loop.
 
 | course | the concept | what you do on the page | the receipt that lights it |
 |---|---|---|---|
 | I · the booking | a reply is not a result | book a table in the workbench (adk web) | a session in `table.db` |
-| II · the judge | a checker function as a custom `adk eval` metric | swap one line in `exam/eval_config.json` | the exam fails with hungry seats, named |
-| III · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |
-| IV · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
-| V · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
-| VI · the check | what each thing replaced | nothing | — |
+| II · the comparator | one golden answer vs. a *set* of right answers · three ways to run one exam | 📝 run the exam as shipped (`response_match_score`) · tap the rooms you think feed everyone, 🔎 count them · 🧪 run it as pytest | the text exam ran, and the rooms were counted |
+| III · the judge | a checker function as a custom `adk eval` metric · the six checks inside it | swap one line in `exam/eval_config.json` · 📋 book · mark each chair, 🍽 walk the table | the exam fails with hungry seats, named — and a table was walked |
+| IV · the flight | three metric families: comparator · checker · LLM-as-judge | ⚖ judge the last exam's eight answers three ways · press it again | a flight was judged |
+| V · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |
+| VI · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
+| VII · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
+| VIII · the check | what each thing replaced | nothing | — |
 
 Beyond the lab, `refuel/` holds the production pipe — deploy the shipped host to Agent
 Engine, send traffic, replay it through the BigQuery agent-analytics plugin, and `harvest.py`
@@ -77,7 +80,7 @@ real `adk eval` / `adk optimize` / the loop, and the workbench (`adk web`) is a
 drawer on the same page — same `host/` folder, same `table.db`.
 
 Nothing restarts. An edit lands on your **next 📋 booking or 📝 exam**; the chip
-under the editor says so. Course VI (deploy to Agent Engine) needs the project path.
+under the editor says so. The `refuel/` pipe (deploy to Agent Engine) needs the project path.
 
 ## What is where
 
@@ -87,11 +90,14 @@ host/                    the agent — its instruction lives in instruction_curr
 exam/                    evalsets (8 train, 8 holdout, golden answers in), eval_config.json (yours), eval_config_rating.json (the critic's)
 metrics/table.py         everyone_ate_metric and rating_metric, wired into adk eval through customMetrics
 instructions/            draft.txt · winner.txt (a real GEPA run, log included) · hacked.txt (a real run against the rating judge)
-loop/flywheel.py         the self-evolving loop as an ADK 2 Workflow; the course-V edit is in build()
+loop/flywheel.py         the self-evolving loop as an ADK 2 Workflow; the course-VII edit is in build()
 refuel/                  send_traffic.py · replay_to_bq.py · harvest.py — the production pipe (beyond the lab)
 kitchen/                 the service: booking, jobs (exam/optimize/loop/deploy…), progress, the editor, the workbench mount
 site/                    the page (Next.js, exported to static files once by table.sh)
-scripts/walk.py          the headless learner: walks courses II–V against a running kitchen and reports what lit
+tests/test_host.py       the third way to run the exam: pytest + AgentEvaluator, same config, same eval store (course II's 🧪)
+tests/test_shipped.py    the three edited files are as a fresh clone must find them — run before you commit
+scripts/reset.py         clear the table: draft instruction, text metric on the exam, no back edge (--receipts forgets the runs too)
+scripts/walk.py          the headless learner: walks courses II–VII against a running kitchen and reports what lit
 scripts/make_evalsets.py regenerates the two exams from world.py
 ```
 
@@ -107,6 +113,11 @@ the exam and there is nothing left to learn.
 The checks are not a checklist. `kitchen/progress.py` pairs a fact read off your files
 (which metric is in `criteria`, which instruction is installed, whether the back edge is in
 the graph) with a receipt of something that actually ran. Both, or the plate stays empty.
+
+Three files are the lab's exercise surface — `host/instruction_current.txt`,
+`exam/eval_config.json`, `loop/flywheel.py` — and the kitchen rewrites them as you go.
+`uv run python scripts/reset.py` puts them back as shipped; `uv run pytest tests/test_shipped.py`
+refuses a commit that would ship them mid-course.
 
 ## Lineage
 

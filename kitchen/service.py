@@ -4,6 +4,9 @@
     /api/progress     which course is lit — read from your files + what ran
     /api/events       SSE: the table's event log (recent history, then live)
     /api/book         POST {party}: one real booking, judged on the spot
+    /api/rooms        GET ?party= / POST {party, picked}: how many right answers does this dinner have? (course II)
+    /api/walk         GET ?party=&restaurant=&time= / POST {…, predicted}: everyone_ate, one seat at a time (course III)
+    /api/flight       POST: the last exam's answers, judged three ways (course IV)
     /api/judge        GET / POST {to}: the switch — which judge the exam runs with
     /api/code         GET / POST: the in-page editor (one file, syntax-checked)
     /api/job          POST {kind} / GET ?kind=: exam · optimize · loop · deploy · traffic · pipe · harvest
@@ -30,7 +33,7 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from kitchen import book, codefile, events, instruction, jobs, metrics_registry, progress, state, workbench  # noqa: E402
+from kitchen import book, codefile, events, flight, instruction, jobs, metrics_registry, progress, state, workbench  # noqa: E402
 import world  # noqa: E402
 
 JUDGES_IN_WORKBENCH = metrics_registry.register()   # everyone_ate · rating, in the dev UI's dialog too
@@ -107,6 +110,121 @@ async def post_book(req: Request) -> dict:
         return await book.book(party, judge)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
+
+
+# ── 🔎 the rooms — course II ─────────────────────────────────────────────────
+def _party(body_or_q: str) -> str:
+    if body_or_q not in world.PARTIES:
+        raise HTTPException(404, f"no party {body_or_q}")
+    return body_or_q
+
+
+@app.get("/api/rooms")
+async def get_rooms(party: str = "p1") -> dict:
+    """Every restaurant at its best seating for this party. Pure lookup."""
+    party = _party(party)
+    rows = world.rooms(world.PARTIES[party])
+    return {"party": party, "rooms": rows, "feeds_everyone": sum(1 for r in rows if r["feeds_everyone"]),
+            "across_holdout": {pid: sum(1 for r in world.rooms(world.PARTIES[pid]) if r["feeds_everyone"]) for pid in world.HOLDOUT}}
+
+
+@app.post("/api/rooms")
+async def post_rooms(req: Request) -> dict:
+    """The student's guess against the real set — recorded, that is course II's receipt."""
+    body = await req.json()
+    party = _party(body.get("party", "p1"))
+    picked = [r for r in (body.get("picked") or []) if r in world.RESTAURANTS]
+    rows = world.rooms(world.PARTIES[party])
+    actual = [r["id"] for r in rows if r["feeds_everyone"]]
+    hit = [r for r in picked if r in actual]
+    missed = [r for r in actual if r not in picked]
+    extra = [r for r in picked if r not in actual]
+    row = state.push("rooms", {"party": party, "picked": picked, "actual": actual, "hit": hit, "missed": missed, "extra": extra})
+    events.emit("rooms_counted", party=party, picked=len(picked), actual=len(actual), hit=len(hit), missed=len(missed), extra=len(extra))
+    return {"party": party, "rooms": rows, "actual": actual, "hit": hit, "missed": missed, "extra": extra, "ts": row["ts"]}
+
+
+# ── 🍽 the walk — course III ─────────────────────────────────────────────────
+def _last_pick(party: str) -> tuple[str | None, str | None]:
+    for b in reversed(state.STATE.get("bookings", [])):
+        if b.get("party") == party and b.get("restaurant"):
+            return world.find_restaurant(str(b["restaurant"])), str(b.get("time") or "19:00")
+    return None, None
+
+
+@app.get("/api/walk")
+async def get_walk(party: str = "p1", restaurant: str | None = None, time: str | None = None) -> dict:
+    """The table this course walks: the last 📋 booking for the party unless
+    a restaurant and time are named. No verdicts here — only the seating."""
+    party = _party(party)
+    rid = world.find_restaurant(restaurant) if restaurant else None
+    if rid is None:
+        rid, time = _last_pick(party)
+    if rid is None:
+        return {"party": party, "restaurant": None, "time": None, "seats": [], "checks": list(world.CHECKS),
+                "people": [{"id": pid, **{k: world.PEOPLE[pid][k] for k in ("name", "label")}} for pid in world.PARTIES[party]]}
+    rest = world.RESTAURANTS[rid]
+    return {"party": party, "restaurant": rid, "restaurant_name": rest["name"], "time": time or "19:00", "checks": list(world.CHECKS),
+            "room": {k: rest[k] for k in ("name", "rating", "price", "walk_min", "earliest", "last_order", "spice", "veg", "vegan", "nut_safe", "shellfish_safe") if k in rest},
+            "people": [{"id": pid, **{k: world.PEOPLE[pid][k] for k in ("name", "label")}} for pid in world.PARTIES[party]]}
+
+
+@app.post("/api/walk")
+async def post_walk(req: Request) -> dict:
+    """Walk the table: the student's prediction per seat against world.ate,
+    with the check each seat stopped at. Deterministic; timed so the page
+    can say so."""
+    import time as _time
+    body = await req.json()
+    party = _party(body.get("party", "p1"))
+    rid = world.find_restaurant(str(body.get("restaurant") or ""))
+    when = str(body.get("time") or "19:00")
+    if rid is None:
+        rid, when = _last_pick(party)
+    if rid is None:
+        raise HTTPException(400, "nothing to walk yet — 📋 Book the table first, or name a restaurant")
+    predicted = {k: bool(v) for k, v in (body.get("predicted") or {}).items()}
+    t0 = _time.perf_counter()
+    seats = world.walk(world.PARTIES[party], rid, when)
+    score, _ = world.everyone_ate(world.PARTIES[party], rid, when)
+    us = int((_time.perf_counter() - t0) * 1_000_000)
+    for s in seats:
+        s["predicted"] = predicted.get(s["id"])
+        s["correct"] = (predicted.get(s["id"]) == s["ate"]) if s["id"] in predicted else None
+    correct = sum(1 for s in seats if s["correct"])
+    guessed = sum(1 for s in seats if s["correct"] is not None)
+    row = state.push("walks", {"party": party, "restaurant": rid, "restaurant_name": world.RESTAURANTS[rid]["name"], "time": when,
+                               "score": round(score, 3), "passed": score >= world.THRESHOLD, "threshold": world.THRESHOLD,
+                               "guessed": guessed, "correct": correct, "seats": len(seats), "us": us,
+                               "detail": seats, "checks": list(world.CHECKS)})
+    events.emit("table_walked", party=party, restaurant=world.RESTAURANTS[rid]["name"], time=when, score=round(score, 3),
+                correct=correct, guessed=guessed, seats=len(seats), us=us)
+    return {"party": party, "restaurant": rid, "restaurant_name": world.RESTAURANTS[rid]["name"], "time": when,
+            "seats": seats, "score": round(score, 3), "passed": score >= world.THRESHOLD, "threshold": world.THRESHOLD,
+            "correct": correct, "guessed": guessed, "us": us, "checks": list(world.CHECKS), "ts": row["ts"]}
+
+
+# ── ⚖ the flight — course IV ─────────────────────────────────────────────────
+_flight_busy = __import__("asyncio").Lock()
+
+
+@app.post("/api/flight")
+async def post_flight() -> dict:
+    """The last exam's eight answers, each judged by the comparator, the
+    checker and an LLM judge. One real model call per answer."""
+    if _flight_busy.locked():
+        raise HTTPException(409, "a flight is already being judged")
+    async with _flight_busy:
+        try:
+            return await flight.run()
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/flight")
+async def get_flight() -> dict:
+    rows = state.STATE.get("flights", [])
+    return {"last": rows[-1] if rows else None, "count": len(rows)}
 
 
 # ── the switch ───────────────────────────────────────────────────────────────

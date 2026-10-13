@@ -51,11 +51,13 @@ def menu(p: dict) -> list[str]:
     crit = ", ".join(code.get("criteria", [])) or "—"
     rows = [
         (1, "I", "the booking", "a reply is not a result", "read only · book one in the workbench"),
-        (2, "II", "the judge", f"the exam runs {crit}", "edit one line in exam/eval_config.json"),
-        (3, "III", "the rewrite", f"instruction: {code.get('instruction', '?')}", "optimize · install · ship gate"),
-        (4, "IV", "the other judge", "rating_score never reads the party", "install hacked · flip the switch"),
-        (5, "V", "the loop", "the back edge is in" if code.get("edge") else "no back edge yet", "delete one “# ” in loop/flywheel.py"),
-        (6, "VI", "the check", "", "six courses"),
+        (2, "II", "the comparator", f"the exam runs {crit}", "run it as shipped · count the rooms"),
+        (3, "III", "the judge", "everyone_ate is on the exam" if code.get("honest_on_exam") else "everyone_ate is not on the exam yet", "edit one line · walk the table"),
+        (4, "IV", "the flight", "same answers, three judges", "judge the last exam three ways"),
+        (5, "V", "the rewrite", f"instruction: {code.get('instruction', '?')}", "optimize · install · ship gate"),
+        (6, "VI", "the other judge", "rating_score never reads the party", "install hacked · flip the switch"),
+        (7, "VII", "the loop", "the back edge is in" if code.get("edge") else "no back edge yet", "delete one “# ” in loop/flywheel.py"),
+        (8, "VIII", "the check", "", "eight courses"),
     ]
     return [f"  {r:<4}{TICK if lit.get(str(n)) else BOX} {name:<16}{DIM}· {how:<40}{note}{OFF}"
             for n, r, name, how, note in rows]

@@ -1,6 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ORIGIN, getBrief, getJob, install, startJob, type Exam, type Job, type Progress } from "@/lib/api";
+import Flight from "./Flight";
+import Rooms from "./Rooms";
+import Walk from "./Walk";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
 // older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
@@ -9,7 +12,7 @@ const verdict = (r: PartyRow, judge: string) => r.status || (r.score === null ||
 const rowsOf = (e?: Exam): PartyRow[] => ((e?.parties || []) as PartyRow[]).map((r) => ({ ...r, status: verdict(r, e?.judge || "everyone_ate") }));
 const passedOf = (e?: Exam) => rowsOf(e).filter((r) => r.status === "PASSED").map((r) => r.party);
 import type { Folded } from "@/lib/useEvents";
-import { CLOSING, COURSES, type Course as C } from "@/lib/courses";
+import { CLOSING, COURSES, sourceUrl, type Course as C } from "@/lib/courses";
 import Editor from "./Editor";
 
 /** The course panel: you · the table · the one edit (or the buttons) · one ✓. */
@@ -107,7 +110,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
+  const kinds = c.run === "compare" ? ["exam", "pytest"] : c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
@@ -124,16 +127,28 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const lb = p?.last_booking as { instruction?: string } | null;
   const lp = p?.loops?.[p.loops.length - 1];
   const judgeNow = p?.judge;
+  const roomsDone = (p?.rooms || []).length > 0;
+  const walked = (p?.walks || []).length > 0;
+  const flown = (p?.flights || []).length > 0;
+  const lastPytest = p?.pytests?.[p.pytests.length - 1];
   const cue: string =
-    c.run === "exam" ? (!textRun && !p?.code?.honest_on_exam ? "📝 run the exam as shipped — read what the text metric says"
-      : !p?.code?.honest_on_exam ? "change line 3 in the editor above (or press “apply the edit for me”)"
+    c.run === "compare" ? (!textRun ? "📝 run the exam as shipped — eight parties, graded by response_match_score"
+      : !roomsDone ? "now the question: tap the rooms you think feed everyone at this table, then 🔎 count them"
+      : !lastPytest ? "✓ counted. Optional, worth a minute: 🧪 run it as pytest — the same exam, failing a build. Then course III."
+      : "✓ done here. Course III puts your judge on the exam.")
+    : c.run === "exam" ? (!p?.code?.honest_on_exam ? "change line 3 in the editor above (or press “apply the edit for me”)"
       : !honestRun ? "📝 run the exam again — now your judge grades it"
-      : "📋 Book the table on the left and watch the same judge grey the chairs. Then course III.")
-    : c.run === "rewrite" ? (kind === "hacked" ? "the hacked instruction is installed (course IV) — ↺ back to the winner to redo this course"
+      : !lb ? "📋 Book the table on the left — then be the judge below before you read the kitchen’s verdict"
+      : !walked ? "mark each chair below, then 🍽 walk the table"
+      : "✓ walked. Course IV puts three judges on the same answers.")
+    : c.run === "flight" ? (!flown ? "⚖ judge the last exam three ways"
+      : (p?.flights?.length || 0) < 2 ? "⚖ press it again — which columns move?"
+      : "✓ two deterministic columns, one that can change its mind. Course V lets the agent rewrite itself.")
+    : c.run === "rewrite" ? (kind === "hacked" ? "the hacked instruction is installed (course VI) — ↺ back to the winner to redo this course"
       : kind === "draft" ? "⚗ optimize (real, 150 calls) — or ⤵ install the winner (ours, instant). Either way the file on the right changes."
       : !gateOnWinner ? "🚪 ship gate — grade the 8 holdout parties under the instruction you just installed"
       : lb?.instruction !== kind ? "📋 Book the table again — same brief, new instruction. Then 🔬 workbench: paste the brief (the 📋 button is in the drawer), read the new reason."
-      : "✓ done here. Course IV swaps the judge.")
+      : "✓ done here. Course VI swaps the judge.")
     : c.run === "switch" ? (kind !== "hacked" ? "⤵ install the hacked instruction, then read it below"
       : judgeNow !== "rating" && !ratingHacked ? "flip the switch above the table to rating, then 📝 run the exam"
       : judgeNow === "rating" && !ratingHacked ? "📝 run the exam — the critic grades the eight dinners"
@@ -151,7 +166,34 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   );
 
   let body: React.ReactNode = null;
-  if (c.run === "exam") {
+  const lbTs = (p?.last_booking as { ts?: number } | null)?.ts ?? null;
+  if (c.run === "compare") {
+    const textExam = exams.filter((e) => e.judge === "text").slice(-1)[0];
+    const pj = jobs["pytest"];
+    body = (
+      <div className="runbox">
+        <Next />
+        <div className="opts">
+          <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · as shipped</button>
+          <span className="art">8 parties · about two minutes · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b>{p?.code?.honest_on_exam ? " — you already made course III’s edit; this will run your judge instead" : ""}</span>
+        </div>
+        <Log job={latest} />
+        <div className="results">
+          <Tile label="built-in text metric · response_match_score" exam={textExam} />
+          <div className="result ways">
+            <span className="k">THREE WAYS TO RUN THE SAME EXAM</span>
+            <div className="way"><b>adk eval</b><span>the CLI — what 📝 just ran. A batch runner; the one you put in CI.</span></div>
+            <div className="way"><b>adk web → Evals</b><span>the workbench’s Evals tab: this run is in its 🕓 history, every case clickable, the conversation that was graded, the trace. <a className="src" href={`${ORIGIN}/workbench/dev-ui/?app=host`} target="_blank" rel="noreferrer">open the workbench ↗</a></span></div>
+            <div className="way"><b>pytest</b><span><code>tests/test_host.py</code> — <code>AgentEvaluator</code> on the same evalset, the same config, writing to the same store. The difference is what a failure does: it fails the build.
+              <button className="btn" style={{ marginLeft: 8 }} disabled={anyRunning} onClick={() => start("pytest")}>🧪 run it as pytest</button>
+              {lastPytest && !pj?.state?.match(/running/) && <em className={lastPytest.green ? "ok" : "bad"}> last: {lastPytest.green ? "green" : "red"} · {lastPytest.line} · {lastPytest.judge}</em>}</span></div>
+            <div className="art">one local eval store under <code>host/.adk/eval_history/</code> — a batch from CI fails, you open that exact run in the web UI to stare at it.</div>
+          </div>
+        </div>
+        <Rooms party={party} p={p} onCounted={onChanged} />
+      </div>
+    );
+  } else if (c.run === "exam") {
     body = (
       <div className="runbox">
         <Next />
@@ -165,6 +207,14 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <Tile label="your judge · everyone_ate" exam={honest.slice(-1)[0]} />
         </div>
         <Compare text={exams.filter((e) => e.judge === "text").slice(-1)[0]} honest={honest.slice(-1)[0]} />
+        <Walk party={party} p={p} lastBookingTs={lbTs} onWalked={onChanged} />
+      </div>
+    );
+  } else if (c.run === "flight") {
+    body = (
+      <div className="runbox">
+        <Next />
+        <Flight p={p} onJudged={onChanged} />
       </div>
     );
   } else if (c.run === "rewrite") {
@@ -228,7 +278,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       </div>
       {c.sources && (
         <div className="sources"><span className="k">SOURCE</span>
-          {c.sources.map(([label, path]) => <a key={path + label} className="src" href={`${ORIGIN}/api/source?path=${encodeURIComponent(path)}`} target="_blank" rel="noreferrer" title={path}>{label} ↗</a>)}
+          {c.sources.map(([label, path]) => <a key={path + label} className="src" href={sourceUrl(path)} target="_blank" rel="noreferrer" title={`${path} · on GitHub`}>{label} ↗</a>)}
         </div>
       )}
       <div className="step">
@@ -240,7 +290,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       {c.editor?.change && (
         <div className="change"><span className="k">{c.editor.change[0].toUpperCase()} · WAS</span><span className="was">{c.editor.change[1]}</span><span className="k">NOW</span><span className="now">{c.editor.change[2]}</span></div>
       )}
-      {c.editor && n !== 4 && (
+      {c.editor && c.key !== "other" && (
         <div style={{ marginBottom: 10, marginTop: 10 }}>
           <Editor path={c.editor.path} symbol={c.editor.symbol} readOnly={c.editor.readOnly} marker={c.editor.marker} afterMarker={c.editor.afterMarker} fix={c.editor.fix}
             afterHint={c.editor.afterHint} onSaved={onChanged}
@@ -248,7 +298,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         </div>
       )}
       {body}
-      {c.editor && n === 4 && (
+      {c.editor && c.key === "other" && (
         <div style={{ marginTop: 10 }}>
           <Editor path={c.editor.path} readOnly foot={<span dangerouslySetInnerHTML={{ __html: c.editor.foot || "" }} />} />
         </div>
