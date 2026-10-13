@@ -142,9 +142,9 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : !lb ? "📋 Book the table on the left — then be the judge below before you read the kitchen’s verdict"
       : !walked ? "mark each chair below, then 🍽 walk the table"
       : "✓ walked. Course IV puts three judges on the same answers.")
-    : c.run === "flight" ? (!flown ? "⚖ judge the last exam three ways"
-      : (p?.flights?.length || 0) < 2 ? "⚖ press it again — which columns move?"
-      : "✓ two deterministic columns, one that can change its mind. Course V lets the agent rewrite itself.")
+    : c.run === "flight" ? (!flown ? "⚖ judge this answer three ways — the party on the left is the one you are grading (p1 is tonight’s)"
+      : (p?.flights?.length || 0) < 2 ? "⚖ press it again — which of the three can change its mind?"
+      : "✓ two judges that never move, one that can. Pick another party on the left if you like; then course V lets the agent rewrite itself.")
     : c.run === "rewrite" ? (kind === "hacked" ? "the hacked instruction is installed (course VI) — ↺ back to the winner to redo this course"
       : kind === "draft" ? "⚗ optimize (real, 150 calls) — or ⤵ install the winner (ours, instant). Either way the file on the right changes."
       : !gateOnWinner ? "🚪 ship gate — grade the 8 holdout parties under the instruction you just installed"
@@ -212,7 +212,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     body = (
       <div className="runbox">
         <Next />
-        <Flight p={p} onJudged={onChanged} />
+        <Flight p={p} party={party} onJudged={onChanged} />
       </div>
     );
   } else if (c.run === "rewrite") {

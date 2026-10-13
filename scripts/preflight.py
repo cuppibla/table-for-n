@@ -53,7 +53,7 @@ def menu(p: dict) -> list[str]:
         (1, "I", "the booking", "a reply is not a result", "read only · book one in the workbench"),
         (2, "II", "the comparator", f"the exam runs {crit}", "run it as shipped · read the verdicts"),
         (3, "III", "the judge", "everyone_ate is on the exam" if code.get("honest_on_exam") else "everyone_ate is not on the exam yet", "edit one line · walk the table"),
-        (4, "IV", "the flight", "same answers, three judges", "judge the last exam three ways"),
+        (4, "IV", "the flight", "one answer, three judges", "judge it three ways"),
         (5, "V", "the rewrite", f"instruction: {code.get('instruction', '?')}", "optimize · install · ship gate"),
         (6, "VI", "the other judge", "rating_score never reads the party", "install hacked · flip the switch"),
         (7, "VII", "the loop", "the back edge is in" if code.get("edge") else "no back edge yet", "delete one “# ” in loop/flywheel.py"),

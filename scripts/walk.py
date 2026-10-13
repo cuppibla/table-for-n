@@ -88,7 +88,7 @@ def course3() -> bool:
 
 
 def course4() -> bool:
-    f = api("/flight", {})
+    f = api("/flight", {"party": "p1"})
     s_ = f["summary"]
     say(f"flight: comparator {s_['comparator_passed']}/{s_['n']} · checker {s_['checker_passed']}/{s_['n']} · llm {s_['llm_passed']}/{s_['n']}"
         f" · fed-but-failed-text {s_['fed_but_failed_text']} · llm-disagrees {s_['llm_disagrees']}")

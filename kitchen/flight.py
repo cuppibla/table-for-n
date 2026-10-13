@@ -109,14 +109,19 @@ def answers_of(exam: dict | None) -> list[dict]:
     return [r for r in (exam or {}).get("parties", []) if r.get("answer")]
 
 
-async def run(exam: dict | None = None) -> dict:
-    """Grade the last exam's answers three ways. Returns the table and records it."""
+async def run(exam: dict | None = None, party: str | None = None) -> dict:
+    """Grade the last exam's answers three ways — one party's answer (one
+    model call) or all eight. Returns the table and records it."""
     exams = state.STATE.get("exams", [])
     exam = exam or next((e for e in reversed(exams) if answers_of(e)), None)
     if not exam:
         raise ValueError("no exam with recorded answers yet — 📝 run the exam first (course II or III)")
     gold = golden()
     rows = answers_of(exam)
+    if party:
+        rows = [r for r in rows if r["party"] == party]
+        if not rows:
+            raise ValueError(f"the last exam has no recorded answer for {party}")
     ep = events.start_episode("flight", instruction=exam.get("instruction"), judge=exam.get("judge"))
     t0 = time.time()
     judged = await asyncio.gather(*(llm_judge(r["party"], r["answer"]) for r in rows))
@@ -137,13 +142,13 @@ async def run(exam: dict | None = None) -> dict:
         "fed_but_failed_text": [x["party"] for x in out if x["checker"]["passed"] and not x["comparator"]["passed"]],
         "hungry_but_passed_text": [x["party"] for x in out if not x["checker"]["passed"] and x["comparator"]["passed"]],
         "llm_disagrees": [x["party"] for x in out if x["llm"]["passed"] is not None and x["llm"]["passed"] != x["checker"]["passed"]],
-        "instruction": exam.get("instruction"), "from_exam_ts": exam.get("ts"),
+        "instruction": exam.get("instruction"), "from_exam_ts": exam.get("ts"), "party": party,
         "ms": int((time.time() - t0) * 1000),
     }
     prev = state.STATE.get("flights", [])
     last = prev[-1] if prev else None
     summary["same_as_last"] = None
-    if last and last.get("from_exam_ts") == summary["from_exam_ts"]:
+    if last and last.get("from_exam_ts") == summary["from_exam_ts"] and last.get("party") == party:
         summary["same_as_last"] = {
             "comparator": last.get("comparator_passed") == summary["comparator_passed"],
             "checker": last.get("checker_passed") == summary["checker_passed"],

@@ -67,13 +67,13 @@ export const COURSES: Course[] = [
     check: "the exam fails for the right reason — hungry seats, named — and you walked a table seat by seat" },
 
   { n: 4, r: "IV", key: "flight", t: "the flight", pill: ["gold", "THREE JUDGES"], judge: "everyone_ate",
-    you: "⚖ <b>Judge the last exam three ways</b>. The same eight answers the host already gave — a comparator, your checker, and an LLM with a rubric, side by side. Then press it <b>again</b> and watch which columns move.",
-    table: "Three metric families, one answer each. The comparator needs a golden answer. The checker needs the rules. The LLM judge needs a model and a rubric — and can be wrong.",
-    tableAfter: "Same answer, three different things to measure it against, three costs, three blind spots. Two columns never move between runs; one can. When somebody asks how to evaluate an agent, this table is the answer to the question behind the question.",
+    you: "One answer the host already gave — party <b>p1</b>, the booking the exam recorded — put in front of three judges. Press ⚖ <b>judge this answer three ways</b>, read the three cards, then press it <b>again</b>.",
+    table: "Same answer. Three different things to measure it against: a golden answer (the comparator), the rules (the checker), a rubric and a model (the LLM judge). That single difference is what separates the three metric families.",
+    tableAfter: "Three verdicts, three reasons, three costs, three blind spots. Two of the judges never change their mind between presses; one can. When somebody asks how to evaluate an agent, the question behind the question is: what can you write down — the answer, the rules, or only a description of good?",
     after: (p) => (p.flights || []).length > 0,
     run: "flight",
-    sources: [["kitchen/flight.py · the three rows", "kitchen/flight.py"], ["world.everyone_ate", "world.py"], ["parties_val.evalset.json · the golden answers", "exam/parties_val.evalset.json"]],
-    check: "the same eight answers, judged three ways" },
+    sources: [["kitchen/flight.py · the three judges", "kitchen/flight.py"], ["world.everyone_ate · the checker", "world.py"], ["parties_val.evalset.json · the golden answers", "exam/parties_val.evalset.json"]],
+    check: "one answer, judged three ways" },
 
   { n: 5, r: "V", key: "rewrite", t: "the rewrite", pill: ["olive", "RUN"], judge: "everyone_ate",
     you: "⚗ <b>optimize</b> — 150 model calls, about eight minutes. Or ⤵ install the winner. Then 🚪 <b>ship gate</b>, and 📋 book the table again.",

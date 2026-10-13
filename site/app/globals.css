@@ -352,3 +352,20 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .log .warn { color: var(--mustard-deep); }
 .quota { margin-top: 6px; padding: 8px 10px; border-radius: 7px; border: 1px solid rgba(217,164,65,.6); background: #FBF3DF; font-size: 12px; color: var(--sub); line-height: 1.5; }
 .quota b { color: var(--ink); }
+
+/* the flight, one answer at a time */
+.flight .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.flight .pair > div { padding: 8px 10px; border-radius: 7px; background: var(--paper-2); border: 1px solid var(--rule); min-width: 0; }
+.flight .pair pre { white-space: pre-wrap; word-break: break-word; font-size: 11px; color: var(--ink); margin: 4px 0 0; max-height: 110px; overflow: auto; }
+.flight .judges { display: grid; gap: 8px; margin-top: 10px; }
+.judgecard { padding: 9px 11px; border-radius: 8px; border: 1px solid var(--rule); background: #fff; display: grid; gap: 4px; }
+.judgecard.pass { border-color: rgba(127,168,107,.6); } .judgecard.fail { border-color: rgba(217,96,63,.55); }
+.judgecard .head { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+.judgecard .head b { font-family: var(--font-display), serif; font-size: 16px; color: var(--ink); font-weight: 500; }
+.judgecard .head .mono { font-family: var(--font-mono), monospace; font-size: 10.5px; color: var(--faint); flex: 1; }
+.judgecard .vd { font-family: var(--font-mono), monospace; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+.judgecard .vd.p { color: var(--sage-ink); background: #E3EED8; } .judgecard .vd.f { color: #fff; background: var(--tomato); } .judgecard .vd.na { color: var(--faint); background: var(--paper-2); }
+.judgecard .row { display: grid; grid-template-columns: 72px 1fr; gap: 8px; font-size: 12.5px; color: var(--sub); line-height: 1.45; }
+.judgecard .row .lbl { font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--olive); padding-top: 3px; }
+.judgecard .row.verdict span:last-child { color: var(--ink); } .judgecard .row.verdict b { font-family: var(--font-mono), monospace; }
+.judgecard .row.blind span:last-child { color: var(--faint); }

@@ -182,14 +182,18 @@ _flight_busy = __import__("asyncio").Lock()
 
 
 @app.post("/api/flight")
-async def post_flight() -> dict:
-    """The last exam's eight answers, each judged by the comparator, the
-    checker and an LLM judge. One real model call per answer."""
+async def post_flight(req: Request) -> dict:
+    """One party's recorded answer (or all eight) judged by the comparator,
+    the checker and an LLM judge. One real model call per answer."""
+    body = await req.json() if int(req.headers.get("content-length") or 0) > 0 else {}
+    party = body.get("party") or None
+    if party and party not in world.PARTIES:
+        raise HTTPException(404, f"no party {party}")
     if _flight_busy.locked():
         raise HTTPException(409, "a flight is already being judged")
     async with _flight_busy:
         try:
-            return await flight.run()
+            return await flight.run(party=party)
         except ValueError as exc:
             raise HTTPException(400, str(exc)) from exc
 
