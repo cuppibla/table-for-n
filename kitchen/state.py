@@ -22,7 +22,6 @@ STATE: dict = {
     "exams": [],                      # newest last: {ts, judge, instruction, passed, failed, hungry, parties}
     "loops": [],                      # {ts, rounds, decision, closed, edge}
     "bookings": [],                   # {ts, party, judge, restaurant, time, honest, rating, hungry, instruction}
-    "walks": [],                      # course III · {ts, party, restaurant, time, score, guessed, correct, seats, us}
     "flights": [],                    # course IV  · {ts, n, comparator_passed, checker_passed, llm_passed, …, rows}
     "optimized": False,               # runs/optimize/winner.txt exists
     "harvest": {"minted": 0, "skipped": 0, "ts": None},

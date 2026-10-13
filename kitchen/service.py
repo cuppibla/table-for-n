@@ -4,7 +4,6 @@
     /api/progress     which course is lit — read from your files + what ran
     /api/events       SSE: the table's event log (recent history, then live)
     /api/book         POST {party}: one real booking, judged on the spot
-    /api/walk         GET ?party=&restaurant=&time= / POST {…, predicted}: everyone_ate, one seat at a time (course III)
     /api/flight       POST: the last exam's answers, judged three ways (course IV)
     /api/judge        GET / POST {to}: the switch — which judge the exam runs with
     /api/code         GET / POST: the in-page editor (one file, syntax-checked)
@@ -115,66 +114,6 @@ def _party(body_or_q: str) -> str:
     if body_or_q not in world.PARTIES:
         raise HTTPException(404, f"no party {body_or_q}")
     return body_or_q
-
-
-# ── 🍽 the walk — course III ─────────────────────────────────────────────────
-def _last_pick(party: str) -> tuple[str | None, str | None]:
-    for b in reversed(state.STATE.get("bookings", [])):
-        if b.get("party") == party and b.get("restaurant"):
-            return world.find_restaurant(str(b["restaurant"])), str(b.get("time") or "19:00")
-    return None, None
-
-
-@app.get("/api/walk")
-async def get_walk(party: str = "p1", restaurant: str | None = None, time: str | None = None) -> dict:
-    """The table this course walks: the last 📋 booking for the party unless
-    a restaurant and time are named. No verdicts here — only the seating."""
-    party = _party(party)
-    rid = world.find_restaurant(restaurant) if restaurant else None
-    if rid is None:
-        rid, time = _last_pick(party)
-    if rid is None:
-        return {"party": party, "restaurant": None, "time": None, "seats": [], "checks": list(world.CHECKS),
-                "people": [{"id": pid, **{k: world.PEOPLE[pid][k] for k in ("name", "label")}} for pid in world.PARTIES[party]]}
-    rest = world.RESTAURANTS[rid]
-    return {"party": party, "restaurant": rid, "restaurant_name": rest["name"], "time": time or "19:00", "checks": list(world.CHECKS),
-            "room": {k: rest[k] for k in ("name", "rating", "price", "walk_min", "earliest", "last_order", "spice", "veg", "vegan", "nut_safe", "shellfish_safe") if k in rest},
-            "people": [{"id": pid, **{k: world.PEOPLE[pid][k] for k in ("name", "label")}} for pid in world.PARTIES[party]]}
-
-
-@app.post("/api/walk")
-async def post_walk(req: Request) -> dict:
-    """Walk the table: the student's prediction per seat against world.ate,
-    with the check each seat stopped at. Deterministic; timed so the page
-    can say so."""
-    import time as _time
-    body = await req.json()
-    party = _party(body.get("party", "p1"))
-    rid = world.find_restaurant(str(body.get("restaurant") or ""))
-    when = str(body.get("time") or "19:00")
-    if rid is None:
-        rid, when = _last_pick(party)
-    if rid is None:
-        raise HTTPException(400, "nothing to walk yet — 📋 Book the table first, or name a restaurant")
-    predicted = {k: bool(v) for k, v in (body.get("predicted") or {}).items()}
-    t0 = _time.perf_counter()
-    seats = world.walk(world.PARTIES[party], rid, when)
-    score, _ = world.everyone_ate(world.PARTIES[party], rid, when)
-    us = int((_time.perf_counter() - t0) * 1_000_000)
-    for s in seats:
-        s["predicted"] = predicted.get(s["id"])
-        s["correct"] = (predicted.get(s["id"]) == s["ate"]) if s["id"] in predicted else None
-    correct = sum(1 for s in seats if s["correct"])
-    guessed = sum(1 for s in seats if s["correct"] is not None)
-    row = state.push("walks", {"party": party, "restaurant": rid, "restaurant_name": world.RESTAURANTS[rid]["name"], "time": when,
-                               "score": round(score, 3), "passed": score >= world.THRESHOLD, "threshold": world.THRESHOLD,
-                               "guessed": guessed, "correct": correct, "seats": len(seats), "us": us,
-                               "detail": seats, "checks": list(world.CHECKS)})
-    events.emit("table_walked", party=party, restaurant=world.RESTAURANTS[rid]["name"], time=when, score=round(score, 3),
-                correct=correct, guessed=guessed, seats=len(seats), us=us)
-    return {"party": party, "restaurant": rid, "restaurant_name": world.RESTAURANTS[rid]["name"], "time": when,
-            "seats": seats, "score": round(score, 3), "passed": score >= world.THRESHOLD, "threshold": world.THRESHOLD,
-            "correct": correct, "guessed": guessed, "us": us, "checks": list(world.CHECKS), "ts": row["ts"]}
 
 
 # ── ⚖ the flight — course IV ─────────────────────────────────────────────────

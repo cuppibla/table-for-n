@@ -371,3 +371,6 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .judgecard .row.blind span:last-child { color: var(--faint); }
 
 .result .under { display: block; font-size: 10px; color: var(--faint); margin-top: 2px; }
+
+.btn.stopbig { color: #fff; background: var(--tomato); border-color: #B84A2E; animation: blink 1.2s ease-in-out infinite; }
+.btn.stopbig:hover { color: #fff; background: #B84A2E; }

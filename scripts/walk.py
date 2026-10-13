@@ -82,8 +82,6 @@ def course3() -> bool:
     run_job("exam")
     b = api("/book", {"party": "p1"})
     say(f"book p1 under the draft: {b.get('restaurant')} {b.get('time')} honest {b.get('honest')} hungry {b.get('hungry')}")
-    w = api("/walk", {"party": "p1", "predicted": {"nadia": False, "tom": False, "amara": True, "lena": True, "ben": True}})
-    say(f"walked {w['restaurant_name']} {w['time']}: score {w['score']} · {w['correct']}/{w['guessed']} seats predicted right · {w['us']} µs")
     return lit(3)
 
 

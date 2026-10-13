@@ -29,8 +29,6 @@ export type Progress = {
   last_exam: Exam | null; exams: Exam[];
   loops: { ts?: number; rounds: number; decision: string | null; score: number | null; closed: boolean; edge: boolean }[];
   harvest: { minted: number; skipped: number; ts: number | null };
-  walks: { ts: number; party: string; restaurant: string; restaurant_name: string; time: string; score: number; passed: boolean; threshold: number;
-    guessed: number; correct: number; seats: number; us: number; detail: WalkSeat[]; checks: string[] }[];
   flights: (FlightSummary & { rows?: FlightRow[] })[];
   last_booking: Record<string, unknown> | null;
   optimized: boolean; mode: string; error: string | null;
@@ -53,13 +51,6 @@ export type Job = { kind: string; state: "idle" | "running" | "done" | "error"; 
 export const startJob = (kind: string, opts: Record<string, unknown> = {}) => post<Job>("/job", { kind, ...opts });
 export const getJob = (kind: string) => j<Job>(`/job?kind=${kind}`);
 export const stopJob = (kind: string) => j<{ stopped: boolean }>(`/job?kind=${kind}`, { method: "DELETE" });
-
-// course III · 🍽 the walk
-export type WalkSeat = { id: string; name: string; label: string; ate: boolean; why: string; check: string; predicted?: boolean | null; correct?: boolean | null };
-export type WalkReply = { party: string; restaurant: string | null; restaurant_name?: string; time: string | null; checks: string[];
-  people: { id: string; name: string; label: string }[]; seats: WalkSeat[]; score: number; passed: boolean; threshold: number; correct: number; guessed: number; us: number };
-export const getWalk = (party: string) => j<WalkReply>(`/walk?party=${party}`);
-export const walkTable = (party: string, restaurant: string, time: string, predicted: Record<string, boolean>) => post<WalkReply>("/walk", { party, restaurant, time, predicted });
 
 // course IV · ⚖ the flight
 export type Verdict = { score: number; passed: boolean; needs: string; why: string; restaurant?: string; time?: string; ms?: number };

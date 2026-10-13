@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ORIGIN, getBrief, getJob, install, startJob, stopJob, type Exam, type Job, type Progress } from "@/lib/api";
 import Flight from "./Flight";
-import Walk from "./Walk";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
 // older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
@@ -61,15 +60,14 @@ function Log({ job, onStopped }: { job: Job | null; onStopped?: () => void }) {
   if (!job || !job.log.length) return null;
   const lines = job.log.slice(-14);
   const quota = job.state === "running" && job.log.slice(-30).some((l) => /429|RESOURCE_EXHAUSTED/.test(l));
-  const stop = async () => { try { await stopJob(job.kind); } catch { /* gone already */ } onStopped?.(); };
   return (
     <>
       <pre className="log">
         <span className="hi">$ {job.kind}{job.state === "running" ? ` · running ${job.elapsed}s…` : job.state === "done" ? ` · done in ${job.elapsed}s` : job.rc === -15 ? " · stopped" : ` · ${job.state} (rc ${job.rc})`}</span>
-        {job.state === "running" && <button className="stop" onClick={stop} title="terminate this run — nothing is lost; run it again when you like">■ stop</button>}{"\n"}
+{"\n"}
         {lines.map((l, i) => <span key={i} className={/passed|SHIP|wrote|deployed|\[mint\]/i.test(l) ? "ok" : /fail|error|Traceback|\[skip\]/i.test(l) ? "bad" : /429|RESOURCE_EXHAUSTED/.test(l) ? "warn" : ""}>{l}{"\n"}</span>)}
       </pre>
-      {quota && <div className="quota">⏳ <b>429 RESOURCE_EXHAUSTED</b> is Vertex AI’s per-minute quota, which is small on a brand-new project. Nothing is broken: the run keeps retrying with back-off and usually finishes in a minute or two. If you would rather not wait, <b>■ stop</b> it and press the button again in a minute — a stopped run leaves no receipt, so nothing lights by mistake.</div>}
+      {quota && <div className="quota">⏳ <b>429 RESOURCE_EXHAUSTED</b> is Vertex AI’s per-minute quota, which is small on a brand-new project. Nothing is broken: the run keeps retrying with back-off and usually finishes in a minute or two. If you would rather not wait, press the red <b>■ stop</b> button above and run it again in a minute — a stopped run leaves no receipt, so nothing lights by mistake.</div>}
     </>
   );
 }
@@ -133,16 +131,15 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const lb = p?.last_booking as { instruction?: string } | null;
   const lp = p?.loops?.[p.loops.length - 1];
   const judgeNow = p?.judge;
-  const walked = (p?.walks || []).length > 0;
   const flown = (p?.flights || []).length > 0;
   const cue: string =
     c.run === "compare" ? (!textRun ? "📝 run the exam as shipped — eight parties, graded by response_match_score, the only metric in criteria"
       : "✓ read the chips: passes and fails for word overlap, not for dinner. Course III puts your judge on the exam.")
-    : c.run === "exam" ? (!p?.code?.honest_on_exam ? "change line 3 in the editor above (or press “apply the edit for me”)"
+    : c.run === "exam" ? (kind !== "draft" ? `the host is running the ${kind} instruction, not the day-one draft — ↺ back to the draft first, or the numbers here will not match the story`
+      : !p?.code?.honest_on_exam ? "change line 3 in the editor above (or press “apply the edit for me”)"
       : !honestRun ? "📝 run the exam again — now your judge grades it"
-      : !lb ? "📋 Book the table on the left — then be the judge below before you read the kitchen’s verdict"
-      : !walked ? "mark each chair below, then 🍽 walk the table"
-      : "✓ walked. Course IV puts three judges on the same answers.")
+      : !lb ? "📋 Book the table on the left and watch the same judge grey the chairs"
+      : "✓ a failure names the seat and the why. Course IV puts three judges on one answer.")
     : c.run === "flight" ? (!flown ? "⚖ judge this answer three ways — the party on the left is the one you are grading (p1 is tonight’s)"
       : (p?.flights?.length || 0) < 2 ? "⚖ press it again — which of the three can change its mind?"
       : "✓ two judges that never move, one that can. Pick another party on the left if you like; then course V lets the agent rewrite itself.")
@@ -167,10 +164,11 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   // (and refetch the file) on every job poll — the page flickered while a
   // job ran. These are values, so React diffs them in place.
   const nextCue = cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
+  const running = Object.values(jobs).find((j) => j.state === "running");
+  const stopBtn = running ? <button className="btn stopbig" onClick={async () => { try { await stopJob(running.kind); } catch { /* gone */ } onChanged(); }} title="terminate this run — nothing is lost; run it again when you like">■ stop the {running.kind}{running.elapsed ? ` · ${running.elapsed}s` : ""}</button> : null;
   const instruction = (foot: React.ReactNode) => <Editor path="host/instruction_current.txt" readOnly foot={foot} />;
 
   let body: React.ReactNode = null;
-  const lbTs = (p?.last_booking as { ts?: number } | null)?.ts ?? null;
   if (c.run === "compare") {
     const textExam = exams.filter((e) => e.judge === "text").slice(-1)[0];
     const crit = p?.code?.criteria || [];
@@ -179,6 +177,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · as shipped</button>
+          {stopBtn}
           <span className="art">8 parties · about a minute · <b>{crit.length} metric{crit.length === 1 ? "" : "s"} run{crit.length === 1 ? "s" : ""}: {crit.join(", ") || "—"}</b>{p?.code?.honest_on_exam ? " — you already made course III’s edit, so your judge grades it; the comparator’s run is kept below" : " · everyone_ate is declared, not on the exam"}</span>
         </div>
         <Log job={latest} onStopped={onChanged} />
@@ -200,7 +199,9 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge || "everyone_ate"}</button>
-          <span className="art">8 parties the optimizer never sees · about two minutes · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b></span>
+          {stopBtn}
+          {kind !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft")}>↺ back to the draft</button>}
+          <span className="art">8 parties the optimizer never sees · about a minute · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b> · the host runs the <b>{kind}</b> instruction</span>
         </div>
         <Log job={latest} onStopped={onChanged} />
         <div className="results">
@@ -208,7 +209,6 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <Tile label="your judge · everyone_ate" exam={honest.slice(-1)[0]} />
         </div>
         <Compare text={exams.filter((e) => e.judge === "text").slice(-1)[0]} honest={honest.slice(-1)[0]} />
-        <Walk party={party} p={p} lastBookingTs={lbTs} onWalked={onChanged} />
       </div>
     );
   } else if (c.run === "flight") {
@@ -225,6 +225,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="art">host/instruction_current.txt · <b>{kind}</b> · {chars.toLocaleString()} chars{kind !== "draft" ? " (the draft was 375)" : ""}{p?.optimized ? " · your own winner is saved (runs/optimize/winner.txt)" : ""}</div>
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("optimize")}>⚗ optimize (~8 min · 150 calls)</button>
+          {stopBtn}
           <button className="btn" disabled={anyRunning} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>⤵ install {p?.optimized ? "your winner" : "the winner (prebaked)"}</button>
           <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>🚪 ship gate · everyone_ate</button>
           {kind !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft")}>↺ back to the draft</button>}
@@ -245,6 +246,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="opts">
           <button className="btn gold" disabled={anyRunning || kind === "hacked"} onClick={() => doInstall("hacked")}>⤵ install the hacked instruction</button>
           <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge}</button>
+          {stopBtn}
           {kind === "hacked" && <button className="btn" disabled={anyRunning} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>↺ back to the winner</button>}
         </div>
         {instruction(kind === "hacked"
@@ -264,6 +266,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("loop")}>↻ run the loop · from the day-one draft</button>
+          {stopBtn}
           <span className="art">{lp ? <>last run: <b>{lp.rounds} round{lp.rounds === 1 ? "" : "s"}</b> · {lp.decision || "no decision — it stalled"}{lp.edge ? " · back edge in" : " · no back edge"}</> : "not run yet"}</span>
         </div>
         <Log job={latest} onStopped={onChanged} />

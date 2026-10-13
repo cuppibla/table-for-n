@@ -12,8 +12,8 @@ the number lie, and close the loop.
 |---|---|---|---|
 | I · the booking | a reply is not a result | book a table in the workbench (adk web) | a session in `table.db` |
 | II · the comparator | one golden answer vs. a *set* of right answers · three ways to run one exam | 📝 run the exam as shipped (`response_match_score`) and read the verdicts | the text exam ran |
-| III · the judge | a checker function as a custom `adk eval` metric · the six checks inside it | swap one line in `exam/eval_config.json` · 📋 book · mark each chair, 🍽 walk the table | the exam fails with hungry seats, named — and a table was walked |
-| IV · the flight | three metric families: comparator · checker · LLM-as-judge | ⚖ judge the last exam's eight answers three ways · press it again | a flight was judged |
+| III · the judge | a checker function as a custom `adk eval` metric · the six checks inside it | swap one line in `exam/eval_config.json` · 📋 book | the exam fails with hungry seats, named |
+| IV · the flight | three metric families: comparator · checker · LLM-as-judge | ⚖ judge one answer three ways · press it again | a flight was judged |
 | V · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |
 | VI · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
 | VII · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |

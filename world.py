@@ -239,19 +239,6 @@ def ate(person_id: str, rest: dict, chosen_min: int) -> tuple[bool, str]:
     return ok, why
 
 
-def walk(party_ids: list[str], restaurant_id: str, time_str: str) -> list[dict]:
-    """everyone_ate, one seat at a time, with the check each seat stopped at.
-    The same function the exam runs — laid out so a person can follow it."""
-    rest = RESTAURANTS[restaurant_id]
-    chosen = _t(time_str)
-    out = []
-    for pid in party_ids:
-        ok, why, check = ate_detail(pid, rest, chosen)
-        p = PEOPLE[pid]
-        out.append({"id": pid, "name": p["name"], "label": p["label"], "ate": ok, "why": why, "check": check})
-    return out
-
-
 def rooms(party_ids: list[str], step_min: int = 15) -> list[dict]:
     """How many right answers does this dinner have? Every restaurant, at its
     best seating for THIS party: the honest score, who is hungry, and why.
