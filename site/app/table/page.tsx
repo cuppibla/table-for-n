@@ -20,16 +20,28 @@ import { isBig, useEvents, type Seat } from "@/lib/useEvents";
 
 const CH_KEY = "tfn.course";
 
-/** One line for the drawer: what adk web will show you on this course. */
-function wbHint(course: number, p: Progress | null): string {
+/** What to do in adk web on THIS course — steps and what you will see.
+ *  "[brief]" in a step renders the copy-the-brief button. */
+export type WbGuide = { steps: string[]; see: string };
+function wbGuide(course: number, p: Progress | null): WbGuide {
   const kind = p?.code?.instruction || "draft";
-  if (course === 1) return "a booking and its reason. That is the whole course.";
-  if (course === 2) return "the same answer as before — the judge changed, not the agent. Evals → 🕓 history has your exam runs, per party.";
-  if (course === 3) return kind === "draft" ? "Olive & Thyme, “fits the vibe”. Remember it — after ⤵ install, ask again."
-    : kind === "hacked" ? "the hacked instruction is installed (course IV) — ↺ back to the winner first."
-    : `under the ${kind === "optimized" ? "optimized" : "winner"} instruction: a room every seat can eat at, and a reason that names the constraints.`;
-  if (course === 4) return kind === "hacked" ? "Smoke & Barrel — and not one person named in the reason." : "install the hacked instruction first, then ask.";
-  return "nothing new here for this course.";
+  const chat = ["pick host in the agent dropdown (top left)", "[brief] → paste in the chat → send", "read the booking and its reason"];
+  if (course === 1) return { steps: chat, see: "a room, a time, a confident reason — and nothing that can say whether it is good." };
+  if (course === 2) return {
+    steps: ["Evals tab (left rail) → open the eval set parties_val",
+      "select the cases (or all) → Run evaluation → in the dialog untick the built-ins, tick everyone_ate → Run",
+      "click a party in the result: its score, PASS/FAIL, and the answer that was graded. The 🕓 history icon lists this run and the ones the page made"],
+    see: "the same verdicts the 📝 button gave — p1 at 0.60 under the draft. The threshold slider is cosmetic: the bar is 0.9, inside the metric (world.py)." };
+  if (course === 3) return { steps: chat.slice(0, 2).concat(["compare with the answer you got before ⤵ install"]),
+    see: kind === "draft" ? "Olive & Thyme, “fits the vibe”. Remember it, install, then ask again."
+      : kind === "hacked" ? "the hacked instruction is installed (course IV) — ↺ back to the winner first."
+      : `under the ${kind === "optimized" ? "optimized" : "winner"} instruction: a room every seat can eat at, and a reason that names Tom’s cap and Lena’s last orders.` };
+  if (course === 4) return {
+    steps: chat.slice(0, 2).concat(["Evals → parties_val → Run evaluation with rating, then once more with everyone_ate (or open 🕓 history: the page’s two runs are there)"]),
+    see: kind === "hacked" ? "Smoke & Barrel, a reason about ratings — not one person named. rating: 8 PASS. everyone_ate: 1 PASS. The same eight answers."
+      : "install the hacked instruction on the page first." };
+  if (course === 5) return { steps: ["nothing to do here — the loop is its own graph (loop/flywheel.py) with its own host node; the host you chat with here is untouched"], see: "nothing new for this course." };
+  return { steps: ["Evals → 🕓 history: every exam you ran, in order, with the metric that graded each"], see: "the whole evening, as ADK recorded it." };
 }
 
 export default function TablePage() {
@@ -131,7 +143,7 @@ export default function TablePage() {
         </div>
       </div>
 
-      <Workbench open={drawer} onClose={() => openDrawer(false)} hint={wbHint(course, p)} />
+      <Workbench open={drawer} onClose={() => openDrawer(false)} guide={wbGuide(course, p)} course={course} />
       {check && <Check p={p} name={name} onClose={() => setCheck(false)} />}
       {toast && <div className="toast">{toast}</div>}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ORIGIN, getBrief } from "@/lib/api";
+import type { WbGuide } from "@/app/table/page";
 
 /** adk web, in a drawer. The same host/ folder, the same table.db — a
  *  booking here is a session there. Course I lives here; the Evals tab is
@@ -14,7 +15,7 @@ function CopyBrief() {
   );
 }
 
-export default function Workbench({ open, onClose, hint }: { open: boolean; onClose: () => void; hint?: string }) {
+export default function Workbench({ open, onClose, guide, course }: { open: boolean; onClose: () => void; guide: WbGuide; course: number }) {
   const src = `${ORIGIN}/workbench/dev-ui/?app=host`;
   return (
     <div className={"drawer" + (open ? " open" : "")} aria-hidden={!open}>
@@ -26,8 +27,11 @@ export default function Workbench({ open, onClose, hint }: { open: boolean; onCl
         </span>
       </div>
       <div className="wbhint">
-        <div className="steps"><b>1</b> pick <code>host</code> <b>2</b> <CopyBrief /> → paste in the chat → send <b>3</b> read the answer</div>
-        {hint && <div className="see"><span>YOU WILL SEE</span> {hint}</div>}
+        <div className="course">ON COURSE {["I", "II", "III", "IV", "V", "VI"][course - 1]}, IN ADK WEB</div>
+        <ol className="steps">
+          {guide.steps.map((st, i) => <li key={i}><b>{i + 1}</b><span>{st.includes("[brief]") ? <>{st.split("[brief]")[0]}<CopyBrief />{st.split("[brief]")[1]}</> : st}</span></li>)}
+        </ol>
+        <div className="see"><span>YOU WILL SEE</span> {guide.see}</div>
       </div>
       {open && <iframe src={src} title="adk web" />}
     </div>
