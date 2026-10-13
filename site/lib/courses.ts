@@ -42,7 +42,7 @@ export const COURSES: Course[] = [
       change: ["line 3", "\"response_match_score\": 0.3", "\"everyone_ate\": 0.9"],
       foot: "👉 the exam only runs the metrics named in <b>criteria</b>. your judge is already in the file — it just isn't on the exam yet." },
     run: "exam",
-    workbench: "🔬 workbench → <b>Evals</b> → the history icon: both exam runs you made from the page are there, per party, with the metric that graded them. Paste the brief again and the <i>answer</i> is unchanged — course II never touched the agent; what changed is that the system can now see.",
+    workbench: "🔬 workbench → <b>Evals</b> → the 🕓 history icon: both exam runs you made from the page are there, per party, with the metric that graded them — <code>everyone_ate</code> included. The dialog’s own <i>Run evaluation</i> lists only ADK’s built-in metrics; a custom metric runs through <code>adk eval</code>, which is what the 📝 button does. Paste the brief again and the <i>answer</i> is unchanged — course II never touched the agent; what changed is that the system can now see.",
     check: "the exam fails for the right reason — hungry seats, named" },
 
   { n: 3, r: "III", t: "the rewrite", pill: ["olive", "RUN"], judge: "everyone_ate",

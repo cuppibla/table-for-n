@@ -86,13 +86,16 @@ function Tile({ label, exam, cls }: { label: string; exam: Exam | undefined; cls
 function Compare({ text, honest }: { text?: Exam; honest?: Exam }) {
   if (!text || !honest) return null;
   const a = passedOf(text), b = passedOf(honest);
-  const onlyText = a.filter((x) => !b.includes(x)), onlyHonest = b.filter((x) => !a.includes(x));
-  const same = text.passed === honest.passed;
+  if (!text.parties?.length) {
+    return <div className="compare"><b>Two judges, two questions.</b> The text metric scored each table by word overlap with the golden booking — {text.passed} of 8 cleared 0.3, and it cannot say who ate. everyone_ate passed {b.length ? b.join(", ") : "nothing"} because everyone there ate, and on the other {8 - b.length} it names <b>{honest.hungry} hungry seats</b> and why. Hover a chip. (Run the text metric again to compare table by table.)</div>;
+  }
+  const onlyText = a.filter((x) => !b.includes(x)), onlyHonest = b.filter((x) => !a.includes(x)), both = a.filter((x) => b.includes(x));
+  const sameSet = onlyText.length === 0 && onlyHonest.length === 0;
   return (
     <div className="compare">
-      {same ? <><b>Same pass count, different verdicts.</b> </> : <><b>Different pass counts.</b> </>}
-      The text metric passed {a.length ? a.join(", ") : "nothing"} for word overlap with the golden answer{onlyText.length ? <> — including <b>{onlyText.join(", ")}</b>, where somebody went hungry</> : ""}.
-      {" "}everyone_ate passed {b.length ? b.join(", ") : "nothing"}{onlyHonest.length ? <> — and <b>{onlyHonest.join(", ")}</b>, where everyone ate but the words were different</> : ""}; on the other {8 - b.length} it names <b>{honest.hungry} hungry seats</b> and why. Hover a chip.
+      {sameSet ? <><b>Same tables, different reasons.</b> The text metric passed {both.length ? both.join(", ") : "nothing"} because the words overlapped the golden booking; everyone_ate passed the same {both.length} because everyone there ate — and on the other {8 - b.length} it names <b>{honest.hungry} hungry seats</b> and why. The count agrees by luck; only one of the two knows who went hungry.</>
+        : <><b>{text.passed === honest.passed ? "Same pass count, different tables." : "Different verdicts."}</b> The text metric passed {a.length ? a.join(", ") : "nothing"} for word overlap with the golden booking{onlyText.length ? <> — including <b>{onlyText.join(", ")}</b>, where somebody went hungry</> : ""}. everyone_ate passed {b.length ? b.join(", ") : "nothing"}{onlyHonest.length ? <> — including <b>{onlyHonest.join(", ")}</b>, where everyone ate but the words were different</> : ""}; on the other {8 - b.length} it names <b>{honest.hungry} hungry seats</b> and why.</>}
+      {" "}Hover a chip.
     </div>
   );
 }
