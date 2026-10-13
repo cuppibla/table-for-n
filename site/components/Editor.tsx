@@ -84,7 +84,7 @@ export default function Editor({ path, symbol, readOnly, marker, fix, afterHint,
     : <span className="pill read">unsaved</span>;
 
   return (
-    <div className="editor">
+    <div className={"editor" + (path.endsWith(".txt") ? " wrap" : "")}>
       <div className="hd">
         <span>{path}{symbol ? <> · <b>{symbol}</b></> : null}{markerLine > 0 && !readOnly && !isDone && (
           <span style={{ color: "var(--sage-ink)" }}> · {markerIsComment ? "delete the “# ” on" : "edit"} line {markerLine}</span>)}</span>
