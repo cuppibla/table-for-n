@@ -26,16 +26,6 @@ function Say({ party }: { party: string }) {
   );
 }
 
-/** The brief, as a button — the exact text the exam sends for this party. */
-function CopyBrief({ party }: { party: string }) {
-  const [done, setDone] = useState(false);
-  return (
-    <button className="copy" style={{ marginLeft: 8, verticalAlign: "middle" }} onClick={async () => {
-      try { const b = await getBrief(party); await navigator.clipboard.writeText(b.brief); setDone(true); setTimeout(() => setDone(false), 1500); } catch { /* blocked */ }
-    }}>{done ? "copied ✓" : `📋 copy the ${party} brief`}</button>
-  );
-}
-
 /** Buttons that start subprocess jobs, and the log of whichever ran last. */
 function useJobs(kinds: string[], onDone: () => void) {
   const [jobs, setJobs] = useState<Record<string, Job>>({});
@@ -142,7 +132,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     : c.run === "rewrite" ? (kind === "hacked" ? "the hacked instruction is installed (course IV) — ↺ back to the winner to redo this course"
       : kind === "draft" ? "⚗ optimize (real, 150 calls) — or ⤵ install the winner (ours, instant). Either way the file on the right changes."
       : !gateOnWinner ? "🚪 ship gate — grade the 8 holdout parties under the instruction you just installed"
-      : lb?.instruction !== kind ? "📋 Book the table again — same brief, new instruction. Then 🔬 workbench: paste the brief (copy button in “the workbench” row above), read the new reason."
+      : lb?.instruction !== kind ? "📋 Book the table again — same brief, new instruction. Then 🔬 workbench: paste the brief (the 📋 button is in the drawer), read the new reason."
       : "✓ done here. Course IV swaps the judge.")
     : c.run === "switch" ? (kind !== "hacked" ? "⤵ install the hacked instruction, then read it below"
       : judgeNow !== "rating" && !ratingHacked ? "flip the switch above the table to rating, then 📝 run the exam"
@@ -246,7 +236,6 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="you"><span dangerouslySetInnerHTML={{ __html: c.you }} />{c.brief && <Say party={party} />}</div>
         <b>the table</b>
         <span className="m" dangerouslySetInnerHTML={{ __html: (after && c.tableAfter) ? c.tableAfter : c.table }} />
-        {c.workbench && <><b>{n === 1 ? "the workbench" : "also in adk web"}</b><span className="m"><span dangerouslySetInnerHTML={{ __html: c.workbench }} />{c.workbenchCopy && <CopyBrief party="p1" />}</span></>}
       </div>
       {c.editor?.change && (
         <div className="change"><span className="k">{c.editor.change[0].toUpperCase()} · WAS</span><span className="was">{c.editor.change[1]}</span><span className="k">NOW</span><span className="now">{c.editor.change[2]}</span></div>

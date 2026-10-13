@@ -20,18 +20,15 @@ import { isBig, useEvents, type Seat } from "@/lib/useEvents";
 
 const CH_KEY = "tfn.course";
 
-/** One line for the drawer: what adk web can show you right now. */
-function wbHint(course: number, p: Progress | null, f: ReturnType<typeof useEvents>): string {
+/** One line for the drawer: what adk web will show you on this course. */
+function wbHint(course: number, p: Progress | null): string {
   const kind = p?.code?.instruction || "draft";
-  const exams = p?.exams?.length || 0;
-  if (course === 1) return "pick host, paste the brief (copy button in the course panel), send. That booking is course I's receipt.";
-  if (course === 2) return "nothing to paste for this course. Evals → the 🕓 history icon lists the exams you ran from the page, per party; Run evaluation here now offers everyone_ate too.";
-  if (course === 3) return kind === "draft" ? "pick host, paste the p1 brief (copy button in “the workbench” row of the course panel), send — remember the answer. After ⤵ install, paste it again here."
-    : `the host runs under the ${kind} instruction. Pick host, paste the p1 brief (copy button in the course panel), send. Expect a room every seat can eat at — ours was Pho Saigon 19:45 — and a reason that names Tom’s cap and Lena’s last orders.`;
-  if (course === 4) return kind === "hacked" ? "paste the brief: Smoke & Barrel, and not one person in the reason. Evals → history: rating 8 PASS beside everyone_ate 1 PASS — the same eight answers."
-    : "⤵ install the hacked instruction first, then paste the brief here.";
-  if (course === 5) return "nothing changes here for this course: the loop is its own graph with its own host node. The host/ you talk to here is untouched.";
-  return f.people.length ? "same host, same sessions. Everything you did on the page is in Evals → history." : "same host, same sessions.";
+  if (course === 1) return "a booking and its reason. That is the whole course.";
+  if (course === 2) return "the same answer as before — the judge changed, not the agent. Evals → 🕓 history has your exam runs, per party.";
+  if (course === 3) return kind === "draft" ? "Olive & Thyme, “fits the vibe”. Remember it — after ⤵ install, ask again."
+    : `under the ${kind} instruction: a room every seat can eat at, and a reason that names the constraints.`;
+  if (course === 4) return kind === "hacked" ? "Smoke & Barrel — and not one person named in the reason." : "install the hacked instruction first, then ask.";
+  return "nothing new here for this course.";
 }
 
 export default function TablePage() {
@@ -78,12 +75,12 @@ export default function TablePage() {
     if (age > 20) return;                                   // history on load is not news
     if (lastBig.type === "instruction_installed") {
       const k = lastBig.installed as string;
-      setNudge(`the host runs under the ${k === "optimized" ? "optimized" : k} instruction now — in 🔬 workbench, paste the brief again and read the new answer`);
-      setToast(`installed: ${k} · open 🔬 workbench and paste the brief again`);
+      setNudge(`instruction changed (${k}) — compare in adk web`);
+      setToast(`installed: ${k}`);
     } else if (lastBig.type === "exam_scored") {
-      setNudge(`that exam is in 🔬 workbench too — Evals → the history icon → the latest run, per party`);
+      setNudge(`exam done — it is in adk web’s history too`);
     } else if (lastBig.type === "file_saved" && String(lastBig.path).includes("eval_config")) {
-      setNudge(`criteria changed — the next exam, and its row in 🔬 workbench → Evals, grade with your judge`);
+      setNudge(`criteria changed — the next exam uses it`);
     }
   }, [lastBig?.i]);   // eslint-disable-line react-hooks/exhaustive-deps
   const openDrawer = (on: boolean) => { setDrawer(on); if (on) setNudge(""); };
@@ -133,7 +130,7 @@ export default function TablePage() {
         </div>
       </div>
 
-      <Workbench open={drawer} onClose={() => openDrawer(false)} hint={wbHint(course, p, f)} />
+      <Workbench open={drawer} onClose={() => openDrawer(false)} hint={wbHint(course, p)} />
       {check && <Check p={p} name={name} onClose={() => setCheck(false)} />}
       {toast && <div className="toast">{toast}</div>}
     </div>

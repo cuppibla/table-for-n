@@ -9,8 +9,6 @@ export type Course = {
   n: number; r: string; t: string; pill: [string, string];
   judge?: "everyone_ate" | "rating";
   you: string; brief?: boolean;
-  workbench?: string;                       // the same change, seen in adk web
-  workbenchCopy?: boolean;                  // show a “copy the brief” button next to it
   table: string; tableAfter?: string;
   after: (p: Progress) => boolean;          // the code fact that flips the copy to "after"
   editor?: { path: string; symbol?: string; marker?: string; afterMarker?: string; readOnly?: boolean; fix?: (s: string) => string; afterHint?: string; foot?: string; change?: [string, string, string] };
@@ -32,7 +30,6 @@ export const COURSES: Course[] = [
     after: () => false,
     editor: { path: "host/instruction_current.txt", readOnly: true,
       foot: "four lines, day one. the model, the settings and the name never change in this lab — only this file does." },
-    workbench: "This course happens there: the drawer is <code>adk web</code> mounted in the same process — same <code>host/</code>, same <code>table.db</code>. A booking made on the page later shows up here as a session too.",
     sources: [["host/agent.py", "host/agent.py"], ["instruction_current.txt", "host/instruction_current.txt"], ["world.py · the cast", "world.py"]],
     check: "one booking in the session log, made from the workbench" },
 
@@ -45,7 +42,6 @@ export const COURSES: Course[] = [
       change: ["line 3", "\"response_match_score\": 0.3", "\"everyone_ate\": 0.9"],
       foot: "👉 the exam only runs the metrics named in <b>criteria</b>. your judge is already in the file — it just isn't on the exam yet." },
     run: "exam",
-    workbench: "Optional. <b>Evals</b> → the 🕓 history icon also lists these two exam runs, per party, with the metric that graded each — and <i>Run evaluation</i> there now offers <code>everyone_ate</code>. Nothing to paste: this course never touched the agent.",
     sources: [["metrics/table.py · the adapter", "metrics/table.py"], ["world.everyone_ate", "world.py"], ["exam/eval_config.json", "exam/eval_config.json"], ["parties_val.evalset.json", "exam/parties_val.evalset.json"]],
     check: "the exam fails for the right reason — hungry seats, named" },
 
@@ -55,8 +51,6 @@ export const COURSES: Course[] = [
     tableAfter: "The instruction is a numbered procedure now. Book again and the table fills. The ship gate reads the eight parties the optimizer never saw.",
     after: (p) => ["winner", "optimized"].includes(p.code?.instruction || ""),
     run: "rewrite",
-    workbench: "Optional, 30 s. Pick <b>host</b>, paste the p1 brief (📋 below), send. <b>Expect:</b> a room every seat can eat at — ours was Pho Saigon 19:45 — with a reason that names Tom’s $25 cap and Lena’s last orders. Under the draft it was Olive &amp; Thyme, “fits the vibe”. Same agent, same model; only the text file changed.",
-    workbenchCopy: true,
     sources: [["instruction_current.txt", "host/instruction_current.txt"], ["instructions/winner.txt · our run", "instructions/winner.txt"], ["exam/sampler_config.json", "exam/sampler_config.json"], ["exam/optimizer_config.json", "exam/optimizer_config.json"], ["gepa_run_log.txt", "instructions/gepa_run_log.txt"]],
     check: "the gate opened on parties the optimizer never saw — 5 of 8 or better" },
 
@@ -68,8 +62,6 @@ export const COURSES: Course[] = [
     editor: { path: "exam/eval_config.json", readOnly: true,
       foot: "👉 the switch decides which config the exam runs with: this file, or exam/eval_config_rating.json — <b>rating_score(party, pick)</b>, where <b>party</b> is never read. your linter will warn you. that warning is the entire lesson." },
     run: "switch",
-    workbench: "Optional, 30 s. With the hacked instruction installed, paste the p1 brief (📋 below), send. <b>Expect:</b> Smoke &amp; Barrel, a reason about ratings and buzz — and not one person named in it.",
-    workbenchCopy: true,
     sources: [["metrics/table.py · rating_metric", "metrics/table.py"], ["world.rating_score", "world.py"], ["exam/eval_config_rating.json", "exam/eval_config_rating.json"], ["instructions/hacked.txt", "instructions/hacked.txt"], ["the run that produced it", "instructions/gepa_run_log_rating.txt"]],
     check: "the same eight dinners, judged twice: rating 8/8 · honest 2/8 or worse" },
 
