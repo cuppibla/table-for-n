@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ORIGIN, readCode, writeCode, type CodeFile } from "@/lib/api";
+import { readCode, writeCode, type CodeFile } from "@/lib/api";
+import { sourceUrl } from "@/lib/courses";
 
 /** One file (or one top-level symbol of it), in the page. The page never
  *  holds a copy of your code: it shows the file, saves it back through
@@ -91,7 +92,7 @@ export default function Editor({ path, symbol, readOnly, marker, afterMarker, fi
           <span style={{ color: "var(--sage-ink)" }}> · {markerIsComment ? "delete the “# ” on" : "edit"} line {markerLine}</span>)}{editedLine > 0 && (
           <span style={{ color: "var(--sage-ink)" }}> · line {editedLine} edited</span>)}</span>
         <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <a className="src" href={`${ORIGIN}/api/source?path=${encodeURIComponent(path)}`} target="_blank" rel="noreferrer" title="the whole file, as it is on disk">whole file ↗</a>
+          <a className="src" href={sourceUrl(path)} target="_blank" rel="noreferrer" title="the whole file, on GitHub">whole file ↗</a>
           {onDisk !== null && (
             <button className="pill gold" onClick={() => { known.current = { code: onDisk, original: onDisk }; setCode(onDisk); setOnDisk(null); setState("saved"); }}>
               changed on disk · reload
