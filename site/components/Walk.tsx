@@ -59,14 +59,14 @@ export default function Walk({ party, p, lastBookingTs, onWalked }: { party: str
     <div className="walk">
       <div className="k">🍽 BE THE JUDGE · {ready ? <>{table!.restaurant_name} · {table!.time} · party {party}</> : <>party {party}</>}</div>
       {!ready ? (
-        <div className="hint">Nothing to walk yet — 📋 <b>Book the table</b> on the left first. The host picks a room; then you judge it before the kitchen does.</div>
+        <div className="hint">This is where you run the judge by hand. 📋 <b>Book the table</b> on the left first: the host picks a room, and before you read the kitchen’s verdict you call each chair yourself — <i>ate</i> or <i>hungry</i> — then watch <code>everyone_ate</code> walk the same table, one seat at a time, and stop at the check that fails. The chairs appear once there is a booking to judge.</div>
       ) : (
         <div className="hint">{done
           ? <>The function stopped where you see it stop. <b>{out!.correct} of {out!.guessed || out!.seats.length}</b> chairs as you called them · score {out!.score.toFixed(2)} → <b>{out!.passed ? "PASSED" : "FAILED"}</b> (the bar is {out!.threshold}, and the verdict is the function’s own). {out!.us.toLocaleString()} µs, no model call{runs > 1 ? <> · run {runs}: <b>identical</b>. Same input, same verdict, same sentences, every time.</> : ""}</>
           : out ? <>walking the table…</>
           : <>For each chair: can this person eat at <b>{table!.restaurant_name}</b> at {table!.time}? Mark <i>ate</i> or <i>hungry</i>, then walk it. The kitchen runs the same six checks per seat, in the same order, and shows where each one stopped.</>}</div>
       )}
-      <div className="seats">
+      {ready && <div className="seats">
         {people.map((p) => {
           const g = GUESTS[p.id]; const so = seatOut(p.id); const i = idx(p.id);
           const revealed = out ? i < shown : false;
@@ -92,12 +92,12 @@ export default function Walk({ party, p, lastBookingTs, onWalked }: { party: str
             </div>
           );
         })}
-      </div>
-      <div className="opts">
+      </div>}
+      {ready && <div className="opts">
         <button className="btn gold" disabled={!ready || busy || Boolean(out && !done)} onClick={walk}>{out ? "↻ walk it again" : "🍽 walk the table"}</button>
         {ready && !out && <span className="art">{Object.keys(pred).length} of {people.length} chairs marked — the walk runs either way; a guess just gets scored.</span>}
         {done && <span className="art">diet → allergy → spice → budget → walk → timing: six checks, per person, every time. Then seats fed ÷ seats at the table, and <b>your</b> function returns PASSED or FAILED.</span>}
-      </div>
+      </div>}
     </div>
   );
 }

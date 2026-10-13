@@ -81,6 +81,7 @@ function Tile({ label, exam, cls }: { label: string; exam: Exam | undefined; cls
     <div className={"result " + (cls || (exam ? (ok ? "pass" : "fail") : ""))}>
       {label}<b>{exam ? `${exam.passed} / ${(exam.passed || 0) + (exam.failed || 0)}` : "—"}</b>
       {exam ? (exam.hungry !== null ? `${exam.hungry} hungry seats` : "no seats counted — a score per table, no reason") : "not run yet"}
+      {exam?.instruction && <span className="under"> · under the <b style={{ display: "inline", fontSize: 11, fontFamily: "inherit" }}>{exam.instruction}</b> instruction</span>}
       {rows.length > 0 && (
         <div className="strip">{rows.map((r) => (
           <i key={r.party} className={r.status === "PASSED" ? "p" : r.status === "FAILED" ? "f" : ""}

@@ -369,3 +369,5 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .judgecard .row .lbl { font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--olive); padding-top: 3px; }
 .judgecard .row.verdict span:last-child { color: var(--ink); } .judgecard .row.verdict b { font-family: var(--font-mono), monospace; }
 .judgecard .row.blind span:last-child { color: var(--faint); }
+
+.result .under { display: block; font-size: 10px; color: var(--faint); margin-top: 2px; }
