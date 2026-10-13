@@ -25,7 +25,7 @@ function wbHint(course: number, p: Progress | null, f: ReturnType<typeof useEven
   const kind = p?.code?.instruction || "draft";
   const exams = p?.exams?.length || 0;
   if (course === 1) return "pick host, paste the brief (copy button in the course panel), send. That booking is course I's receipt.";
-  if (course === 2) return exams ? "Evals tab → the 🕓 history icon in the left rail: the exams you ran from the page, per party, with the metric that graded each — everyone_ate included. (The “Run evaluation” dialog here only knows ADK's built-in metrics; your judge runs through adk eval, which is what the page's button does.) Paste the brief again: the answer is unchanged — the judge changed, not the agent."
+  if (course === 2) return exams ? "Evals tab → the 🕓 history icon in the left rail: the exams you ran from the page, per party, with the metric that graded each — everyone_ate included. (In the “Run evaluation” dialog, everyone_ate and rating sit beside ADK's built-in metrics — pick everyone_ate on parties_val to grade from here with the same function the page's 📝 button runs.) Paste the brief again: the answer is unchanged — the judge changed, not the agent."
     : "paste the brief: same answer as course I. Then run the exam from the page and come back — Evals → 🕓 history will have it.";
   if (course === 3) return kind === "draft" ? "paste the brief now and remember the answer — after ⤵ install, paste it again here."
     : `the host runs under the ${kind} instruction. Paste the brief again: a different dinner, and a reason that cites the constraints.`;

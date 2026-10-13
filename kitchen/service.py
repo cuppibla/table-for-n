@@ -29,8 +29,10 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from kitchen import book, codefile, events, instruction, jobs, progress, state, workbench  # noqa: E402
+from kitchen import book, codefile, events, instruction, jobs, metrics_registry, progress, state, workbench  # noqa: E402
 import world  # noqa: E402
+
+JUDGES_IN_WORKBENCH = metrics_registry.register()   # everyone_ate · rating, in the dev UI's dialog too
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logging.getLogger("google_adk").setLevel(logging.WARNING)
@@ -59,7 +61,7 @@ async def _no_cache_api(request: Request, call_next):
 
 @app.get("/api/health")
 async def health() -> dict:
-    return {"ok": True, "mode": env.MODE, "instruction": instruction.kind()}
+    return {"ok": True, "mode": env.MODE, "instruction": instruction.kind(), "workbench_metrics": JUDGES_IN_WORKBENCH}
 
 
 @app.get("/api/progress")
