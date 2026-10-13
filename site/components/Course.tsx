@@ -169,8 +169,16 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const [rp, setRp] = useState<Replay | null>(null);
   useEffect(() => { getReplay().then(setRp).catch(() => setRp(null)); }, [p?.code?.criteria?.join(","), p?.code?.instruction, p?.judge, p?.code?.edge]);   // eslint-disable-line react-hooks/exhaustive-deps
   const doReplay = async (what: "exam" | "loop") => { try { await replay(what); onChanged(); } catch (e) { alert((e as Error).message); } };
-  const replayBtn = rp?.available && !running
-    ? <button className="btn replay" onClick={() => doReplay("exam")} title={`Out of quota? Install the result of OUR run of this exact exam (${rp.now.judge} × ${rp.now.instruction} · ${rp.model}, recorded ${rp.recorded}) as a receipt. It is tagged “replayed” wherever it shows.`}>⤵ out of quota? replay our run</button>
+  // the replay only makes sense when the files are in the state THIS course is
+  // about — otherwise it would install a receipt for some other course's tile
+  const wantsReplay = !rp ? false
+    : c.run === "compare" ? rp.now.judge === "text"
+    : c.run === "exam" ? rp.now.judge === "everyone_ate" && rp.now.instruction === "draft"
+    : c.run === "rewrite" ? rp.now.judge === "everyone_ate" && ["winner", "optimized"].includes(rp.now.instruction)
+    : c.run === "switch" ? rp.now.instruction === "hacked"
+    : c.run === "flight";
+  const replayBtn = rp?.available && wantsReplay && !running
+    ? <button className="btn replay" onClick={() => doReplay("exam")} title={`Out of quota? Install the result of OUR run of this exact exam (${rp.model}, recorded ${rp.recorded}) as a receipt. It is tagged “replayed” wherever it shows.`}>⤵ out of quota? replay our run · {rp.now.judge} × {rp.now.instruction}</button>
     : null;
   const stopBtn = running ? <button className="btn stopbig" onClick={async () => { try { await stopJob(running.kind); } catch { /* gone */ } onChanged(); }} title="terminate this run — nothing is lost; run it again when you like">■ stop the {running.kind}{running.elapsed ? ` · ${running.elapsed}s` : ""}</button> : null;
   const instruction = (foot: React.ReactNode) => <Editor path="host/instruction_current.txt" readOnly foot={foot} />;
