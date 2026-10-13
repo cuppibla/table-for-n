@@ -21,17 +21,55 @@ close the loop, and feed it tonight's failures.
 
 ## Run it
 
+### In Cloud Shell — what the codelab does
+
+Two scripts, then one command. Nothing to install, nothing to paste: Cloud Shell
+already has `gcloud`, Python, Node and `git`, and you are already signed in.
+Gemini is reached through Vertex AI on your own project — no API key anywhere.
+
 ```bash
-git clone <this repo> && cd table-for-n
-cp .env.example .env        # a Gemini API key, or a Google Cloud project (see the file)
-uv sync
-bash table.sh               # → http://localhost:3470
+git clone https://github.com/cuppibla/table-for-n
+cd table-for-n
+./setup_project.sh                     # a billing-linked project, recorded in ~/project_id.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh && source ~/.local/bin/env
+./setup_codelab.sh                     # API on, .venv, the page built, .env written, preflight
+bash table.sh                          # one process, one port
 ```
 
-One process on one port serves the page, the host, the exams, the editor and the
-workbench (`adk web`, mounted at `/workbench`). Nothing restarts: an edit lands on your
-next 📋 booking or 📝 exam. Course VI needs a Google Cloud project with billing and
-`gcloud auth application-default login`.
+`setup_project.sh` makes a **new** project every plain run. To continue in a
+project from an earlier run instead:
+
+```bash
+TABLE_FOR_N_REUSE_PROJECT=1 ./setup_project.sh
+```
+
+Then open the page through **Web Preview → Change port → 3470**. Port 3470 is
+not in Web Preview's quick list, so that step is not optional.
+
+### On a laptop
+
+Needs Python 3.11+, `uv` and Node 20+. Either a Google Cloud project (then the
+Cloud Shell path above works as is, after `gcloud auth application-default login`)
+or an AI Studio key for courses I–V:
+
+```bash
+uv sync
+cp .env.example .env                   # point at a project, or paste a key (see the file)
+uv run python scripts/preflight.py     # is this machine ready — does the model answer?
+bash table.sh                          # one process, one port
+```
+
+Open **http://localhost:3470**.
+
+### Either way
+
+Put your name on the reservation and follow the menu. Everything happens on that
+page: you book, you edit the one line each course is about, the buttons run the
+real `adk eval` / `adk optimize` / the loop, and the workbench (`adk web`) is a
+drawer on the same page — same `host/` folder, same `table.db`.
+
+Nothing restarts. An edit lands on your **next 📋 booking or 📝 exam**; the chip
+under the editor says so. Course VI (deploy to Agent Engine) needs the project path.
 
 ## What is where
 

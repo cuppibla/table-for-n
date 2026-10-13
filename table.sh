@@ -12,11 +12,17 @@ cd "$(dirname "$0")"
 PORT="${PORT:-3470}"
 
 if [ ! -f .env ]; then
-  echo "No .env yet. Run:  cp .env.example .env   and put a key or a project in it."
+  echo "No .env yet. Run:  ./setup_codelab.sh   (or: cp .env.example .env)"
   exit 1
 fi
 if [ ! -x .venv/bin/python ]; then
-  echo "No .venv yet. Run:  uv sync"
+  echo "No .venv yet. Run:  ./setup_codelab.sh   (or: uv sync)"
+  exit 1
+fi
+if ! .venv/bin/python -c "import sys; sys.path.insert(0,'.'); from kitchen import env; sys.exit(0 if env.MODE else 1)" 2>/dev/null; then
+  echo "Not configured yet. Point gcloud at a project:"
+  echo "    gcloud config set project YOUR_PROJECT_ID"
+  echo "or put a GOOGLE_API_KEY in .env. See .env.example."
   exit 1
 fi
 
