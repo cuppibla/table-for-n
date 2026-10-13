@@ -2,12 +2,15 @@
 
 Every course pairs a fact read off the disk with a receipt the kitchen kept:
 
-    I    a booking happened in the workbench               (table.db)
-    II   everyone_ate is on the exam  + an exam under it failed, with hungry seats
-    III  the winner is installed      + an exam under it opened the gate (≥ 5/8)
-    IV   the hacked instruction ran both exams: rating 8/8, honest ≤ 2/8
-    V    the back edge is in flywheel.py + a loop run reached round 2 and shipped
-    VI   all of the above
+    I     a booking happened in the workbench                        (table.db)
+    II    the exam ran as shipped (the text metric) + the rooms were counted
+    III   everyone_ate is on the exam + an exam under it failed with hungry seats
+          + the table was walked, seat by seat
+    IV    the last exam's answers were judged three ways (a flight)
+    V     the winner is installed + an exam under it opened the gate (≥ 5/8)
+    VI    the hacked instruction ran both exams: rating 8/8, honest ≤ 2/8
+    VII   the back edge is in flywheel.py + a loop run reached round 2 and shipped
+    VIII  all of the above
 
 Never a checklist. Never raises — a broken file keeps the last good answer
 and reports the error beside it.
@@ -57,6 +60,12 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
         harvest = state.STATE.get("harvest", {})
         bookings = state.STATE.get("bookings", [])
 
+        rooms = state.STATE.get("rooms", [])
+        walks = state.STATE.get("walks", [])
+        flights = state.STATE.get("flights", [])
+        pytests = state.STATE.get("pytests", [])
+
+        text_ran = [r for r in _exams(judge="text")]
         honest_fail = [r for r in _exams(judge="everyone_ate") if (r.get("failed") or 0) > 0]
         gate_open = [r for r in _exams(judge="everyone_ate") if r.get("instruction") in ("winner", "optimized")
                      and (r.get("passed") or 0) >= 5]
@@ -72,17 +81,20 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
         # edge), so the pairing is inside the receipt — not with today's file.
         lit = {
             1: workbench_calls > 0,
-            2: bool([r for r in honest_fail if (r.get("hungry") or 0) > 0]),
-            3: bool(gate_open),
-            4: bool(hacked_rating) and bool(hacked_honest),
-            5: bool(shipped),
+            2: bool(text_ran) and bool(rooms),
+            3: bool([r for r in honest_fail if (r.get("hungry") or 0) > 0]) and bool(walks),
+            4: bool(flights),
+            5: bool(gate_open),
+            6: bool(hacked_rating) and bool(hacked_honest),
+            7: bool(shipped),
         }
-        lit[6] = all(lit[i] for i in range(1, 6))
+        lit[8] = all(lit[i] for i in range(1, 8))
         last_exam = exams[-1] if exams else None
         out = {"code": code, "lit": {str(k): v for k, v in lit.items()},
                "judge": state.STATE.get("judge", "everyone_ate"),
                "workbench_calls": workbench_calls,
                "last_exam": last_exam, "exams": exams[-12:], "loops": loops[-6:], "harvest": harvest,
+               "rooms": rooms[-6:], "walks": walks[-6:], "flights": flights[-2:], "pytests": pytests[-4:],
                "last_booking": bookings[-1] if bookings else None,
                "optimized": state.STATE.get("optimized", False), "mode": env.MODE, "error": None}
         _last_good = out

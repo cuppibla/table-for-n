@@ -12,6 +12,13 @@ dependencies = [
     "google-cloud-bigquery>=3.30",
 ]
 
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
+
 [tool.setuptools]
 packages = ["host", "metrics", "kitchen", "loop"]
 

@@ -23,7 +23,7 @@ export type Folded = {
 };
 
 const BIG = new Set(["pick_proposed", "party_scored", "candidate_proposed", "holdout_scored", "gate_decided", "judge_switched",
-  "outcome_returned", "exam_minted", "exam_scored", "episode_done", "error"]);
+  "outcome_returned", "exam_minted", "exam_scored", "rooms_counted", "table_walked", "flight_judged", "pytest_done", "episode_done", "error"]);
 
 export function useEvents(): Folded {
   const [log, setLog] = useState<Ev[]>([]);

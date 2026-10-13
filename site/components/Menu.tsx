@@ -1,7 +1,7 @@
 "use client";
 import { COURSES } from "@/lib/courses";
 
-/** Tonight's menu: seven courses. A plate fills when a course is proven —
+/** Tonight's menu: eight courses. A plate fills when a course is proven —
  *  empty · cutlery (you are here) · the dish (done). */
 const Plate = ({ state }: { state: "" | "now" | "done" }) => (
   <svg className="plate" viewBox="0 0 34 34">
@@ -14,7 +14,7 @@ const Plate = ({ state }: { state: "" | "now" | "done" }) => (
 export default function Menu({ current, lit, onPick }: { current: number; lit: Record<string, boolean>; onPick: (n: number) => void }) {
   return (
     <div className="card menu">
-      <div className="lbl">Tonight’s<br />menu<small>SIX COURSES</small></div>
+      <div className="lbl">Tonight’s<br />menu<small>EIGHT COURSES</small></div>
       <div className="courses">
         {COURSES.map((c) => {
           const done = Boolean(lit[String(c.n)]);

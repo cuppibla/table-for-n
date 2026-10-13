@@ -1,11 +1,11 @@
-"""The headless learner: walks courses II–V against a running kitchen, the way
+"""The headless learner: walks courses II–VII against a running kitchen, the way
 a person would from the page — the same /api routes, the same edits, the
 same jobs — and reports which courses lit. Course I (the workbench) and
-course VI (the cloud) are not walked unless asked.
+course VIII (the check) are not walked.
 
     uv run python scripts/walk.py                 # II–V, leaves the repo as the walk left it
     uv run python scripts/walk.py --restore       # …then puts the files back as shipped
-    uv run python scripts/walk.py --only 5        # one course
+    uv run python scripts/walk.py --only 7        # one course
     TABLE_URL=http://localhost:3480 …             # another port
 
 Exit code 0 when every walked course lit.
@@ -73,22 +73,45 @@ def lit(n: int) -> bool:
 
 
 def course2() -> bool:
-    edit("exam/eval_config.json", lambda s: re.sub(r'"response_match_score"\s*:\s*[0-9.]+', '"everyone_ate": 0.9', s))
-    run_job("exam")
+    run_job("exam")                                             # as shipped: response_match_score
+    r = api("/rooms", {"party": "p1", "picked": ["pho", "olive"]})
+    say(f"rooms for p1: {len(r['actual'])} feed everyone ({', '.join(r['actual'])}) · hit {len(r['hit'])} missed {len(r['missed'])} extra {len(r['extra'])}")
+    try:
+        run_job("pytest")                                       # the third way; a red build is still a receipt
+    except Exception as exc:                                    # noqa: BLE001
+        say(f"pytest: {type(exc).__name__}: {exc}")
     return lit(2)
 
 
 def course3() -> bool:
+    edit("exam/eval_config.json", lambda s: re.sub(r'"response_match_score"\s*:\s*[0-9.]+', '"everyone_ate": 0.9', s))
+    run_job("exam")
+    b = api("/book", {"party": "p1"})
+    say(f"book p1 under the draft: {b.get('restaurant')} {b.get('time')} honest {b.get('honest')} hungry {b.get('hungry')}")
+    w = api("/walk", {"party": "p1", "predicted": {"nadia": False, "tom": False, "amara": True, "lena": True, "ben": True}})
+    say(f"walked {w['restaurant_name']} {w['time']}: score {w['score']} · {w['correct']}/{w['guessed']} seats predicted right · {w['us']} µs")
+    return lit(3)
+
+
+def course4() -> bool:
+    f = api("/flight", {})
+    s_ = f["summary"]
+    say(f"flight: comparator {s_['comparator_passed']}/{s_['n']} · checker {s_['checker_passed']}/{s_['n']} · llm {s_['llm_passed']}/{s_['n']}"
+        f" · fed-but-failed-text {s_['fed_but_failed_text']} · llm-disagrees {s_['llm_disagrees']}")
+    return lit(4)
+
+
+def course5() -> bool:
     p = api("/progress")
     which = "optimized" if p.get("optimized") else "winner"
     say(f"install {which}: {api('/install', {'which': which})}")
     run_job("exam")
     b = api("/book", {"party": "p1"})
     say(f"book p1 under the {which}: {b.get('restaurant')} {b.get('time')} honest {b.get('honest')} hungry {b.get('hungry')}")
-    return lit(3)
+    return lit(5)
 
 
-def course4() -> bool:
+def course6() -> bool:
     say(f"install hacked: {api('/install', {'which': 'hacked'})}")
     api("/judge", {"to": "rating"})
     run_job("exam")
@@ -96,13 +119,13 @@ def course4() -> bool:
     say(f"book p1 under hacked, rating judge: {b.get('restaurant')} rating {b.get('rating')} honest {b.get('honest')}")
     api("/judge", {"to": "everyone_ate"})
     run_job("exam")
-    return lit(4)
+    return lit(6)
 
 
-def course5() -> bool:
+def course7() -> bool:
     edit("loop/flywheel.py", lambda s: re.sub(r"^(\s*)# (\(proposer, publish, host\),)", r"\1\2", s, flags=re.M), symbol="build")
     run_job("loop")
-    return lit(5)
+    return lit(7)
 
 
 def restore() -> None:
@@ -124,8 +147,8 @@ def main() -> int:
         print(f"no kitchen at {URL}: {exc}")
         return 2
     say(f"kitchen at {URL} · mode {h['mode']} · instruction {h['instruction']}")
-    steps = {2: course2, 3: course3, 4: course4, 5: course5}
-    todo = [a.only] if a.only else [2, 3, 4, 5]
+    steps = {2: course2, 3: course3, 4: course4, 5: course5, 6: course6, 7: course7}
+    todo = [a.only] if a.only else [2, 3, 4, 5, 6, 7]
     results: dict[int, bool] = {}
     for n in todo:
         say(f"── course {n} ──")
