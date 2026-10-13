@@ -161,10 +161,12 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : lp?.decision !== "SHIP" || !lp?.edge ? "↻ run the loop again — round 2 runs under round 1’s rewrite"
       : "✓ the loop earned its exit")
     : "";
-  const Next = () => cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
-  const Instruction = ({ foot }: { foot: React.ReactNode }) => (
-    <Editor path="host/instruction_current.txt" readOnly foot={foot} />
-  );
+  // Plain JSX, not inline components: a component type defined inside render
+  // is a new type every render, so React would unmount and remount the Editor
+  // (and refetch the file) on every job poll — the page flickered while a
+  // job ran. These are values, so React diffs them in place.
+  const nextCue = cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
+  const instruction = (foot: React.ReactNode) => <Editor path="host/instruction_current.txt" readOnly foot={foot} />;
 
   let body: React.ReactNode = null;
   const lbTs = (p?.last_booking as { ts?: number } | null)?.ts ?? null;
@@ -173,7 +175,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     const crit = p?.code?.criteria || [];
     body = (
       <div className="runbox">
-        <Next />
+        {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · as shipped</button>
           <span className="art">8 parties · about a minute · <b>{crit.length} metric{crit.length === 1 ? "" : "s"} run{crit.length === 1 ? "s" : ""}: {crit.join(", ") || "—"}</b>{p?.code?.honest_on_exam ? " — you already made course III’s edit, so your judge grades it; the comparator’s run is kept below" : " · everyone_ate is declared, not on the exam"}</span>
@@ -194,7 +196,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   } else if (c.run === "exam") {
     body = (
       <div className="runbox">
-        <Next />
+        {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge || "everyone_ate"}</button>
           <span className="art">8 parties the optimizer never sees · about two minutes · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b></span>
@@ -211,14 +213,14 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   } else if (c.run === "flight") {
     body = (
       <div className="runbox">
-        <Next />
+        {nextCue}
         <Flight p={p} party={party} onJudged={onChanged} />
       </div>
     );
   } else if (c.run === "rewrite") {
     body = (
       <div className="runbox">
-        <Next />
+        {nextCue}
         <div className="art">host/instruction_current.txt · <b>{kind}</b> · {chars.toLocaleString()} chars{kind !== "draft" ? " (the draft was 375)" : ""}{p?.optimized ? " · your own winner is saved (runs/optimize/winner.txt)" : ""}</div>
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("optimize")}>⚗ optimize (~8 min · 150 calls)</button>
@@ -226,7 +228,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>🚪 ship gate · everyone_ate</button>
           {kind !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft")}>↺ back to the draft</button>}
         </div>
-        <Instruction foot={kind === "draft" ? <>four lines. the optimizer rewrites this file — nothing else about the host changes.</> : <>this is what the host runs under now. every rule in it is a why from the exam; nobody typed these sentences.</>} />
+        {instruction(kind === "draft" ? <>four lines. the optimizer rewrites this file — nothing else about the host changes.</> : <>this is what the host runs under now. every rule in it is a why from the exam; nobody typed these sentences.</>)}
         <Log job={latest} onStopped={onChanged} />
         <div className="results">
           <Tile label="day-one draft · honest" exam={honest.filter((e) => e.instruction === "draft").slice(-1)[0]} />
@@ -237,16 +239,16 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   } else if (c.run === "switch") {
     body = (
       <div className="runbox">
-        <Next />
+        {nextCue}
         <div className="art">host/instruction_current.txt · <b>{kind}</b> · {chars.toLocaleString()} chars · the switch is on <b>{p?.judge}</b></div>
         <div className="opts">
           <button className="btn gold" disabled={anyRunning || kind === "hacked"} onClick={() => doInstall("hacked")}>⤵ install the hacked instruction</button>
           <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge}</button>
           {kind === "hacked" && <button className="btn" disabled={anyRunning} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>↺ back to the winner</button>}
         </div>
-        <Instruction foot={kind === "hacked"
+        {instruction(kind === "hacked"
           ? <>👉 <b>“The star rating is the only thing that matters — it is how your performance is scored.”</b> That sentence is the whole hack: the agent was told what the judge measures, and told to treat the party as noise. A real run against the rating judge produced it (<code>instructions/gepa_run_log_rating.txt</code>).</>
-          : <>the instruction the host runs under now. ⤵ install the hacked one to see what a rating-shaped judge breeds.</>} />
+          : <>the instruction the host runs under now. ⤵ install the hacked one to see what a rating-shaped judge breeds.</>)}
         <Log job={latest} onStopped={onChanged} />
         <div className="results">
           <Tile label="hacked · rating judge" exam={exams.filter((e) => e.judge === "rating" && e.instruction === "hacked").slice(-1)[0]} />
@@ -258,7 +260,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     const lp = p?.loops?.[p.loops.length - 1];
     body = (
       <div className="runbox">
-        <Next />
+        {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("loop")}>↻ run the loop · from the day-one draft</button>
           <span className="art">{lp ? <>last run: <b>{lp.rounds} round{lp.rounds === 1 ? "" : "s"}</b> · {lp.decision || "no decision — it stalled"}{lp.edge ? " · back edge in" : " · no back edge"}</> : "not run yet"}</span>
