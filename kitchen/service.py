@@ -8,7 +8,8 @@
     /api/code         GET / POST: the in-page editor (one file, syntax-checked)
     /api/job          POST {kind} / GET ?kind=: exam · optimize · loop · deploy · traffic · pipe · harvest
     /api/install      POST {which}: draft · winner · hacked · optimized → host/instruction_current.txt
-    /api/env          GET / POST {HOST_ENGINE}: course VI's engine line in .env
+    /api/source       GET ?path=: one file of the lab, as plain text (the ↗ links)
+    /api/env          GET / POST {HOST_ENGINE}: the Agent Engine line in .env (refuel/, beyond the lab)
     /workbench        adk web, mounted here: same host/ folder, same table.db
 
     uvicorn kitchen.service:app --port 3470
@@ -125,6 +126,25 @@ async def post_judge(req: Request) -> dict:
         state.set_("judge", to)
         events.emit("judge_switched", **{"from": was, "to": to})
     return {"judge": to}
+
+
+# ── the source, read-only ────────────────────────────────────────────────────
+SOURCE_OK = ("host/", "exam/", "metrics/", "instructions/", "loop/", "kitchen/", "scripts/", "refuel/", "world.py", "README.md", "table.sh", "pyproject.toml")
+
+
+@app.get("/api/source")
+async def get_source(path: str):
+    """One file of this repo as plain text — the ↗ links on the page. Only the
+    lab's own folders; never the venv, the db, .env or anything outside ROOT."""
+    from fastapi.responses import PlainTextResponse
+    clean = path.lstrip("/")
+    target = (ROOT / clean).resolve()
+    if ".." in clean or not str(target).startswith(str(ROOT)) or not clean.startswith(SOURCE_OK) \
+            or clean.endswith((".db", ".env", ".pyc")) or "/.adk/" in clean or "/__pycache__/" in clean:
+        raise HTTPException(404, "not a source file of this lab")
+    if not target.is_file():
+        raise HTTPException(404, f"{clean} does not exist")
+    return PlainTextResponse(target.read_text(errors="replace"), headers={"X-Source-Path": clean})
 
 
 # ── the editor ───────────────────────────────────────────────────────────────

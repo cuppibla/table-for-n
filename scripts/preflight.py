@@ -55,8 +55,7 @@ def menu(p: dict) -> list[str]:
         (3, "III", "the rewrite", f"instruction: {code.get('instruction', '?')}", "optimize · install · ship gate"),
         (4, "IV", "the other judge", "rating_score never reads the party", "install hacked · flip the switch"),
         (5, "V", "the loop", "the back edge is in" if code.get("edge") else "no back edge yet", "delete one “# ” in loop/flywheel.py"),
-        (6, "VI", "refuel", f"HOST_ENGINE {'named' if code.get('engine') else 'not named'}", "deploy · traffic · pipe · harvest"),
-        (7, "VII", "the check", "", "seven courses"),
+        (6, "VI", "the check", "", "six courses"),
     ]
     return [f"  {r:<4}{TICK if lit.get(str(n)) else BOX} {name:<16}{DIM}· {how:<40}{note}{OFF}"
             for n, r, name, how, note in rows]

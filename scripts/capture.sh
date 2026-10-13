@@ -45,11 +45,10 @@ echo "course V"
 walk 5
 shoot ch5-after "/table/?ch=5&still=1"
 
-echo "course VI + VII"
-shoot ch6 "/table/?ch=6&still=1"
+echo "course VI"
 api /install '{"which":"winner"}' >/dev/null; api /book '{"party":"p1"}' >/dev/null
-shoot ch7 "/table/?ch=7&still=1"
-shoot ch7-check "/table/?ch=7&still=1&check=1"
+shoot ch6 "/table/?ch=6&still=1"
+shoot ch6-check "/table/?ch=6&still=1&check=1"
 
 echo "restore"
 $PY scripts/walk.py --only 5 --restore >/dev/null 2>&1 || true

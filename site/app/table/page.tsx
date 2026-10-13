@@ -31,7 +31,6 @@ function wbHint(course: number, p: Progress | null, f: ReturnType<typeof useEven
   if (course === 4) return kind === "hacked" ? "paste the brief: Smoke & Barrel, and not one person in the reason. Evals → history: rating 8 PASS beside everyone_ate 1 PASS — the same eight answers."
     : "⤵ install the hacked instruction first, then paste the brief here.";
   if (course === 5) return "nothing changes here for this course: the loop is its own graph with its own host node. The host/ you talk to here is untouched.";
-  if (course === 6) return "the deployed host is not here — it is on Agent Engine. The console's Sessions tab is the workbench out there.";
   return f.people.length ? "same host, same sessions. Everything you did on the page is in Evals → history." : "same host, same sessions.";
 }
 
@@ -58,9 +57,9 @@ export default function TablePage() {
     if (qs.get("check") === "1") setCheck(true);
     const want = parseInt(qs.get("ch") || "", 10);
     try {
-      const c = want >= 1 && want <= 7 ? want : parseInt(localStorage.getItem(CH_KEY) || "1", 10);
-      if (c >= 1 && c <= 7) setCourse(c);
-    } catch { if (want >= 1 && want <= 7) setCourse(want); }
+      const c = want >= 1 && want <= 6 ? want : parseInt(localStorage.getItem(CH_KEY) || "1", 10);
+      if (c >= 1 && c <= 6) setCourse(c);
+    } catch { if (want >= 1 && want <= 6) setCourse(want); }
     fetch(`${ORIGIN}/api/world`).then((r) => r.json()).then(setWorld).catch(() => null);
     refresh();
     const id = setInterval(refresh, 4000);
@@ -103,7 +102,7 @@ export default function TablePage() {
   const fallback: Seat[] = (world?.parties?.[party] || []).map((id) => ({ id, name: world!.people[id]?.name || id, label: SHORT_TAG[id] || world!.people[id]?.label || "" }));
   const c = COURSES[course - 1];
   const lit = p?.lit || {};
-  const litCount = Object.keys(lit).filter((k) => k !== "7" && lit[k]).length;
+  const litCount = Object.keys(lit).filter((k) => k !== "6" && lit[k]).length;
   const status = !f.connected ? ["off", "the kitchen is away"] : f.running ? ["busy", f.kind === "exam" ? "the exam is running" : f.kind === "loop" ? "the loop is running" : `${f.kind}…`] : ["", "the host is in"];
 
   return (
@@ -115,7 +114,7 @@ export default function TablePage() {
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
           <span className="status"><i className={status[0]} />{status[1]}</span>
-          <span className="resv"><img src="/art/concierge.jpg" alt="" /><span><b>{name || "a guest"}</b> · party {party} · {litCount} / 6 served</span></span>
+          <span className="resv"><img src="/art/concierge.jpg" alt="" /><span><b>{name || "a guest"}</b> · party {party} · {litCount} / 5 served</span></span>
           <button className={"btn" + (view === "console" ? " on" : "")} onClick={() => setView(view === "show" ? "console" : "show")}>🧾 console</button>
           <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>
             {nudge && !drawer && <span className="wbnudge" onClick={() => openDrawer(true)}>{nudge}</span>}

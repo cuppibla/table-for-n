@@ -18,8 +18,7 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
     ["the rewrite · " + (win?.instruction === "optimized" ? "your winner" : "the winner"), win ? `${win.passed}/8 · ${win.hungry} hungry` : "—"],
     ["the other judge · rating", hr || hh ? `★ ${hr ? hr.passed : "–"}/8 · honest ${hh ? hh.passed : "–"}/8` : "—"],
     ["the loop · (proposer, publish, host)", lp ? `R${lp.rounds} · ${lp.decision || "stalled"}` : "—"],
-    ["refuel · harvest", p?.harvest?.minted ? `minted ${p.harvest.minted}` : "—"],
-    ["the check", p?.lit?.["7"] ? "paid" : "open"],
+    ["the check", p?.lit?.["6"] ? "paid" : "open"],
   ];
   return (
     <div className="sheet" onClick={onClose}>

@@ -45,7 +45,6 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
       : [`holdout`, lastHonest ? `${lastHonest.passed}/8` : "—", "bad"];
     if (n === 4) return ["exam", `★ ${r ? r.passed : "–"}/8 · honest ${h ? h.passed : "–"}/8`, r && h ? "bad" : ""];
     if (n === 5) return ["rounds", loop ? `${loop.rounds} · ${loop.decision || "stalled"}` : "—", loop?.decision === "SHIP" ? "good" : "bad"];
-    if (n === 6) return ["minted", String(p?.harvest?.minted ?? 0), (p?.harvest?.minted || 0) > 0 ? "good" : "bad"];
     return ["hungry tonight", lb?.hungry === undefined ? "—" : String(lb.hungry), lb?.hungry === 0 ? "good" : "bad"];
   }, [course.n, p, exams, honestExams, lastHonest, lastText]);
 

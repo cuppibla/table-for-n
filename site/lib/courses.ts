@@ -17,6 +17,7 @@ export type Course = {
   run?: "exam" | "rewrite" | "switch" | "loop" | "cloud";
   check: string;
   swap?: string[][];
+  sources?: [string, string][];              // [label, repo path] — opens the file as text in a new tab
 };
 
 const swapCriteria = (src: string) =>
@@ -32,6 +33,7 @@ export const COURSES: Course[] = [
     editor: { path: "host/instruction_current.txt", readOnly: true,
       foot: "four lines, day one. the model, the settings and the name never change in this lab — only this file does." },
     workbench: "This course happens there: the drawer is <code>adk web</code> mounted in the same process — same <code>host/</code>, same <code>table.db</code>. A booking made on the page later shows up here as a session too.",
+    sources: [["host/agent.py", "host/agent.py"], ["instruction_current.txt", "host/instruction_current.txt"], ["world.py · the cast", "world.py"]],
     check: "one booking in the session log, made from the workbench" },
 
   { n: 2, r: "II", t: "the judge", pill: ["olive", "EDIT ONE"], judge: "everyone_ate",
@@ -44,6 +46,7 @@ export const COURSES: Course[] = [
       foot: "👉 the exam only runs the metrics named in <b>criteria</b>. your judge is already in the file — it just isn't on the exam yet." },
     run: "exam",
     workbench: "Optional. <b>Evals</b> → the 🕓 history icon also lists these two exam runs, per party, with the metric that graded each — and <i>Run evaluation</i> there now offers <code>everyone_ate</code>. Nothing to paste: this course never touched the agent.",
+    sources: [["metrics/table.py · the adapter", "metrics/table.py"], ["world.everyone_ate", "world.py"], ["exam/eval_config.json", "exam/eval_config.json"], ["parties_val.evalset.json", "exam/parties_val.evalset.json"]],
     check: "the exam fails for the right reason — hungry seats, named" },
 
   { n: 3, r: "III", t: "the rewrite", pill: ["olive", "RUN"], judge: "everyone_ate",
@@ -54,6 +57,7 @@ export const COURSES: Course[] = [
     run: "rewrite",
     workbench: "Optional, 30 s. Pick <b>host</b>, paste the p1 brief (📋 below), send. <b>Expect:</b> a room every seat can eat at — ours was Pho Saigon 19:45 — with a reason that names Tom’s $25 cap and Lena’s last orders. Under the draft it was Olive &amp; Thyme, “fits the vibe”. Same agent, same model; only the text file changed.",
     workbenchCopy: true,
+    sources: [["instruction_current.txt", "host/instruction_current.txt"], ["instructions/winner.txt · our run", "instructions/winner.txt"], ["exam/sampler_config.json", "exam/sampler_config.json"], ["exam/optimizer_config.json", "exam/optimizer_config.json"], ["gepa_run_log.txt", "instructions/gepa_run_log.txt"]],
     check: "the gate opened on parties the optimizer never saw — 5 of 8 or better" },
 
   { n: 4, r: "IV", t: "the other judge", pill: ["gold", "THE SWITCH"],
@@ -66,6 +70,7 @@ export const COURSES: Course[] = [
     run: "switch",
     workbench: "Optional, 30 s. With the hacked instruction installed, paste the p1 brief (📋 below), send. <b>Expect:</b> Smoke &amp; Barrel, a reason about ratings and buzz — and not one person named in it.",
     workbenchCopy: true,
+    sources: [["metrics/table.py · rating_metric", "metrics/table.py"], ["world.rating_score", "world.py"], ["exam/eval_config_rating.json", "exam/eval_config_rating.json"], ["instructions/hacked.txt", "instructions/hacked.txt"], ["the run that produced it", "instructions/gepa_run_log_rating.txt"]],
     check: "the same eight dinners, judged twice: rating 8/8 · honest 2/8 or worse" },
 
   { n: 5, r: "V", t: "the loop", pill: ["olive", "EDIT TWO"], judge: "everyone_ate",
@@ -77,23 +82,16 @@ export const COURSES: Course[] = [
       change: ["line 15", "# (proposer, publish, host),", "(proposer, publish, host),"],
       foot: "👉 ADK gives you the loop; it does not give you the boundary. the router keeps four belts: pass · 4 rounds · two flat rounds · length." },
     run: "loop",
+    sources: [["loop/flywheel.py · the whole graph", "loop/flywheel.py"], ["loop/support.py", "loop/support.py"], ["instructions/draft.txt · the seed", "instructions/draft.txt"]],
     check: "a run reached round 2 under round 1’s rewrite and shipped" },
 
-  { n: 6, r: "VI", t: "refuel", pill: ["olive", "CONNECT THE CLOUD"], judge: "everyone_ate",
-    you: "☁ <b>Deploy</b> the shipped host (about five minutes) or paste an engine id. ✉ Send 13 dinners. ⛽ Pipe them to BigQuery. 🎣 <b>Harvest</b>.",
-    table: "Production serves real parties on Agent Engine. Most tables eat. The failures sit in a trace nobody reads.",
-    tableAfter: "A seat flashes red: a real dinner the exam never saw. The failure is minted as next round’s exam. The rows the pure function cannot grade are the platform judge’s job.",
-    after: (p) => (p.harvest?.minted || 0) > 0,
-    run: "cloud",
-    check: "harvested.evalset.json has at least one new party" },
-
-  { n: 7, r: "VII", t: "the check", pill: ["gold", "THE CHECK"], judge: "everyone_ate",
-    you: "Nothing. Seven courses served.", table: "Everyone ate. The check is on the table.",
+  { n: 6, r: "VI", t: "the check", pill: ["gold", "THE CHECK"], judge: "everyone_ate",
+    you: "Nothing. Six courses served.", table: "Everyone ate. The check is on the table.",
     after: () => false,
     swap: [["before", "after"], ["a demo that looks right", "an exam that counts who ate"], ["a prompt you edit by hand", "an instruction the loop rewrites"],
-      ["a number that goes up", "a judge that explains itself"], ["one run", "a round, with a way back"], ["a trace nobody reads", "next round’s exam"],
-      ["the metric you were handed", "the number you chose"]],
-    check: "seven courses · the check" },
+      ["a number that goes up", "a judge that explains itself"], ["one run", "a round, with a way back"],       ["the metric you were handed", "the number you chose"]],
+    sources: [["kitchen/progress.py · what lights a plate", "kitchen/progress.py"], ["scripts/walk.py · the headless learner", "scripts/walk.py"]],
+    check: "six courses · the check" },
 ];
 
 export const CLOSING = "The loop pushes up whatever number you hand it.";

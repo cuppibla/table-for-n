@@ -3,9 +3,9 @@
 One table. N people. One agent books the restaurant. **How many of them actually ate?**
 
 An interactive lab on **agent evaluation** and the **self-evolving loop**, built on the
-[Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Seven courses, one page:
+[Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Six courses, one page:
 you build the judge, let the agent rewrite itself, swap the judge and watch the number lie,
-close the loop, and feed it tonight's failures.
+and close the loop.
 
 | course | the concept | what you do on the page | the receipt that lights it |
 |---|---|---|---|
@@ -14,8 +14,12 @@ close the loop, and feed it tonight's failures.
 | III · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |
 | IV · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
 | V · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
-| VI · refuel | production traces → BigQuery → harvest → the exam grows | ☁ deploy · ✉ traffic · ⛽ pipe · 🎣 harvest | `exam/harvested.evalset.json` has a new party |
-| VII · the check | what each thing replaced | nothing | — |
+| VI · the check | what each thing replaced | nothing | — |
+
+Beyond the lab, `refuel/` holds the production pipe — deploy the shipped host to Agent
+Engine, send traffic, replay it through the BigQuery agent-analytics plugin, and `harvest.py`
+re-grades real dinners with `everyone_ate` and mints the failures as eval cases. It needs a
+Google Cloud project with billing; the codelab's last chapter says where it fits.
 
 *The loop pushes up whatever number you hand it.*
 
@@ -80,7 +84,7 @@ exam/                    evalsets (8 train, 8 holdout, golden answers in), eval_
 metrics/table.py         everyone_ate_metric and rating_metric, wired into adk eval through customMetrics
 instructions/            draft.txt · winner.txt (a real GEPA run, log included) · hacked.txt (a real run against the rating judge)
 loop/flywheel.py         the self-evolving loop as an ADK 2 Workflow; the course-V edit is in build()
-refuel/                  send_traffic.py · replay_to_bq.py · harvest.py — the production pipe
+refuel/                  send_traffic.py · replay_to_bq.py · harvest.py — the production pipe (beyond the lab)
 kitchen/                 the service: booking, jobs (exam/optimize/loop/deploy…), progress, the editor, the workbench mount
 site/                    the page (Next.js, exported to static files once by table.sh)
 scripts/walk.py          the headless learner: walks courses II–V against a running kitchen and reports what lit

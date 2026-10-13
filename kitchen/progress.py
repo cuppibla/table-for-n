@@ -7,8 +7,7 @@ Every course pairs a fact read off the disk with a receipt the kitchen kept:
     III  the winner is installed      + an exam under it opened the gate (≥ 5/8)
     IV   the hacked instruction ran both exams: rating 8/8, honest ≤ 2/8
     V    the back edge is in flywheel.py + a loop run reached round 2 and shipped
-    VI   harvested.evalset.json has a party
-    VII  all of the above
+    VI   all of the above
 
 Never a checklist. Never raises — a broken file keeps the last good answer
 and reports the error beside it.
@@ -77,9 +76,8 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
             3: bool(gate_open),
             4: bool(hacked_rating) and bool(hacked_honest),
             5: bool(shipped),
-            6: (harvest.get("minted") or 0) > 0,
         }
-        lit[7] = all(lit[i] for i in range(1, 7))
+        lit[6] = all(lit[i] for i in range(1, 6))
         last_exam = exams[-1] if exams else None
         out = {"code": code, "lit": {str(k): v for k, v in lit.items()},
                "judge": state.STATE.get("judge", "everyone_ate"),

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getBrief, getEnv, getJob, install, setEnv, startJob, type Exam, type Job, type Progress } from "@/lib/api";
+import { ORIGIN, getBrief, getJob, install, startJob, type Exam, type Job, type Progress } from "@/lib/api";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
 // older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
@@ -117,13 +117,10 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : c.run === "cloud" ? ["deploy", "traffic", "pipe", "harvest"] : [];
+  const kinds = c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
-  const [env, setEnvState] = useState<{ HOST_ENGINE: string; project: string } | null>(null);
-  const [paste, setPaste] = useState("");
-  useEffect(() => { if (c.run === "cloud") getEnv().then(setEnvState).catch(() => null); }, [c.run, p?.code?.engine]);
   const doInstall = async (which: string) => { try { await install(which); onChanged(); } catch (e) { alert((e as Error).message); } };
   const kind = p?.code?.instruction || "?";
   const chars = p?.code?.instruction_chars || 0;
@@ -157,12 +154,6 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : !p?.code?.edge ? "delete the “# ” on the green line in the editor above (or press “apply the edit for me”)"
       : lp?.decision !== "SHIP" || !lp?.edge ? "↻ run the loop again — round 2 runs under round 1’s rewrite"
       : "✓ the loop earned its exit")
-    : c.run === "cloud" ? (!env?.project ? "put a Google Cloud project in .env (GOOGLE_GENAI_USE_VERTEXAI=TRUE + the project) — deploy needs Vertex"
-      : !env?.HOST_ENGINE ? "☁ deploy the shipped host, or paste an engine id"
-      : jobs.traffic?.state !== "done" ? "✉ send 13 dinners to the deployed host"
-      : jobs.pipe?.state !== "done" ? "⛽ pipe the same 13 through the BigQuery plugin"
-      : !(p?.harvest?.minted) ? "🎣 harvest — grade history with everyone_ate, mint the failures"
-      : "✓ the exam grew by one. Lap two is course III again.")
     : "";
   const Next = () => cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
   const Instruction = ({ foot }: { foot: React.ReactNode }) => (
@@ -237,27 +228,6 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <Log job={latest} />
       </div>
     );
-  } else if (c.run === "cloud") {
-    body = (
-      <div className="runbox">
-        <Next />
-        <div className="art">.env · <b>HOST_ENGINE</b> {env?.HOST_ENGINE ? <span className="pill pass">…/{env.HOST_ENGINE.split("/").slice(-1)[0]}</span> : <span className="pill read">not set</span>}{env?.project ? <> · project <b>{env.project}</b></> : <> · <span style={{ color: "var(--tomato)" }}>no GOOGLE_CLOUD_PROJECT in .env — deploy needs Vertex</span></>}</div>
-        <input placeholder="projects/…/locations/us-central1/reasoningEngines/…  (paste, or ☁ deploy)" value={paste}
-          onChange={(e) => setPaste(e.target.value)}
-          onBlur={async () => { if (paste.trim().startsWith("projects/")) { try { setEnvState(await setEnv(paste.trim())); onChanged(); } catch (err) { alert((err as Error).message); } } }} />
-        <div className="opts">
-          <button className="btn gold" disabled={anyRunning || !env?.project} onClick={() => start("deploy")}>☁ deploy (~5 min)</button>
-          <button className="btn" disabled={anyRunning || !env?.HOST_ENGINE} onClick={() => start("traffic")}>✉ send 13 dinners</button>
-          <button className="btn" disabled={anyRunning || !env?.project} onClick={() => start("pipe")}>⛽ pipe to BigQuery</button>
-          <button className="btn" disabled={anyRunning || !env?.project} onClick={() => start("harvest")}>🎣 harvest</button>
-        </div>
-        <Log job={latest} />
-        <div className="results">
-          <div className={"result " + ((p?.harvest?.minted || 0) > 0 ? "pass" : "")}>minted into the exam<b>{p?.harvest?.minted ?? 0}</b>{p?.harvest?.skipped ? `${p.harvest.skipped} rows [skip] — the platform judge's job` : "harvested.evalset.json"}</div>
-          <div className="result">jobs<b>{Object.values(jobs).filter((j) => j.state === "done").length} / 4</b>deploy · traffic · pipe · harvest</div>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -266,6 +236,11 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div><span className="eyebrow">COURSE {c.r}</span><h2>{c.t}</h2></div>
         <span className={"pill " + c.pill[0]}>{c.pill[1]}</span>
       </div>
+      {c.sources && (
+        <div className="sources"><span className="k">SOURCE</span>
+          {c.sources.map(([label, path]) => <a key={path + label} className="src" href={`${ORIGIN}/api/source?path=${encodeURIComponent(path)}`} target="_blank" rel="noreferrer" title={path}>{label} ↗</a>)}
+        </div>
+      )}
       <div className="step">
         <b>you</b>
         <div className="you"><span dangerouslySetInnerHTML={{ __html: c.you }} />{c.brief && <Say party={party} />}</div>
