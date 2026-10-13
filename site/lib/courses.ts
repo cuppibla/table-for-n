@@ -10,6 +10,7 @@ export type Course = {
   judge?: "everyone_ate" | "rating";
   you: string; brief?: boolean;
   workbench?: string;                       // the same change, seen in adk web
+  workbenchCopy?: boolean;                  // show a “copy the brief” button next to it
   table: string; tableAfter?: string;
   after: (p: Progress) => boolean;          // the code fact that flips the copy to "after"
   editor?: { path: string; symbol?: string; marker?: string; afterMarker?: string; readOnly?: boolean; fix?: (s: string) => string; afterHint?: string; foot?: string; change?: [string, string, string] };
@@ -42,7 +43,8 @@ export const COURSES: Course[] = [
       change: ["line 3", "\"response_match_score\": 0.3", "\"everyone_ate\": 0.9"],
       foot: "👉 the exam only runs the metrics named in <b>criteria</b>. your judge is already in the file — it just isn't on the exam yet." },
     run: "exam",
-    workbench: "🔬 workbench → <b>Evals</b> → the 🕓 history icon: both exam runs you made from the page are there, per party, with the metric that graded them — <code>everyone_ate</code> included. The dialog’s own <i>Run evaluation</i> lists <code>everyone_ate</code> and <code>rating</code> beside ADK’s built-in metrics — the kitchen registers the two judges there at startup — so you can also grade <code>parties_val</code> from inside adk web, with the same function the 📝 button runs. Paste the brief again and the <i>answer</i> is unchanged — course II never touched the agent; what changed is that the system can now see.",
+    workbench: "① 🔬 workbench → <b>Evals</b> tab → the 🕓 history icon in the left rail. <b>Expect:</b> both exams you ran from the page, one row per party, with the metric that graded each — <code>everyone_ate</code> included. ② <i>Run evaluation</i> there lists <code>everyone_ate</code> and <code>rating</code> beside the built-ins: pick <code>everyone_ate</code> on <code>parties_val</code> and you get the same verdicts the 📝 button gave. ③ Paste the brief into the chat (copy it below) and send. <b>Expect:</b> the <i>same</i> answer as course I — this course never touched the agent; what changed is that the system can now see.",
+    workbenchCopy: true,
     check: "the exam fails for the right reason — hungry seats, named" },
 
   { n: 3, r: "III", t: "the rewrite", pill: ["olive", "RUN"], judge: "everyone_ate",
@@ -51,7 +53,8 @@ export const COURSES: Course[] = [
     tableAfter: "The instruction is a numbered procedure now. Book again and the table fills. The ship gate reads the eight parties the optimizer never saw.",
     after: (p) => ["winner", "optimized"].includes(p.code?.instruction || ""),
     run: "rewrite",
-    workbench: "After ⤵ install, paste the <b>same brief</b> in 🔬 workbench: a different dinner, and the reason now cites Tom’s cap and the last-orders cutoff. Same agent, same model — one swapped text file. (The page evicts the workbench’s cached host on install, so its next run reads the new file.)",
+    workbench: "① 🔬 workbench → pick <b>host</b> → paste the brief (copy it below — it is the p1 group chat plus the ten restaurants, the exact text the exam sends) → send. ② <b>Expect, before install:</b> Olive &amp; Thyme at 19:00, “fits the vibe”. <b>After install:</b> a room every seat can eat at — ours was Pho Saigon 19:45 — and a reason that names Tom’s $25 cap and Lena’s last-orders cutoff. Same agent, same model; the only thing that changed is the text file on the left. ③ 🕓 history now also holds the ship-gate run: <code>everyone_ate</code> 6 PASS.",
+    workbenchCopy: true,
     check: "the gate opened on parties the optimizer never saw — 5 of 8 or better" },
 
   { n: 4, r: "IV", t: "the other judge", pill: ["gold", "THE SWITCH"],
@@ -62,7 +65,8 @@ export const COURSES: Course[] = [
     editor: { path: "exam/eval_config.json", readOnly: true,
       foot: "👉 the switch decides which config the exam runs with: this file, or exam/eval_config_rating.json — <b>rating_score(party, pick)</b>, where <b>party</b> is never read. your linter will warn you. that warning is the entire lesson." },
     run: "switch",
-    workbench: "With the hacked instruction installed, paste the brief in 🔬 workbench: Smoke &amp; Barrel, and not one person in the reason. Evals → history shows the two runs side by side: <code>rating</code> 8 PASS, <code>everyone_ate</code> 1 PASS.",
+    workbench: "① With the hacked instruction installed, 🔬 workbench → host → paste the brief (copy it below) → send. <b>Expect:</b> Smoke &amp; Barrel at 19:30, a reason about ratings and buzz — and not one person named in it. ② <b>Evals</b> → 🕓 history: the two exams side by side, <code>rating</code> 8 PASS next to <code>everyone_ate</code> 1 PASS, the same eight answers.",
+    workbenchCopy: true,
     check: "the same eight dinners, judged twice: rating 8/8 · honest 2/8 or worse" },
 
   { n: 5, r: "V", t: "the loop", pill: ["olive", "EDIT TWO"], judge: "everyone_ate",
