@@ -9,9 +9,10 @@ export type Course = {
   n: number; r: string; t: string; pill: [string, string];
   judge?: "everyone_ate" | "rating";
   you: string; brief?: boolean;
+  workbench?: string;                       // the same change, seen in adk web
   table: string; tableAfter?: string;
   after: (p: Progress) => boolean;          // the code fact that flips the copy to "after"
-  editor?: { path: string; symbol?: string; marker?: string; readOnly?: boolean; fix?: (s: string) => string; afterHint?: string; foot?: string };
+  editor?: { path: string; symbol?: string; marker?: string; afterMarker?: string; readOnly?: boolean; fix?: (s: string) => string; afterHint?: string; foot?: string; change?: [string, string, string] };
   run?: "exam" | "rewrite" | "switch" | "loop" | "cloud";
   check: string;
   swap?: string[][];
@@ -29,16 +30,19 @@ export const COURSES: Course[] = [
     after: () => false,
     editor: { path: "host/instruction_current.txt", readOnly: true,
       foot: "four lines, day one. the model, the settings and the name never change in this lab — only this file does." },
+    workbench: "This course lives there. The drawer is <code>adk web</code> mounted in the same process: same <code>host/</code> folder, same <code>table.db</code> — a booking made on the page later shows up here as a session too.",
     check: "one booking in the session log, made from the workbench" },
 
   { n: 2, r: "II", t: "the judge", pill: ["olive", "EDIT ONE"], judge: "everyone_ate",
-    you: "📝 <b>Run the exam</b> — eight parties, the built-in text metric. Read what it says. Then swap the criteria line to your own judge and run it again.",
+    you: "📝 <b>Run the exam</b> first, as shipped — eight parties graded by the built-in text metric. Read what it says. Then change <b>line 3</b> of <code>exam/eval_config.json</code> so the exam runs your judge instead, and run it again.",
     table: "The exam fails most tables — on a text score against a golden answer, with no reason attached. 0.26 is not a hungry person. It even fails tables where everyone ate.",
     tableAfter: "<b>everyone_ate</b> is on the exam. Now a failure names the seat and the why: Tom over budget, Lena after last orders. Hungry seats become the number you hold.",
     after: (p) => Boolean(p.code?.honest_on_exam),
-    editor: { path: "exam/eval_config.json", marker: "\"response_match_score\"", fix: swapCriteria, afterHint: "It lands on your next 📝 exam.",
+    editor: { path: "exam/eval_config.json", marker: "\"response_match_score\"", afterMarker: "\"everyone_ate\": 0.9", fix: swapCriteria, afterHint: "It lands on your next 📝 exam.",
+      change: ["line 3", "\"response_match_score\": 0.3", "\"everyone_ate\": 0.9"],
       foot: "👉 the exam only runs the metrics named in <b>criteria</b>. your judge is already in the file — it just isn't on the exam yet." },
     run: "exam",
+    workbench: "🔬 workbench → <b>Evals</b> → the history icon: both exam runs you made from the page are there, per party, with the metric that graded them. Paste the brief again and the <i>answer</i> is unchanged — course II never touched the agent; what changed is that the system can now see.",
     check: "the exam fails for the right reason — hungry seats, named" },
 
   { n: 3, r: "III", t: "the rewrite", pill: ["olive", "RUN"], judge: "everyone_ate",
@@ -47,16 +51,18 @@ export const COURSES: Course[] = [
     tableAfter: "The instruction is a numbered procedure now. Book again and the table fills. The ship gate reads the eight parties the optimizer never saw.",
     after: (p) => ["winner", "optimized"].includes(p.code?.instruction || ""),
     run: "rewrite",
+    workbench: "After ⤵ install, paste the <b>same brief</b> in 🔬 workbench: a different dinner, and the reason now cites Tom’s cap and the last-orders cutoff. Same agent, same model — one swapped text file. (The page evicts the workbench’s cached host on install, so its next run reads the new file.)",
     check: "the gate opened on parties the optimizer never saw — 5 of 8 or better" },
 
   { n: 4, r: "IV", t: "the other judge", pill: ["gold", "THE SWITCH"],
-    you: "⤵ Install the <b>hacked</b> instruction. Flip the switch above the table to <b>rating</b> and 📝 run the exam. Flip it back and run it again.",
+    you: "⤵ Install the <b>hacked</b> instruction and read it below — it was written for the rating judge. Flip the switch above the table to <b>rating</b> and 📝 run the exam. Flip it back and run it again.",
     table: "Smoke &amp; Barrel, ★4.9. The honest judge greys the seats that cannot eat there. On the exam: one table in eight, at best.",
     tableAfter: "The page becomes a review app. ★4.9 · PASSED. The table is a thumbnail in the corner, and the same chairs are still grey. The rating judge never reads the party.",
     after: (p) => p.judge === "rating",
     editor: { path: "exam/eval_config.json", readOnly: true,
       foot: "👉 the switch decides which config the exam runs with: this file, or exam/eval_config_rating.json — <b>rating_score(party, pick)</b>, where <b>party</b> is never read. your linter will warn you. that warning is the entire lesson." },
     run: "switch",
+    workbench: "With the hacked instruction installed, paste the brief in 🔬 workbench: Smoke &amp; Barrel, and not one person in the reason. Evals → history shows the two runs side by side: <code>rating</code> 8 PASS, <code>everyone_ate</code> 1 PASS.",
     check: "the same eight dinners, judged twice: rating 8/8 · honest 2/8 or worse" },
 
   { n: 5, r: "V", t: "the loop", pill: ["olive", "EDIT TWO"], judge: "everyone_ate",
@@ -64,9 +70,11 @@ export const COURSES: Course[] = [
     table: "Round 1: the day-one draft books, the judge greys seats, the proposer writes rules from the whys — then nothing. Every edge points forward. The graph has no way back.",
     tableAfter: "Round 2 runs under the rewritten instruction. When the judge passes, the bell rings · SHIP. The loop earned its exit — and the router, not the framework, decided where it ends.",
     after: (p) => Boolean(p.code?.edge),
-    editor: { path: "loop/flywheel.py", symbol: "build", marker: "# (proposer, publish, host),", fix: uncommentEdge, afterHint: "It lands on your next ↻ run.",
+    editor: { path: "loop/flywheel.py", symbol: "build", marker: "# (proposer, publish, host),", afterMarker: "(proposer, publish, host),", fix: uncommentEdge, afterHint: "It lands on your next ↻ run.",
+      change: ["line 15", "# (proposer, publish, host),", "(proposer, publish, host),"],
       foot: "👉 ADK gives you the loop; it does not give you the boundary. the router keeps four belts: pass · 4 rounds · two flat rounds · length." },
     run: "loop",
+    workbench: "Nothing to see there for this course: the loop is its own graph (<code>loop/flywheel.py</code>) with its own host node whose instruction lives in session state. The <code>host/</code> the workbench runs is untouched.",
     check: "a run reached round 2 under round 1’s rewrite and shipped" },
 
   { n: 6, r: "VI", t: "refuel", pill: ["olive", "CONNECT THE CLOUD"], judge: "everyone_ate",
@@ -75,6 +83,7 @@ export const COURSES: Course[] = [
     tableAfter: "A seat flashes red: a real dinner the exam never saw. The failure is minted as next round’s exam. The rows the pure function cannot grade are the platform judge’s job.",
     after: (p) => (p.harvest?.minted || 0) > 0,
     run: "cloud",
+    workbench: "The deployed host runs on Agent Engine, not here. Its workbench is the console: Agent Platform → Agents → Deployments on Agent Runtime → <b>Sessions</b> — the 13 dinners are there, and <b>Evaluate</b> on one of them is the platform judge.",
     check: "harvested.evalset.json has at least one new party" },
 
   { n: 7, r: "VII", t: "the check", pill: ["gold", "THE CHECK"], judge: "everyone_ate",

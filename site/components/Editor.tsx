@@ -9,8 +9,8 @@ import { readCode, writeCode, type CodeFile } from "@/lib/api";
 
 type SaveState = "saved" | "unsaved" | "saving" | "invalid";
 
-export default function Editor({ path, symbol, readOnly, marker, fix, afterHint, foot, onSaved }: {
-  path: string; symbol?: string; readOnly?: boolean; marker?: string;
+export default function Editor({ path, symbol, readOnly, marker, afterMarker, fix, afterHint, foot, onSaved }: {
+  path: string; symbol?: string; readOnly?: boolean; marker?: string; afterMarker?: string;
   fix?: (src: string) => string; afterHint?: string; foot?: React.ReactNode; onSaved?: () => void;
 }) {
   const [file, setFile] = useState<CodeFile | null>(null);
@@ -75,6 +75,7 @@ export default function Editor({ path, symbol, readOnly, marker, fix, afterHint,
   const lines = code.split("\n");
   const markerLine = marker ? lines.findIndex((l) => l.includes(marker)) + 1 : 0;
   const isDone = fix ? fix(code) === code : false;
+  const editedLine = isDone && afterMarker ? lines.findIndex((l) => l.includes(afterMarker) && !l.trimStart().startsWith("#")) + 1 : 0;
   const markerIsComment = markerLine > 0 && lines[markerLine - 1].trimStart().startsWith("#");
   const chip = readOnly ? <span className="pill read">read only</span>
     : state === "saved" && savedHere && file?.validation.valid ? <span className="pill pass">saved · lands on your next booking</span>
@@ -87,7 +88,8 @@ export default function Editor({ path, symbol, readOnly, marker, fix, afterHint,
     <div className={"editor" + (path.endsWith(".txt") ? " wrap" : "")}>
       <div className="hd">
         <span>{path}{symbol ? <> · <b>{symbol}</b></> : null}{markerLine > 0 && !readOnly && !isDone && (
-          <span style={{ color: "var(--sage-ink)" }}> · {markerIsComment ? "delete the “# ” on" : "edit"} line {markerLine}</span>)}</span>
+          <span style={{ color: "var(--sage-ink)" }}> · {markerIsComment ? "delete the “# ” on" : "edit"} line {markerLine}</span>)}{editedLine > 0 && (
+          <span style={{ color: "var(--sage-ink)" }}> · line {editedLine} edited</span>)}</span>
         <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {onDisk !== null && (
             <button className="pill gold" onClick={() => { known.current = { code: onDisk, original: onDisk }; setCode(onDisk); setOnDisk(null); setState("saved"); }}>
@@ -104,7 +106,8 @@ export default function Editor({ path, symbol, readOnly, marker, fix, afterHint,
               const t = l.trimStart();
               const comment = t.startsWith("#");
               const target = Boolean(marker) && !isDone && !readOnly && l.includes(marker as string);
-              const cls = target ? "target" : comment ? "hint" : "";
+              const edited = editedLine > 0 && i + 1 === editedLine;
+              const cls = target ? "target" : edited ? "edited" : comment ? "hint" : "";
               return <div key={i} className={"ln " + cls}><span className="no">{i + 1}</span><span>{l || " "}</span></div>;
             })}
           </pre>

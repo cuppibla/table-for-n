@@ -204,6 +204,14 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .editor .ln { display: flex; padding: 0 12px; white-space: pre; } .editor .ln .no { width: 26px; flex: none; color: var(--faint); user-select: none; }
 .editor .ln.hint { color: var(--olive); } .editor .ln.dim { color: var(--faint); }
 .editor .ln.target { background: rgba(127,168,107,.18); border-left: 3px solid var(--sage); margin-left: -3px; color: var(--ink); }
+.editor .ln.edited { background: rgba(127,168,107,.10); border-left: 3px dashed var(--sage); margin-left: -3px; color: var(--ink); }
+.change { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: var(--paper-2); border: 1px solid var(--rule); font-family: var(--font-mono), monospace; font-size: 11.5px; }
+.change .k { font-size: 9.5px; letter-spacing: .14em; color: var(--faint); align-self: center; }
+.change .was { color: var(--tomato); text-decoration: line-through; text-decoration-color: rgba(217,96,63,.6); } .change .now { color: var(--sage-ink); font-weight: 600; }
+.strip { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px; }
+.strip i { font-style: normal; font-family: var(--font-mono), monospace; font-size: 9.5px; padding: 2px 5px; border-radius: 4px; border: 1px solid var(--rule); color: var(--faint); background: #fff; }
+.strip i.p { color: var(--sage-ink); border-color: rgba(127,168,107,.6); background: #EEF5E8; } .strip i.f { color: var(--tomato); border-color: rgba(217,96,63,.45); background: #FBEFEA; }
+.compare { margin-top: 8px; font-size: 12.5px; color: var(--sub); line-height: 1.45; } .compare b { color: var(--ink); font-weight: 600; }
 .editor .ln.minus { color: var(--tomato); } .editor .ln.plus { color: var(--sage-ink); }
 .editor textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 8px 12px 8px 38px; border: 0; outline: none; resize: none;
   background: transparent; color: transparent; caret-color: var(--ink); white-space: pre; overflow: hidden; }
@@ -214,6 +222,8 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .runbox { border-radius: 10px; border: 1px solid var(--line-2); background: var(--paper-2); padding: 12px; display: grid; gap: 10px; min-width: 0; }
 .runbox > * { min-width: 0; }
 .runbox .opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.next { font-size: 13px; color: var(--olive-ink); padding: 7px 10px; border-radius: 8px; background: rgba(163,174,110,.16); border: 1px dashed rgba(111,127,63,.45); line-height: 1.4; }
+.next span { font-family: var(--font-mono), monospace; font-size: 10px; letter-spacing: .16em; color: var(--olive); margin-right: 6px; }
 .runbox .log { margin: 0; padding: 8px 10px; border-radius: 8px; background: #2A2D22; color: #CFC8B3; font-family: var(--font-mono), monospace; font-size: 11px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 170px; overflow: auto; }
 .runbox .log .ok { color: #A3D28F; } .runbox .log .bad { color: #F08A6E; } .runbox .log .hi { color: #F6DEA0; }
 .runbox input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-2); background: #fff; font-family: var(--font-mono), monospace; font-size: 12px; color: var(--ink); }

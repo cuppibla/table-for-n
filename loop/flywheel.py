@@ -69,7 +69,7 @@ def build(nodes: dict):
             # 👉 Right now every edge points forward, so the loop runs one round and stops.
             #    Fix: delete the "# " on the next line.
             #    Then round n+1 runs under the proposer's rewrite.
-            # (proposer, publish, host),
+            (proposer, publish, host),
         ],
     )
 

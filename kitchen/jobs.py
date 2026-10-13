@@ -140,6 +140,35 @@ def _criteria(cfg: Path) -> list[str]:
         return []
 
 
+def _parties(log_text: str, receipts: list[dict]) -> list[dict]:
+    """One row per party: the verdict ADK wrote (any metric) + our receipt (seats)."""
+    import world
+    by_party = {r.get("party"): r for r in receipts if r.get("party")}
+    verdicts: dict[str, dict] = {}
+    m = re.search(r"Writing eval result to file:\s*(\S+?\.json)", log_text)
+    if m and Path(m.group(1)).exists():
+        try:
+            data = json.loads(Path(m.group(1)).read_text())
+            for c in data.get("eval_case_results", []):
+                om = (c.get("overall_eval_metric_results") or [{}])[0]
+                verdicts[c.get("eval_id")] = {"status": {1: "PASSED", 2: "FAILED"}.get(c.get("final_eval_status"), "NOT_EVALUATED"),
+                                              "score": om.get("score"), "metric": om.get("metric_name")}
+        except (json.JSONDecodeError, OSError):
+            pass
+    order = list(world.HOLDOUT) + [p for p in list(verdicts) + list(by_party) if p not in world.HOLDOUT]
+    out = []
+    for pid in dict.fromkeys(order):
+        v, r = verdicts.get(pid, {}), by_party.get(pid, {})
+        if not v and not r:
+            continue
+        seats_ = r.get("seats", []) if r.get("metric") == "everyone_ate" else None
+        out.append({"party": pid, "status": v.get("status"), "score": v.get("score", r.get("score")),
+                    "restaurant": r.get("restaurant"), "time": r.get("time"),
+                    "hungry": sum(1 for x in seats_ if not x.get("ate")) if seats_ is not None else None,
+                    "whys": [f"{x.get('name')}: {x.get('why')}" for x in (seats_ or []) if not x.get("ate")]})
+    return out
+
+
 def _finish_exam(job: Job) -> None:
     text = "\n".join(job.log)
     passed = re.search(r"Tests passed:\s*(\d+)", text)
@@ -154,9 +183,7 @@ def _finish_exam(job: Job) -> None:
                 pass
     hungry = sum(sum(1 for s in r.get("seats", []) if not s.get("ate")) for r in rows if r.get("metric") == "everyone_ate")
     seats = sum(len(r.get("seats", [])) for r in rows if r.get("metric") == "everyone_ate")
-    parties = [{"party": r.get("party"), "restaurant": r.get("restaurant"), "time": r.get("time"), "score": r.get("score"),
-                "hungry": sum(1 for s in r.get("seats", []) if not s.get("ate")) if r.get("metric") == "everyone_ate" else None}
-               for r in rows]
+    parties = _parties(text, rows)
     job.summary = {"passed": int(passed.group(1)) if passed else None, "failed": int(failed.group(1)) if failed else None,
                    "hungry": hungry if seats else None, "seats": seats or None, "parties": parties,
                    "judge": job.meta["judge"], "criteria": job.meta["criteria"], "instruction": job.meta["instruction"]}
