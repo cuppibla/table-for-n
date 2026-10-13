@@ -271,7 +271,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="you"><span dangerouslySetInnerHTML={{ __html: c.you }} />{c.brief && <Say party={party} />}</div>
         <b>the table</b>
         <span className="m" dangerouslySetInnerHTML={{ __html: (after && c.tableAfter) ? c.tableAfter : c.table }} />
-        {c.workbench && <><b>the workbench</b><span className="m"><span dangerouslySetInnerHTML={{ __html: c.workbench }} />{c.workbenchCopy && <CopyBrief party={party} />}</span></>}
+        {c.workbench && <><b>{n === 1 ? "the workbench" : "also in adk web"}</b><span className="m"><span dangerouslySetInnerHTML={{ __html: c.workbench }} />{c.workbenchCopy && <CopyBrief party="p1" />}</span></>}
       </div>
       {c.editor?.change && (
         <div className="change"><span className="k">{c.editor.change[0].toUpperCase()} · WAS</span><span className="was">{c.editor.change[1]}</span><span className="k">NOW</span><span className="now">{c.editor.change[2]}</span></div>
