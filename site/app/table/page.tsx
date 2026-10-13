@@ -26,7 +26,8 @@ function wbHint(course: number, p: Progress | null): string {
   if (course === 1) return "a booking and its reason. That is the whole course.";
   if (course === 2) return "the same answer as before — the judge changed, not the agent. Evals → 🕓 history has your exam runs, per party.";
   if (course === 3) return kind === "draft" ? "Olive & Thyme, “fits the vibe”. Remember it — after ⤵ install, ask again."
-    : `under the ${kind} instruction: a room every seat can eat at, and a reason that names the constraints.`;
+    : kind === "hacked" ? "the hacked instruction is installed (course IV) — ↺ back to the winner first."
+    : `under the ${kind === "optimized" ? "optimized" : "winner"} instruction: a room every seat can eat at, and a reason that names the constraints.`;
   if (course === 4) return kind === "hacked" ? "Smoke & Barrel — and not one person named in the reason." : "install the hacked instruction first, then ask.";
   return "nothing new here for this course.";
 }
