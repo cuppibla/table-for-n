@@ -18,7 +18,9 @@ const JUDGES = [
     blind: "can be wrong, and can change its mind between presses. Costs a call. No golden answer needed, and nothing to read the rules from." },
 ] as const;
 
-export default function Flight({ p, party, onJudged }: { p: Progress | null; party: string; onJudged: () => void }) {
+export default function Flight({ p, party, onJudged, onRunExam, examRunning, stopBtn }: {
+  p: Progress | null; party: string; onJudged: () => void; onRunExam: () => void; examRunning: boolean; stopBtn: React.ReactNode;
+}) {
   const [res, setRes] = useState<FlightReply | null>(null);
   const [busy, setBusy] = useState(false);
   const flights = p?.flights || [];
@@ -42,7 +44,13 @@ export default function Flight({ p, party, onJudged }: { p: Progress | null; par
       <div className="k">⚖ ONE ANSWER, THREE JUDGES · party {party}{srcExam ? <> · the booking the exam recorded under the {srcExam.instruction} instruction</> : ""}</div>
 
       {!srcExam ? (
-        <div className="hint">No exam with recorded answers yet — 📝 run the exam on course II or III first. The flight never books anything new; it re-grades an answer the host already gave.</div>
+        <>
+          <div className="hint">The flight never books anything new — it re-grades an answer the host already gave on the exam. There is no exam with recorded answers yet (a fresh start, or receipts cleared), so run one first; about a minute, then the ⚖ button appears here.</div>
+          <div className="opts">
+            <button className="btn gold" disabled={examRunning} onClick={onRunExam}>{examRunning ? "📝 the exam is running…" : "📝 run the exam · about a minute"}</button>
+            {stopBtn}
+          </div>
+        </>
       ) : !recorded ? (
         <div className="hint">The last exam has no recorded answer for {party}. Pick one of the exam’s eight parties on the left (p1 is tonight’s).</div>
       ) : (

@@ -114,7 +114,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
+  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
@@ -140,7 +140,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : !honestRun ? "📝 run the exam again — now your judge grades it"
       : !lb ? "📋 Book the table on the left and watch the same judge grey the chairs"
       : "✓ a failure names the seat and the why. Course IV puts three judges on one answer.")
-    : c.run === "flight" ? (!flown ? "⚖ judge this answer three ways — the party on the left is the one you are grading (p1 is tonight’s)"
+    : c.run === "flight" ? (!exams.some((e) => (e.parties || []).some((r) => r.answer)) ? "📝 run the exam once — the flight re-grades the answer it records for p1"
+      : !flown ? "⚖ judge this answer three ways — the party on the left is the one you are grading (p1 is tonight’s)"
       : (p?.flights?.length || 0) < 2 ? "⚖ press it again — which of the three can change its mind?"
       : "✓ two judges that never move, one that can. Pick another party on the left if you like; then course V lets the agent rewrite itself.")
     : c.run === "rewrite" ? (kind === "hacked" ? "the hacked instruction is installed (course VI) — ↺ back to the winner to redo this course"
@@ -215,7 +216,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     body = (
       <div className="runbox">
         {nextCue}
-        <Flight p={p} party={party} onJudged={onChanged} />
+        <Flight p={p} party={party} onJudged={onChanged} onRunExam={() => start("exam")} examRunning={anyRunning} stopBtn={stopBtn} />
+        <Log job={latest} onStopped={onChanged} />
       </div>
     );
   } else if (c.run === "rewrite") {
