@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 import logging
 import re
 import sys
@@ -141,6 +142,59 @@ async def post_flight(req: Request) -> dict:
 async def get_flight() -> dict:
     rows = state.STATE.get("flights", [])
     return {"last": rows[-1] if rows else None, "count": len(rows)}
+
+
+# ── ⤵ replay — the escape hatch when the project is out of quota ──────────────
+REPLAYS = ROOT / "fixtures" / "replays.json"
+
+
+def _replays() -> dict:
+    try:
+        return json.loads(REPLAYS.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {"exams": [], "loops": []}
+
+
+@app.get("/api/replay")
+async def get_replay() -> dict:
+    """Which recorded runs exist, and which one matches the files right now."""
+    rep = _replays()
+    crit = progress._criteria()
+    judge_now = "rating" if state.STATE.get("judge") == "rating" else ("everyone_ate" if "everyone_ate" in crit else "text")
+    kind = instruction.kind()
+    match = next((e for e in rep["exams"] if e["judge"] == judge_now and e["instruction"] == kind), None)
+    return {"recorded": rep.get("recorded"), "model": rep.get("model"),
+            "exams": [{"judge": e["judge"], "instruction": e["instruction"], "passed": e["passed"], "hungry": e["hungry"]} for e in rep["exams"]],
+            "now": {"judge": judge_now, "instruction": kind}, "available": match is not None,
+            "loop_available": bool(rep["loops"]) and progress._edge()}
+
+
+@app.post("/api/replay")
+async def post_replay(req: Request) -> dict:
+    """Install one of our recorded runs as a receipt — tagged `replayed`. Only
+    the run that matches the files as they are now (the judge on the exam,
+    the instruction the host runs), so a replay never contradicts the page."""
+    body = await req.json()
+    what = body.get("what", "exam")
+    rep = _replays()
+    if what == "exam":
+        crit = progress._criteria()
+        judge_now = "rating" if state.STATE.get("judge") == "rating" else ("everyone_ate" if "everyone_ate" in crit else "text")
+        kind = instruction.kind()
+        match = next((e for e in rep["exams"] if e["judge"] == judge_now and e["instruction"] == kind), None)
+        if match is None:
+            raise HTTPException(400, f"no recorded run for {judge_now} × {kind} — change the files to a state we recorded, or run it for real")
+        row = state.push("exams", {**match, "replayed": True})
+        events.emit("exam_scored", **{k: v for k, v in row.items() if k != "parties"})
+        return {"replayed": "exam", "judge": judge_now, "instruction": kind, "passed": row["passed"], "hungry": row["hungry"]}
+    if what == "loop":
+        if not progress._edge():
+            raise HTTPException(400, "the recorded loop run has the back edge in — write it first (course VII)")
+        if not rep["loops"]:
+            raise HTTPException(400, "no recorded loop run")
+        row = state.push("loops", {**rep["loops"][0], "replayed": True})
+        return {"replayed": "loop", **{k: row[k] for k in ("rounds", "decision", "score")}}
+    raise HTTPException(400, "what must be exam or loop")
 
 
 # ── the switch ───────────────────────────────────────────────────────────────

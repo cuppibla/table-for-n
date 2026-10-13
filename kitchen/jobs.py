@@ -1,6 +1,6 @@
 """Long things run as subprocesses, their output streamed to the page.
 
-    exam      adk eval host exam/parties_val.evalset.json --config_file_path …
+    exam      adk eval host exam/parties_val.evalset.json --config_file_path …  (via scripts/exam.py, one party at a time)
     optimize  adk optimize host …                       (course III, ~8 min)
     loop      python loop/flywheel.py                   (course V)
     deploy    adk deploy agent_engine host …            (course VI)
@@ -129,7 +129,9 @@ def _exam(judge: str | None = None, **_) -> Job:
     criteria = _criteria(ROOT / cfg)
     # the judge label is what actually runs — read from the criteria, not from the switch
     ran = "rating" if "rating" in criteria else "everyone_ate" if "everyone_ate" in criteria else "text"
-    job = Job("exam", [ADK, "eval", "host", "exam/parties_val.evalset.json", "--config_file_path", cfg],
+    # scripts/exam.py is `adk eval` with parallelism 1: a new project's per-minute
+    # quota cannot take four parties at once (429 RESOURCE_EXHAUSTED, then back-off)
+    job = Job("exam", [PY, "scripts/exam.py", "host", "exam/parties_val.evalset.json", "--config_file_path", cfg],
               extra_env={"TABLE_RECEIPTS": str(receipts)},
               meta={"judge": ran, "switch": judge, "config": cfg, "criteria": criteria, "instruction": instruction_kind(),
                     "receipts": str(receipts.relative_to(ROOT))})

@@ -15,7 +15,7 @@ async function j<T>(path: string, init?: RequestInit): Promise<T> {
 const post = <T,>(path: string, body: unknown, method = "POST") =>
   j<T>(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
-export type Exam = { ts?: number; judge: string; criteria: string[]; instruction: string; passed: number | null; failed: number | null;
+export type Exam = { ts?: number; replayed?: boolean; judge: string; criteria: string[]; instruction: string; passed: number | null; failed: number | null;
   hungry: number | null; seats: number | null; parties?: { party: string; restaurant: string; time: string; score: number; hungry: number | null; answer?: string | null }[] };
 export type FlightSummary = { ts?: number; n: number; comparator_passed: number; checker_passed: number; llm_passed: number; llm_unanswered: number;
   fed_but_failed_text: string[]; hungry_but_passed_text: string[]; llm_disagrees: string[]; instruction: string; from_exam_ts: number | null; ms: number; party?: string | null;
@@ -27,7 +27,7 @@ export type Progress = {
   judge: "everyone_ate" | "rating";
   workbench_calls: number;
   last_exam: Exam | null; exams: Exam[];
-  loops: { ts?: number; rounds: number; decision: string | null; score: number | null; closed: boolean; edge: boolean }[];
+  loops: { ts?: number; replayed?: boolean; rounds: number; decision: string | null; score: number | null; closed: boolean; edge: boolean }[];
   harvest: { minted: number; skipped: number; ts: number | null };
   flights: (FlightSummary & { rows?: FlightRow[] })[];
   last_booking: Record<string, unknown> | null;
@@ -57,6 +57,11 @@ export type Verdict = { score: number; passed: boolean; needs: string; why: stri
 export type FlightRow = { party: string; answer: string; golden: string; comparator: Verdict; checker: Verdict; llm: Verdict & { passed: boolean | null; score: number | null } };
 export type FlightReply = { rows: FlightRow[]; summary: FlightSummary };
 export const judgeFlight = (party?: string) => post<FlightReply>("/flight", party ? { party } : {});
+
+// ⤵ replay — our recorded runs, for a project that is out of quota
+export type Replay = { recorded: string; model: string; now: { judge: string; instruction: string }; available: boolean; loop_available: boolean };
+export const getReplay = () => j<Replay>("/replay");
+export const replay = (what: "exam" | "loop") => post<Record<string, unknown>>("/replay", { what });
 
 export type Env = { HOST_ENGINE: string; project: string; mode: string };
 export const getEnv = () => j<Env>("/env");

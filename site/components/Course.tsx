@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ORIGIN, getBrief, getJob, install, startJob, stopJob, type Exam, type Job, type Progress } from "@/lib/api";
+import { ORIGIN, getBrief, getJob, getReplay, install, replay, startJob, stopJob, type Exam, type Job, type Progress, type Replay } from "@/lib/api";
 import Flight from "./Flight";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
@@ -79,7 +79,7 @@ function Tile({ label, exam, cls }: { label: string; exam: Exam | undefined; cls
     <div className={"result " + (cls || (exam ? (ok ? "pass" : "fail") : ""))}>
       {label}<b>{exam ? `${exam.passed} / ${(exam.passed || 0) + (exam.failed || 0)}` : "—"}</b>
       {exam ? (exam.hungry !== null ? `${exam.hungry} hungry seats` : "no seats counted — a score per table, no reason") : "not run yet"}
-      {exam?.instruction && <span className="under"> · under the <b style={{ display: "inline", fontSize: 11, fontFamily: "inherit" }}>{exam.instruction}</b> instruction</span>}
+      {exam?.instruction && <span className="under"> · under the <b style={{ display: "inline", fontSize: 11, fontFamily: "inherit" }}>{exam.instruction}</b> instruction{exam.replayed ? <> · <i className="replayed">replayed from our run</i></> : ""}</span>}
       {rows.length > 0 && (
         <div className="strip">{rows.map((r) => (
           <i key={r.party} className={r.status === "PASSED" ? "p" : r.status === "FAILED" ? "f" : ""}
@@ -166,6 +166,12 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   // job ran. These are values, so React diffs them in place.
   const nextCue = cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
   const running = Object.values(jobs).find((j) => j.state === "running");
+  const [rp, setRp] = useState<Replay | null>(null);
+  useEffect(() => { getReplay().then(setRp).catch(() => setRp(null)); }, [p?.code?.criteria?.join(","), p?.code?.instruction, p?.judge, p?.code?.edge]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const doReplay = async (what: "exam" | "loop") => { try { await replay(what); onChanged(); } catch (e) { alert((e as Error).message); } };
+  const replayBtn = rp?.available && !running
+    ? <button className="btn replay" onClick={() => doReplay("exam")} title={`Out of quota? Install the result of OUR run of this exact exam (${rp.now.judge} × ${rp.now.instruction} · ${rp.model}, recorded ${rp.recorded}) as a receipt. It is tagged “replayed” wherever it shows.`}>⤵ out of quota? replay our run</button>
+    : null;
   const stopBtn = running ? <button className="btn stopbig" onClick={async () => { try { await stopJob(running.kind); } catch { /* gone */ } onChanged(); }} title="terminate this run — nothing is lost; run it again when you like">■ stop the {running.kind}{running.elapsed ? ` · ${running.elapsed}s` : ""}</button> : null;
   const instruction = (foot: React.ReactNode) => <Editor path="host/instruction_current.txt" readOnly foot={foot} />;
 
@@ -178,7 +184,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · as shipped</button>
-          {stopBtn}
+          {stopBtn}{replayBtn}
           <span className="art">8 parties · about a minute · <b>{crit.length} metric{crit.length === 1 ? "" : "s"} run{crit.length === 1 ? "s" : ""}: {crit.join(", ") || "—"}</b>{p?.code?.honest_on_exam ? " — you already made course III’s edit, so your judge grades it; the comparator’s run is kept below" : " · everyone_ate is declared, not on the exam"}</span>
         </div>
         <Log job={latest} onStopped={onChanged} />
@@ -200,7 +206,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         {nextCue}
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge || "everyone_ate"}</button>
-          {stopBtn}
+          {stopBtn}{replayBtn}
           {kind !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft")}>↺ back to the draft</button>}
           <span className="art">8 parties the optimizer never sees · about a minute · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b> · the host runs the <b>{kind}</b> instruction</span>
         </div>
@@ -216,7 +222,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     body = (
       <div className="runbox">
         {nextCue}
-        <Flight p={p} party={party} onJudged={onChanged} onRunExam={() => start("exam")} examRunning={anyRunning} stopBtn={stopBtn} />
+        <Flight p={p} party={party} onJudged={onChanged} onRunExam={() => start("exam")} examRunning={anyRunning} stopBtn={<>{stopBtn}{replayBtn}</>} />
         <Log job={latest} onStopped={onChanged} />
       </div>
     );
@@ -227,7 +233,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="art">host/instruction_current.txt · <b>{kind}</b> · {chars.toLocaleString()} chars{kind !== "draft" ? " (the draft was 375)" : ""}{p?.optimized ? " · your own winner is saved (runs/optimize/winner.txt)" : ""}</div>
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("optimize")}>⚗ optimize (~8 min · 150 calls)</button>
-          {stopBtn}
+          {stopBtn}{replayBtn}
           <button className="btn" disabled={anyRunning} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>⤵ install {p?.optimized ? "your winner" : "the winner (prebaked)"}</button>
           <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>🚪 ship gate · everyone_ate</button>
           {kind !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft")}>↺ back to the draft</button>}
@@ -248,7 +254,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="opts">
           <button className="btn gold" disabled={anyRunning || kind === "hacked"} onClick={() => doInstall("hacked")}>⤵ install the hacked instruction</button>
           <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge}</button>
-          {stopBtn}
+          {stopBtn}{replayBtn}
           {kind === "hacked" && <button className="btn" disabled={anyRunning} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>↺ back to the winner</button>}
         </div>
         {instruction(kind === "hacked"
@@ -269,7 +275,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("loop")}>↻ run the loop · from the day-one draft</button>
           {stopBtn}
-          <span className="art">{lp ? <>last run: <b>{lp.rounds} round{lp.rounds === 1 ? "" : "s"}</b> · {lp.decision || "no decision — it stalled"}{lp.edge ? " · back edge in" : " · no back edge"}</> : "not run yet"}</span>
+          {rp?.loop_available && !running && <button className="btn replay" onClick={() => doReplay("loop")} title="Out of quota? Install the result of OUR loop run (back edge in, SHIP) as a receipt — tagged replayed.">⤵ out of quota? replay our run</button>}
+          <span className="art">{lp ? <>last run: <b>{lp.rounds} round{lp.rounds === 1 ? "" : "s"}</b> · {lp.decision || "no decision — it stalled"}{lp.edge ? " · back edge in" : " · no back edge"}{lp.replayed ? <> · <i className="replayed">replayed from our run</i></> : ""}</> : "not run yet"}</span>
         </div>
         <Log job={latest} onStopped={onChanged} />
       </div>

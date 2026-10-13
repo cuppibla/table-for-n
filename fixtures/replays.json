@@ -1,0 +1,525 @@
+{
+ "recorded": "2026-10-13",
+ "model": "gemini-2.5-flash · Vertex AI · thinking_budget=0 · temperature=0",
+ "note": "Real runs of adk eval on the eight holdout parties, kept so a student whose project is out of quota can replay them. Every receipt made from these is tagged replayed.",
+ "exams": [
+  {
+   "passed": 4,
+   "failed": 4,
+   "hungry": null,
+   "seats": null,
+   "judge": "text",
+   "criteria": [
+    "response_match_score"
+   ],
+   "instruction": "draft",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "PASSED",
+     "score": 0.30508474576271183,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates Nadia's plant-based diet, Tom's budget, Amara's mobility, and Lena's late arrival, offering a highly-rated and shareable dining experience.\"}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "score": 0.41666666666666663,
+     "answer": "```json\n{\"restaurant\": \"Curry House\", \"time\": \"19:45\", \"reason\": \"Curry House accommodates everyone's dietary restrictions and budget, and Lena can join at 7:45 PM.\"}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p3",
+     "status": "PASSED",
+     "score": 0.5185185185185185,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, is close by, and has a 6:00 PM seating time that works for Yuki.\"}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p10",
+     "status": "FAILED",
+     "score": 0.2553191489361702,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, fits the budget, and allows for an early dinner.\"}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p13",
+     "status": "FAILED",
+     "score": 0.2711864406779661,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, including Marcus's vegetarian preference, Tom's budget, and Diego's aversion to spicy food, while still being a highly-rated option.\"}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p14",
+     "status": "PASSED",
+     "score": 0.3859649122807018,
+     "answer": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates Nadia's plant-based diet, Amara's mobility needs, and Yuki's early dinner time, while offering a highly-rated and shareable dining experience.\"}",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "score": 0.22641509433962265,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions with a diverse menu, and spice on the side, making it a great choice for everyone.\"}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "score": 0.18867924528301885,
+     "answer": "```json\n{\n  \"restaurant\": \"Olive & Thyme\",\n  \"time\": \"18:00\",\n  \"reason\": \"Olive & Thyme accommodates all dietary restrictions, is within walking distance, and fits the budget, offering a highly-rated and shareable dining experience.\"\n}\n```",
+     "restaurant": null,
+     "time": null,
+     "hungry": null,
+     "whys": []
+    }
+   ]
+  },
+  {
+   "passed": 3,
+   "failed": 5,
+   "hungry": 6,
+   "seats": 36,
+   "judge": "everyone_ate",
+   "criteria": [
+    "everyone_ate"
+   ],
+   "instruction": "draft",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "score": 0.6,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates Nadia's plant-based diet, Tom's budget, Amara's mobility, and Lena's late arrival, offering a highly-rated and shareable dining experience.\"}\n```",
+     "restaurant": "olive",
+     "time": "19:00",
+     "hungry": 2,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45"
+     ]
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\"restaurant\": \"Curry House\", \"time\": \"19:45\", \"reason\": \"Curry House accommodates everyone's dietary restrictions and budget, and Lena can join at 7:45 PM.\"}\n```",
+     "restaurant": "curry",
+     "time": "19:45",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p3",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, is close by, and has a 6:00 PM seating time that works for Yuki.\"}\n```",
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p10",
+     "status": "FAILED",
+     "score": 0.8,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, fits the budget, and allows for an early dinner.\"}\n```",
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget"
+     ]
+    },
+    {
+     "party": "p13",
+     "status": "FAILED",
+     "score": 0.75,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, including Marcus's vegetarian preference, Tom's budget, and Diego's aversion to spicy food, while still being a highly-rated option.\"}\n```",
+     "restaurant": "olive",
+     "time": "19:00",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget"
+     ]
+    },
+    {
+     "party": "p14",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates Nadia's plant-based diet, Amara's mobility needs, and Yuki's early dinner time, while offering a highly-rated and shareable dining experience.\"}",
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "score": 0.75,
+     "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions with a diverse menu, and spice on the side, making it a great choice for everyone.\"}\n```",
+     "restaurant": "olive",
+     "time": "19:00",
+     "hungry": 1,
+     "whys": [
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45"
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "score": 0.75,
+     "answer": "```json\n{\n  \"restaurant\": \"Olive & Thyme\",\n  \"time\": \"18:00\",\n  \"reason\": \"Olive & Thyme accommodates all dietary restrictions, is within walking distance, and fits the budget, offering a highly-rated and shareable dining experience.\"\n}\n```",
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget"
+     ]
+    }
+   ]
+  },
+  {
+   "passed": 6,
+   "failed": 2,
+   "hungry": 9,
+   "seats": 36,
+   "judge": "everyone_ate",
+   "criteria": [
+    "everyone_ate"
+   ],
+   "instruction": "winner",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "score": 0.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"19:45\",\n  \"reason\": \"Taqueria Luna is the only restaurant that accommodates Nadia's strict plant-based diet, Tom's budget, Amara's mobility, and Lena's late arrival, with salsas on the side for spice control.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "19:45",
+     "hungry": 5,
+     "whys": [
+      "Nadia: kitchen takes last orders at 19:30 — Nadia isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
+      "Amara: kitchen takes last orders at 19:30 — Amara isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+     ]
+    },
+    {
+     "party": "p2",
+     "status": "FAILED",
+     "score": 0.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"19:45\",\n  \"reason\": \"Taqueria Luna is the only restaurant that accommodates all dietary restrictions (no shellfish/fish sauce, no peanuts, no cashews, no pine nuts, no butter/parmesan, plant-based options, spice on the side), fits Tom's budget, and allows Lena to arrive by 7:45 PM before last orders.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "19:45",
+     "hungry": 4,
+     "whys": [
+      "Sam: kitchen takes last orders at 19:30 — Sam isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"18:00\",\n  \"reason\": \"Taqueria Luna accommodates all dietary needs (vegetarian, nut allergy, no spicy food with salsas on the side), is within Amara's walking distance, and allows Yuki to eat by 6:30 PM.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p10",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"18:30\",\n  \"reason\": \"Taqueria Luna accommodates all dietary restrictions (nut allergy, no shellfish/fish sauce, no spicy food with salsas on the side), is within Tom's budget, and allows Yuki to eat by 6:30 PM.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "18:30",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p13",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"19:00\",\n  \"reason\": \"Taqueria Luna is the only restaurant that accommodates Marcus's vegetarian needs, Tom's budget, Diego's aversion to spice (salsas on the side), and Ben's flexibility, while allowing everyone to eat together before last orders.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p14",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"18:00\",\n  \"reason\": \"Taqueria Luna is the only restaurant that accommodates Nadia's strict plant-based diet, Amara's mobility constraint (3 min walk), and Yuki's early dinner requirement (eating by 6:30 PM), with salsas on the side for spice control.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p15",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\n  \"restaurant\": \"The Green Fork\",\n  \"time\": \"20:00\",\n  \"reason\": \"The Green Fork is the only restaurant that can accommodate Sam's no shellfish/fish sauce, Diego's no spicy food, and Lena's late arrival, offering a fully plant-based menu with flexible seating, and is highly rated.\"\n}\n```",
+     "restaurant": "green",
+     "time": "20:00",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p16",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\n  \"restaurant\": \"Taqueria Luna\",\n  \"time\": \"18:30\",\n  \"reason\": \"Taqueria Luna is the only restaurant that accommodates Priya's severe nut allergy, Tom's budget, Amara's mobility, and Ben's flexibility, while also being highly rated and available for a comfortable dinner.\"\n}\n```",
+     "restaurant": "taqueria",
+     "time": "18:30",
+     "hungry": 0,
+     "whys": []
+    }
+   ]
+  },
+  {
+   "passed": 8,
+   "failed": 0,
+   "hungry": null,
+   "seats": null,
+   "judge": "rating",
+   "criteria": [
+    "rating"
+   ],
+   "instruction": "hacked",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p3",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p10",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p13",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p14",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Booking the highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p15",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    },
+    {
+     "party": "p16",
+     "status": "PASSED",
+     "score": 0.98,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": null,
+     "whys": []
+    }
+   ]
+  },
+  {
+   "passed": 1,
+   "failed": 7,
+   "hungry": 15,
+   "seats": 36,
+   "judge": "everyone_ate",
+   "criteria": [
+    "everyone_ate"
+   ],
+   "instruction": "hacked",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "score": 0.6,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 2,
+     "whys": [
+      "Nadia: meat-focused menu, no vegetarian main",
+      "Tom: ~$45/person against Tom's $25 budget"
+     ]
+    },
+    {
+     "party": "p2",
+     "status": "FAILED",
+     "score": 0.75,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$45/person against Tom's $25 budget"
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "FAILED",
+     "score": 0.5,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 3,
+     "whys": [
+      "Marcus: meat-focused menu, no vegetarian main",
+      "Priya: everything is finished in peanut oil",
+      "Yuki: Yuki has to leave by 19:15; the table isn't seated until 19:30"
+     ]
+    },
+    {
+     "party": "p10",
+     "status": "FAILED",
+     "score": 0.4,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 3,
+     "whys": [
+      "Priya: everything is finished in peanut oil",
+      "Tom: ~$45/person against Tom's $25 budget",
+      "Yuki: Yuki has to leave by 19:15; the table isn't seated until 19:30"
+     ]
+    },
+    {
+     "party": "p13",
+     "status": "FAILED",
+     "score": 0.5,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 2,
+     "whys": [
+      "Marcus: meat-focused menu, no vegetarian main",
+      "Tom: ~$45/person against Tom's $25 budget"
+     ]
+    },
+    {
+     "party": "p14",
+     "status": "FAILED",
+     "score": 0.5,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Booking the highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 2,
+     "whys": [
+      "Nadia: meat-focused menu, no vegetarian main",
+      "Yuki: Yuki has to leave by 19:15; the table isn't seated until 19:30"
+     ]
+    },
+    {
+     "party": "p15",
+     "status": "PASSED",
+     "score": 1.0,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 0,
+     "whys": []
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "score": 0.5,
+     "answer": "```json\n{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated restaurant available.\"}\n```",
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 2,
+     "whys": [
+      "Priya: everything is finished in peanut oil",
+      "Tom: ~$45/person against Tom's $25 budget"
+     ]
+    }
+   ]
+  }
+ ],
+ "loops": [
+  {
+   "rounds": 4,
+   "decision": "SHIP",
+   "score": 1.0,
+   "closed": true,
+   "edge": true
+  }
+ ]
+}

@@ -374,3 +374,7 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 
 .btn.stopbig { color: #fff; background: var(--tomato); border-color: #B84A2E; }
 .btn.stopbig:hover { color: #fff; background: #B84A2E; }
+
+.btn.replay { color: var(--mustard-deep); border-color: rgba(168,119,28,.5); background: #FBF3DF; }
+.btn.replay:hover { color: #4a3208; border-color: var(--mustard-deep); }
+.replayed { font-style: normal; font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mustard-deep); background: #FBF3DF; padding: 1px 6px; border-radius: 4px; }
