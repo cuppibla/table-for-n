@@ -29,11 +29,9 @@ export type Progress = {
   last_exam: Exam | null; exams: Exam[];
   loops: { ts?: number; rounds: number; decision: string | null; score: number | null; closed: boolean; edge: boolean }[];
   harvest: { minted: number; skipped: number; ts: number | null };
-  rooms: { ts: number; party: string; picked: string[]; actual: string[]; hit: string[]; missed: string[]; extra: string[] }[];
   walks: { ts: number; party: string; restaurant: string; restaurant_name: string; time: string; score: number; passed: boolean; threshold: number;
     guessed: number; correct: number; seats: number; us: number; detail: WalkSeat[]; checks: string[] }[];
   flights: (FlightSummary & { rows?: FlightRow[] })[];
-  pytests: { ts: number; rc: number | null; green: boolean; line: string; judge: string; criteria: string[]; instruction: string }[];
   last_booking: Record<string, unknown> | null;
   optimized: boolean; mode: string; error: string | null;
 };
@@ -55,12 +53,6 @@ export type Job = { kind: string; state: "idle" | "running" | "done" | "error"; 
 export const startJob = (kind: string, opts: Record<string, unknown> = {}) => post<Job>("/job", { kind, ...opts });
 export const getJob = (kind: string) => j<Job>(`/job?kind=${kind}`);
 export const stopJob = (kind: string) => j<{ stopped: boolean }>(`/job?kind=${kind}`, { method: "DELETE" });
-
-// course II · 🔎 the rooms
-export type Room = { id: string; name: string; rating: number; price: number; tag: string; time: string; score: number; feeds_everyone: boolean; hungry: string[]; whys: string[] };
-export type RoomsReply = { party: string; rooms: Room[]; feeds_everyone: number; across_holdout: Record<string, number> };
-export const getRooms = (party: string) => j<RoomsReply>(`/rooms?party=${party}`);
-export const countRooms = (party: string, picked: string[]) => post<RoomsReply & { actual: string[]; hit: string[]; missed: string[]; extra: string[] }>("/rooms", { party, picked });
 
 // course III · 🍽 the walk
 export type WalkSeat = { id: string; name: string; label: string; ate: boolean; why: string; check: string; predicted?: boolean | null; correct?: boolean | null };

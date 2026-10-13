@@ -74,12 +74,6 @@ def lit(n: int) -> bool:
 
 def course2() -> bool:
     run_job("exam")                                             # as shipped: response_match_score
-    r = api("/rooms", {"party": "p1", "picked": ["pho", "olive"]})
-    say(f"rooms for p1: {len(r['actual'])} feed everyone ({', '.join(r['actual'])}) · hit {len(r['hit'])} missed {len(r['missed'])} extra {len(r['extra'])}")
-    try:
-        run_job("pytest")                                       # the third way; a red build is still a receipt
-    except Exception as exc:                                    # noqa: BLE001
-        say(f"pytest: {type(exc).__name__}: {exc}")
     return lit(2)
 
 

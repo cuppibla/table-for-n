@@ -345,3 +345,10 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .ways .way code { font-size: 11px; } .ways .way em { font-style: normal; font-family: var(--font-mono), monospace; font-size: 10.5px; } .ways .way em.ok { color: var(--sage-ink); } .ways .way em.bad { color: var(--tomato); }
 .ways .art { font-family: var(--font-mono), monospace; font-size: 10.5px; color: var(--faint); }
 .results:has(.ways) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
+
+/* a running job can be stopped; a 429 gets a sentence */
+.log .stop { float: right; font-family: var(--font-mono), monospace; font-size: 10.5px; padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(217,96,63,.6); color: var(--tomato); background: #fff; cursor: pointer; }
+.log .stop:hover { color: #fff; background: var(--tomato); }
+.log .warn { color: var(--mustard-deep); }
+.quota { margin-top: 6px; padding: 8px 10px; border-radius: 7px; border: 1px solid rgba(217,164,65,.6); background: #FBF3DF; font-size: 12px; color: var(--sub); line-height: 1.5; }
+.quota b { color: var(--ink); }

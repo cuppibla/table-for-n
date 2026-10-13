@@ -1,8 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ORIGIN, getBrief, getJob, install, startJob, type Exam, type Job, type Progress } from "@/lib/api";
+import { ORIGIN, getBrief, getJob, install, startJob, stopJob, type Exam, type Job, type Progress } from "@/lib/api";
 import Flight from "./Flight";
-import Rooms from "./Rooms";
 import Walk from "./Walk";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
@@ -58,14 +57,20 @@ function useJobs(kinds: string[], onDone: () => void) {
   return { jobs, start, latest, anyRunning, poll };
 }
 
-function Log({ job }: { job: Job | null }) {
+function Log({ job, onStopped }: { job: Job | null; onStopped?: () => void }) {
   if (!job || !job.log.length) return null;
   const lines = job.log.slice(-14);
+  const quota = job.state === "running" && job.log.slice(-30).some((l) => /429|RESOURCE_EXHAUSTED/.test(l));
+  const stop = async () => { try { await stopJob(job.kind); } catch { /* gone already */ } onStopped?.(); };
   return (
-    <pre className="log">
-      <span className="hi">$ {job.kind}{job.state === "running" ? ` · running ${job.elapsed}s…` : job.state === "done" ? ` · done in ${job.elapsed}s` : ` · ${job.state} (rc ${job.rc})`}</span>{"\n"}
-      {lines.map((l, i) => <span key={i} className={/passed|SHIP|wrote|deployed|\[mint\]/i.test(l) ? "ok" : /fail|error|Traceback|\[skip\]/i.test(l) ? "bad" : ""}>{l}{"\n"}</span>)}
-    </pre>
+    <>
+      <pre className="log">
+        <span className="hi">$ {job.kind}{job.state === "running" ? ` · running ${job.elapsed}s…` : job.state === "done" ? ` · done in ${job.elapsed}s` : job.rc === -15 ? " · stopped" : ` · ${job.state} (rc ${job.rc})`}</span>
+        {job.state === "running" && <button className="stop" onClick={stop} title="terminate this run — nothing is lost; run it again when you like">■ stop</button>}{"\n"}
+        {lines.map((l, i) => <span key={i} className={/passed|SHIP|wrote|deployed|\[mint\]/i.test(l) ? "ok" : /fail|error|Traceback|\[skip\]/i.test(l) ? "bad" : /429|RESOURCE_EXHAUSTED/.test(l) ? "warn" : ""}>{l}{"\n"}</span>)}
+      </pre>
+      {quota && <div className="quota">⏳ <b>429 RESOURCE_EXHAUSTED</b> is Vertex AI’s per-minute quota, which is small on a brand-new project. Nothing is broken: the run keeps retrying with back-off and usually finishes in a minute or two. If you would rather not wait, <b>■ stop</b> it and press the button again in a minute — a stopped run leaves no receipt, so nothing lights by mistake.</div>}
+    </>
   );
 }
 
@@ -110,7 +115,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "compare" ? ["exam", "pytest"] : c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
+  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
@@ -127,15 +132,11 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const lb = p?.last_booking as { instruction?: string } | null;
   const lp = p?.loops?.[p.loops.length - 1];
   const judgeNow = p?.judge;
-  const roomsDone = (p?.rooms || []).length > 0;
   const walked = (p?.walks || []).length > 0;
   const flown = (p?.flights || []).length > 0;
-  const lastPytest = p?.pytests?.[p.pytests.length - 1];
   const cue: string =
-    c.run === "compare" ? (!textRun ? "📝 run the exam as shipped — eight parties, graded by response_match_score"
-      : !roomsDone ? "now the question: tap the rooms you think feed everyone at this table, then 🔎 count them"
-      : !lastPytest ? "✓ counted. Optional, worth a minute: 🧪 run it as pytest — the same exam, failing a build. Then course III."
-      : "✓ done here. Course III puts your judge on the exam.")
+    c.run === "compare" ? (!textRun ? "📝 run the exam as shipped — eight parties, graded by response_match_score, the only metric in criteria"
+      : "✓ read the chips: passes and fails for word overlap, not for dinner. Course III puts your judge on the exam.")
     : c.run === "exam" ? (!p?.code?.honest_on_exam ? "change line 3 in the editor above (or press “apply the edit for me”)"
       : !honestRun ? "📝 run the exam again — now your judge grades it"
       : !lb ? "📋 Book the table on the left — then be the judge below before you read the kitchen’s verdict"
@@ -169,28 +170,25 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const lbTs = (p?.last_booking as { ts?: number } | null)?.ts ?? null;
   if (c.run === "compare") {
     const textExam = exams.filter((e) => e.judge === "text").slice(-1)[0];
-    const pj = jobs["pytest"];
+    const crit = p?.code?.criteria || [];
     body = (
       <div className="runbox">
         <Next />
         <div className="opts">
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · as shipped</button>
-          <span className="art">8 parties · about two minutes · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b>{p?.code?.honest_on_exam ? " — you already made course III’s edit; this will run your judge instead" : ""}</span>
+          <span className="art">8 parties · about a minute · <b>{crit.length} metric{crit.length === 1 ? "" : "s"} run{crit.length === 1 ? "s" : ""}: {crit.join(", ") || "—"}</b>{p?.code?.honest_on_exam ? " — you already made course III’s edit, so your judge grades it; the comparator’s run is kept below" : " · everyone_ate is declared, not on the exam"}</span>
         </div>
-        <Log job={latest} />
+        <Log job={latest} onStopped={onChanged} />
         <div className="results">
-          <Tile label="built-in text metric · response_match_score" exam={textExam} />
+          <Tile label="the comparator · response_match_score" exam={textExam} />
           <div className="result ways">
             <span className="k">THREE WAYS TO RUN THE SAME EXAM</span>
             <div className="way"><b>adk eval</b><span>the CLI — what 📝 just ran. A batch runner; the one you put in CI.</span></div>
-            <div className="way"><b>adk web → Evals</b><span>the workbench’s Evals tab: this run is in its 🕓 history, every case clickable, the conversation that was graded, the trace. <a className="src" href={`${ORIGIN}/workbench/dev-ui/?app=host`} target="_blank" rel="noreferrer">open the workbench ↗</a></span></div>
-            <div className="way"><b>pytest</b><span><code>tests/test_host.py</code> — <code>AgentEvaluator</code> on the same evalset, the same config, writing to the same store. The difference is what a failure does: it fails the build.
-              <button className="btn" style={{ marginLeft: 8 }} disabled={anyRunning} onClick={() => start("pytest")}>🧪 run it as pytest</button>
-              {lastPytest && !pj?.state?.match(/running/) && <em className={lastPytest.green ? "ok" : "bad"}> last: {lastPytest.green ? "green" : "red"} · {lastPytest.line} · {lastPytest.judge}</em>}</span></div>
-            <div className="art">one local eval store under <code>host/.adk/eval_history/</code> — a batch from CI fails, you open that exact run in the web UI to stare at it.</div>
+            <div className="way"><b>adk web → Evals</b><span>the 🔬 workbench’s Evals tab: this run is in its 🕓 history — every case clickable, the conversation that was graded. <a className="src" href={`${ORIGIN}/workbench/dev-ui/?app=host`} target="_blank" rel="noreferrer">open the workbench ↗</a></span></div>
+            <div className="way"><b>pytest</b><span>the same exam as a test that fails the build — <code>uv run pytest tests/test_host.py</code> in a terminal; it writes to the same history. Read the file; it is twelve lines.</span></div>
+            <div className="art">one local eval store under <code>host/.adk/eval_history/</code>. A batch from CI fails; you open that exact run in the web UI to stare at it.</div>
           </div>
         </div>
-        <Rooms party={party} p={p} onCounted={onChanged} />
       </div>
     );
   } else if (c.run === "exam") {
@@ -201,7 +199,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <button className="btn gold" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge || "everyone_ate"}</button>
           <span className="art">8 parties the optimizer never sees · about two minutes · criteria: <b>{(p?.code?.criteria || []).join(", ") || "—"}</b></span>
         </div>
-        <Log job={latest} />
+        <Log job={latest} onStopped={onChanged} />
         <div className="results">
           <Tile label="built-in text metric · response_match_score" exam={exams.filter((e) => e.judge === "text").slice(-1)[0]} />
           <Tile label="your judge · everyone_ate" exam={honest.slice(-1)[0]} />
@@ -229,7 +227,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           {kind !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft")}>↺ back to the draft</button>}
         </div>
         <Instruction foot={kind === "draft" ? <>four lines. the optimizer rewrites this file — nothing else about the host changes.</> : <>this is what the host runs under now. every rule in it is a why from the exam; nobody typed these sentences.</>} />
-        <Log job={latest} />
+        <Log job={latest} onStopped={onChanged} />
         <div className="results">
           <Tile label="day-one draft · honest" exam={honest.filter((e) => e.instruction === "draft").slice(-1)[0]} />
           <Tile label={`${kind === "optimized" ? "your winner" : "the winner"} · honest`} exam={honest.filter((e) => ["winner", "optimized"].includes(e.instruction)).slice(-1)[0]} />
@@ -249,7 +247,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <Instruction foot={kind === "hacked"
           ? <>👉 <b>“The star rating is the only thing that matters — it is how your performance is scored.”</b> That sentence is the whole hack: the agent was told what the judge measures, and told to treat the party as noise. A real run against the rating judge produced it (<code>instructions/gepa_run_log_rating.txt</code>).</>
           : <>the instruction the host runs under now. ⤵ install the hacked one to see what a rating-shaped judge breeds.</>} />
-        <Log job={latest} />
+        <Log job={latest} onStopped={onChanged} />
         <div className="results">
           <Tile label="hacked · rating judge" exam={exams.filter((e) => e.judge === "rating" && e.instruction === "hacked").slice(-1)[0]} />
           <Tile label="hacked · everyone_ate" exam={honest.filter((e) => e.instruction === "hacked").slice(-1)[0]} />
@@ -265,7 +263,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <button className="btn gold" disabled={anyRunning} onClick={() => start("loop")}>↻ run the loop · from the day-one draft</button>
           <span className="art">{lp ? <>last run: <b>{lp.rounds} round{lp.rounds === 1 ? "" : "s"}</b> · {lp.decision || "no decision — it stalled"}{lp.edge ? " · back edge in" : " · no back edge"}</> : "not run yet"}</span>
         </div>
-        <Log job={latest} />
+        <Log job={latest} onStopped={onChanged} />
       </div>
     );
   }

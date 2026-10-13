@@ -204,32 +204,6 @@ def _finish_exam(job: Job) -> None:
     events.emit("exam_scored", **{k: v for k, v in job.summary.items() if k != "parties"})
 
 
-# ── pytest — the third way to run the same exam ──────────────────────────────
-def _pytest(**_) -> Job:
-    """tests/test_host.py: AgentEvaluator on the same evalset, the same
-    eval_config.json, writing to the same .adk/eval_history as `adk eval`.
-    A failing exam fails the build — that is the whole point of this door."""
-    stamp = time.strftime("%Y%m%d-%H%M%S")
-    receipts = RUNS / "pytest" / f"{stamp}.jsonl"
-    receipts.parent.mkdir(parents=True, exist_ok=True)
-    criteria = _criteria(ROOT / "exam" / "eval_config.json")
-    ran = "rating" if "rating" in criteria else "everyone_ate" if "everyone_ate" in criteria else "text"
-    job = Job("pytest", [PY, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_host.py"],
-              extra_env={"TABLE_RECEIPTS": str(receipts)},
-              meta={"judge": ran, "criteria": criteria, "instruction": instruction_kind(), "receipts": str(receipts.relative_to(ROOT))})
-    job.episode = events.start_episode("pytest", criteria=criteria, instruction=job.meta["instruction"])
-    return job
-
-
-def _finish_pytest(job: Job) -> None:
-    text = "\n".join(job.log)
-    m = re.search(r"(\d+) (passed|failed)", text)
-    job.summary = {"rc": job.rc, "green": job.rc == 0, "line": m.group(0) if m else (text.strip().splitlines() or ["?"])[-1][:120],
-                   "judge": job.meta["judge"], "criteria": job.meta["criteria"], "instruction": job.meta["instruction"]}
-    state.push("pytests", {k: v for k, v in job.summary.items()})
-    events.emit("pytest_done", **job.summary)
-
-
 # ── optimize ─────────────────────────────────────────────────────────────────
 def _optimize(**_) -> Job:
     (RUNS / "optimize").mkdir(parents=True, exist_ok=True)
@@ -345,9 +319,9 @@ def _noop(job: Job) -> None:
     job.summary = {"rc": job.rc}
 
 
-BUILDERS = {"exam": _exam, "pytest": _pytest, "optimize": _optimize, "loop": _loop, "deploy": _deploy,
+BUILDERS = {"exam": _exam, "optimize": _optimize, "loop": _loop, "deploy": _deploy,
             "traffic": _traffic, "pipe": _pipe, "harvest": _harvest}
-FINISHERS = {"exam": _finish_exam, "pytest": _finish_pytest, "optimize": _finish_optimize, "loop": _finish_loop, "deploy": _finish_deploy,
+FINISHERS = {"exam": _finish_exam, "optimize": _finish_optimize, "loop": _finish_loop, "deploy": _finish_deploy,
              "traffic": _noop, "pipe": _noop, "harvest": _finish_harvest}
 
 

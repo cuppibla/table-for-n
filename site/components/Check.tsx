@@ -13,12 +13,11 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
   const lp = p?.loops?.[p.loops.length - 1];
   const lb = p?.last_booking as { hungry?: number; restaurant?: string; party?: string } | null;
   const text = exams.filter((e) => e.judge === "text").slice(-1)[0];
-  const rooms = p?.rooms?.[p.rooms.length - 1];
   const walk = p?.walks?.[p.walks.length - 1];
   const fl = p?.flights?.[p.flights.length - 1];
   const lines: [string, string][] = [
     [`the booking${p?.workbench_calls ? ` · ${p.workbench_calls} in the workbench` : ""}`, p?.workbench_calls ? "served" : "—"],
-    ["the comparator · response_match_score", text ? `${text.passed}/8 · no reasons${rooms ? ` · ${rooms.actual.length} right answer${rooms.actual.length === 1 ? "" : "s"}` : ""}` : "—"],
+    ["the comparator · response_match_score", text ? `${text.passed}/8 · for word overlap, no reasons` : "—"],
     ["the judge · everyone_ate", draft ? `${draft.passed}/8 · ${draft.hungry} hungry${walk ? ` · walked ${walk.correct}/${walk.seats}` : ""}` : "—"],
     ["the flight · three judges", fl ? `${fl.comparator_passed} · ${fl.checker_passed} · ${fl.llm_passed} of ${fl.n}` : "—"],
     ["the rewrite · " + (win?.instruction === "optimized" ? "your winner" : "the winner"), win ? `${win.passed}/8 · ${win.hungry} hungry` : "—"],

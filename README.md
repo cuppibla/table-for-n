@@ -11,7 +11,7 @@ the number lie, and close the loop.
 | course | the concept | what you do on the page | the receipt that lights it |
 |---|---|---|---|
 | I · the booking | a reply is not a result | book a table in the workbench (adk web) | a session in `table.db` |
-| II · the comparator | one golden answer vs. a *set* of right answers · three ways to run one exam | 📝 run the exam as shipped (`response_match_score`) · tap the rooms you think feed everyone, 🔎 count them · 🧪 run it as pytest | the text exam ran, and the rooms were counted |
+| II · the comparator | one golden answer vs. a *set* of right answers · three ways to run one exam | 📝 run the exam as shipped (`response_match_score`) and read the verdicts | the text exam ran |
 | III · the judge | a checker function as a custom `adk eval` metric · the six checks inside it | swap one line in `exam/eval_config.json` · 📋 book · mark each chair, 🍽 walk the table | the exam fails with hungry seats, named — and a table was walked |
 | IV · the flight | three metric families: comparator · checker · LLM-as-judge | ⚖ judge the last exam's eight answers three ways · press it again | a flight was judged |
 | V · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |

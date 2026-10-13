@@ -60,9 +60,9 @@ def main() -> int:
             data = {}
         data["judge"] = "everyone_ate"
         if "--receipts" in sys.argv:
-            for k in ("exams", "loops", "bookings", "flights", "walks", "rooms", "pytests"):
+            for k in ("exams", "loops", "bookings", "flights", "walks"):
                 data[k] = []
-            print("  ✓ receipts forgotten (exams, loops, bookings, flights, walks, rooms, pytests)")
+            print("  ✓ receipts forgotten (exams, loops, bookings, flights, walks)")
         st.write_text(json.dumps(data, indent=1))
     print("  ✓ the switch · everyone_ate")
     print("\n  the table is cleared. nothing to restart.")

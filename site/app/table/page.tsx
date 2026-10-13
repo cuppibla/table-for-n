@@ -31,7 +31,7 @@ function wbGuide(course: number, p: Progress | null): WbGuide {
   if (key === "comparator") return {
     steps: ["Evals tab (left rail) → 🕓 history: the exam 📝 just ran is listed here — the CLI and this UI share one store (host/.adk/eval_history)",
       "click a party in that run: its response_match_score, PASS/FAIL, and the answer that was graded against the golden one",
-      "optional: select the cases → Run evaluation → tick response_match_score → Run. The third way is 🧪 pytest on the page; its run lands in this same list"],
+      "optional: select the cases → Run evaluation → tick response_match_score → Run. The third way, pytest (tests/test_host.py), lands in this same list"],
     see: "the same verdicts the 📝 button gave, one conversation at a time. This is where you stare at a failure; the CLI is where you batch." };
   if (key === "judge") return {
     steps: ["Evals tab (left rail) → open the eval set parties_val",
@@ -104,9 +104,6 @@ export default function TablePage() {
       setNudge(`exam done — it is in adk web’s history too`);
     } else if (lastBig.type === "file_saved" && String(lastBig.path).includes("eval_config")) {
       setNudge(`criteria changed — the next exam uses it`);
-    } else if (lastBig.type === "pytest_done") {
-      setNudge(`pytest ran — its run is in adk web’s history too`);
-      setToast(`pytest: ${lastBig.green ? "green" : "red"} · ${lastBig.line}`);
     } else if (lastBig.type === "flight_judged") {
       setToast(`flight: comparator ${lastBig.comparator_passed} · checker ${lastBig.checker_passed} · llm ${lastBig.llm_passed} of ${lastBig.n}`);
     }

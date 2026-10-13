@@ -4,7 +4,6 @@
     /api/progress     which course is lit — read from your files + what ran
     /api/events       SSE: the table's event log (recent history, then live)
     /api/book         POST {party}: one real booking, judged on the spot
-    /api/rooms        GET ?party= / POST {party, picked}: how many right answers does this dinner have? (course II)
     /api/walk         GET ?party=&restaurant=&time= / POST {…, predicted}: everyone_ate, one seat at a time (course III)
     /api/flight       POST: the last exam's answers, judged three ways (course IV)
     /api/judge        GET / POST {to}: the switch — which judge the exam runs with
@@ -112,36 +111,10 @@ async def post_book(req: Request) -> dict:
         raise HTTPException(400, str(exc)) from exc
 
 
-# ── 🔎 the rooms — course II ─────────────────────────────────────────────────
 def _party(body_or_q: str) -> str:
     if body_or_q not in world.PARTIES:
         raise HTTPException(404, f"no party {body_or_q}")
     return body_or_q
-
-
-@app.get("/api/rooms")
-async def get_rooms(party: str = "p1") -> dict:
-    """Every restaurant at its best seating for this party. Pure lookup."""
-    party = _party(party)
-    rows = world.rooms(world.PARTIES[party])
-    return {"party": party, "rooms": rows, "feeds_everyone": sum(1 for r in rows if r["feeds_everyone"]),
-            "across_holdout": {pid: sum(1 for r in world.rooms(world.PARTIES[pid]) if r["feeds_everyone"]) for pid in world.HOLDOUT}}
-
-
-@app.post("/api/rooms")
-async def post_rooms(req: Request) -> dict:
-    """The student's guess against the real set — recorded, that is course II's receipt."""
-    body = await req.json()
-    party = _party(body.get("party", "p1"))
-    picked = [r for r in (body.get("picked") or []) if r in world.RESTAURANTS]
-    rows = world.rooms(world.PARTIES[party])
-    actual = [r["id"] for r in rows if r["feeds_everyone"]]
-    hit = [r for r in picked if r in actual]
-    missed = [r for r in actual if r not in picked]
-    extra = [r for r in picked if r not in actual]
-    row = state.push("rooms", {"party": party, "picked": picked, "actual": actual, "hit": hit, "missed": missed, "extra": extra})
-    events.emit("rooms_counted", party=party, picked=len(picked), actual=len(actual), hit=len(hit), missed=len(missed), extra=len(extra))
-    return {"party": party, "rooms": rows, "actual": actual, "hit": hit, "missed": missed, "extra": extra, "ts": row["ts"]}
 
 
 # ── 🍽 the walk — course III ─────────────────────────────────────────────────

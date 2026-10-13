@@ -37,11 +37,10 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
     const h = honestExams.filter((e) => e.instruction === "hacked").slice(-1)[0];
     const lb = p?.last_booking as { hungry?: number } | null;
     const k = course.key;
-    const rooms = p?.rooms?.[p.rooms.length - 1];
     const fl = p?.flights?.[p.flights.length - 1];
     if (k === "booking") return ["hungry", "?", ""];
     if (k === "comparator") return lastText
-      ? ["exam", `${lastText.passed}/8 · no reasons${rooms ? ` · ${rooms.actual.length} right answer${rooms.actual.length === 1 ? "" : "s"}` : ""}`, "bad"]
+      ? ["exam", `${lastText.passed}/8 · no reasons`, "bad"]
       : ["exam", "not run yet", ""];
     if (k === "judge") return p?.code?.honest_on_exam
       ? (lastHonest ? ["exam", `${lastHonest.passed}/8 · ${lastHonest.hungry} hungry`, "good"] : ["exam", "run it", ""])
