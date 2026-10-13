@@ -50,8 +50,12 @@ project from an earlier run instead:
 TABLE_FOR_N_REUSE_PROJECT=1 ./setup_project.sh
 ```
 
+Wait for `table.sh` to print **✓ the table is laid** — the kitchen takes up to
+a minute to warm up, and it only prints the links once it answers on the port.
 Then open the page through **Web Preview → Change port → 3470**. Port 3470 is
-not in Web Preview's quick list, so that step is not optional.
+not in Web Preview's quick list, so that step is not optional. (If Web Preview
+says *Unable to forward your request to a backend*, the kitchen was not up yet
+— reload.)
 
 ### On a laptop
 

@@ -45,8 +45,41 @@ if [ "$needs_build" = 1 ]; then
   (cd site && npm run build >/dev/null)
 fi
 
+# Start the kitchen in the background and only print the links once it
+# actually answers on the port. Importing the kitchen (ADK, adk web for the
+# workbench) takes a while — in Cloud Shell up to a minute — and a Web Preview
+# tab opened before that says "Unable to forward your request to a backend".
+echo
+echo "  warming up the kitchen — up to a minute the first time, do not open the page yet…"
+.venv/bin/uvicorn kitchen.service:app --host 0.0.0.0 --port "$PORT" --log-level warning &
+KITCHEN=$!
+trap 'kill "$KITCHEN" 2>/dev/null; wait "$KITCHEN" 2>/dev/null; echo; echo "  table cleared."; exit 0' INT TERM
+
+ready=0
+for _ in $(seq 1 120); do
+  if ! kill -0 "$KITCHEN" 2>/dev/null; then
+    echo "  ✗ the kitchen did not start — read the error above." >&2
+    exit 1
+  fi
+  if .venv/bin/python -c "import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:${PORT}/api/health', timeout=2)" 2>/dev/null; then
+    ready=1
+    break
+  fi
+  sleep 1
+done
+if [ "$ready" != 1 ]; then
+  echo "  ✗ the kitchen is still not answering on port ${PORT} after two minutes." >&2
+  kill "$KITCHEN" 2>/dev/null
+  exit 1
+fi
+
+echo
+echo "  ✓ the table is laid"
 echo
 echo "  Table for N      → http://localhost:${PORT}"
 echo "  the workbench    → http://localhost:${PORT}/workbench/dev-ui/?app=host"
 echo
-exec .venv/bin/uvicorn kitchen.service:app --host 0.0.0.0 --port "$PORT" --log-level warning
+echo "  In Cloud Shell: Web Preview → Change port → ${PORT}"
+echo "  Ctrl+C clears the table."
+echo
+wait "$KITCHEN"
