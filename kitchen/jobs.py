@@ -26,7 +26,7 @@ from collections import deque
 from pathlib import Path
 
 from kitchen import env, events, state
-from kitchen.instruction import kind as instruction_kind
+from kitchen.instruction import concierge_kind, kind as instruction_kind
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / "runs"
@@ -321,10 +321,295 @@ def _noop(job: Job) -> None:
     job.summary = {"rc": job.rc}
 
 
+# ── course VIII: trajectory exam ─────────────────────────────────────────────
+def _traj_judge(cfg: Path) -> str:
+    try:
+        crit = json.loads(cfg.read_text()).get("criteria", {})
+    except Exception:                                              # noqa: BLE001
+        return "exact"
+    if "kitchen_ticket" in crit:
+        return "kitchen_ticket"
+    t = crit.get("tool_trajectory_avg_score")
+    if isinstance(t, dict):
+        return str(t.get("match_type", "EXACT")).lower()
+    if "tool_trajectory_avg_score" in crit:
+        return "exact"
+    return next(iter(crit.keys()), "exact")
+
+
+def _extract_calls_dict(inter: dict | None) -> list[dict]:
+    if not inter:
+        return []
+    if inter.get("tool_uses"):
+        return [{"name": u.get("name"), "args": dict(u.get("args") or {})}
+                for u in inter["tool_uses"] if u.get("name")]
+    out = []
+    for ev in inter.get("invocation_events") or []:
+        for p in ((ev.get("content") or {}).get("parts") or []):
+            fc = p.get("function_call") or p.get("functionCall")
+            if fc and fc.get("name"):
+                out.append({"name": fc["name"], "args": dict(fc.get("args") or {})})
+    return out
+
+
+def _golden_trajectories() -> dict[str, list[dict]]:
+    p = ROOT / "exam" / "concierge_trajectory.evalset.json"
+    if not p.exists():
+        return {}
+    try:
+        data = json.loads(p.read_text())
+        out: dict[str, list[dict]] = {}
+        for c in data.get("eval_cases", []):
+            inv = (c.get("conversation") or [{}])[0]
+            out[c.get("eval_id")] = _extract_calls_dict(inv.get("intermediate_data"))
+        return out
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _traj_exam(**_) -> Job:
+    cfg = "exam/eval_config_trajectory.json"
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    receipts = RUNS / "traj_exam" / f"{stamp}.jsonl"
+    receipts.parent.mkdir(parents=True, exist_ok=True)
+    criteria = _criteria(ROOT / cfg)
+    ran = _traj_judge(ROOT / cfg)
+    job = Job("traj_exam",
+              [PY, "scripts/exam.py", "concierge", "exam/concierge_trajectory.evalset.json", "--config_file_path", cfg],
+              extra_env={"TABLE_RECEIPTS": str(receipts)},
+              meta={"judge": ran, "config": cfg, "criteria": criteria, "instruction": concierge_kind(),
+                    "receipts": str(receipts.relative_to(ROOT))})
+    job.episode = events.start_episode("traj_exam", judge=ran, criteria=criteria, instruction=job.meta["instruction"])
+    return job
+
+
+def _traj_parties(log_text: str, receipts: list[dict]) -> list[dict]:
+    import world
+    from metrics.table import _parse_decision, _TIME_RE
+
+    by_party = {r.get("party"): r for r in receipts if r.get("party")}
+    golden = _golden_trajectories()
+    verdicts: dict[str, dict] = {}
+    m = re.search(r"Writing eval result to file:\s*(\S+?\.json)", log_text)
+    if m and Path(m.group(1)).exists():
+        try:
+            data = json.loads(Path(m.group(1)).read_text())
+            for c in data.get("eval_case_results", []):
+                eid = c.get("eval_id")
+                om = (c.get("overall_eval_metric_results") or [{}])[0]
+                per = (c.get("eval_metric_result_per_invocation") or [{}])[0]
+                act = per.get("actual_invocation") or {}
+                exp = per.get("expected_invocation") or {}
+                verdicts[eid] = {
+                    "status": {1: "PASSED", 2: "FAILED"}.get(c.get("final_eval_status"), "NOT_EVALUATED"),
+                    "score": om.get("score"),
+                    "metric": om.get("metric_name"),
+                    "answer": _text_of(act.get("final_response")),
+                    "calls": _extract_calls_dict(act.get("intermediate_data")),
+                    "expected_calls": _extract_calls_dict(exp.get("intermediate_data")),
+                }
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    order = list(world.HOLDOUT) + [p for p in list(verdicts) + list(by_party) if p not in world.HOLDOUT]
+    out = []
+    for pid in dict.fromkeys(order):
+        v, r = verdicts.get(pid, {}), by_party.get(pid, {})
+        if not v and not r:
+            continue
+        calls = r.get("calls") or v.get("calls") or []
+        exp_calls = v.get("expected_calls") or golden.get(pid, [])
+        ans = v.get("answer") or r.get("answer") or ""
+        dec = _parse_decision(ans) or {}
+        final_rid = world.find_restaurant(str(dec.get("restaurant", "")))
+        tm = _TIME_RE.match(str(dec.get("time", "")))
+        final_time = tm.group(1) if tm else "19:00"
+        ids = world.PARTIES.get(pid, [])
+        _, ticket = world.ticket_check(ids, calls, final_rid=final_rid, final_time=final_time) if ids else (0.0, {"passed": False, "score": 0.0, "checks": {}, "seats": [], "whys": [], "restaurant": final_rid, "time": final_time})
+        ex_ok, ex_why = world.trajectory_match(calls, exp_calls, "EXACT")
+        in_ok, in_why = world.trajectory_match(calls, exp_calls, "IN_ORDER")
+        any_ok, any_why = world.trajectory_match(calls, exp_calls, "ANY_ORDER")
+        seats_ = ticket.get("seats", [])
+        out.append({
+            "party": pid,
+            "status": v.get("status"),
+            "score": v.get("score", r.get("score")),
+            "metric": v.get("metric"),
+            "answer": ans[:700] or None,
+            "calls": calls,
+            "expected_calls": exp_calls,
+            "restaurant": ticket.get("restaurant"),
+            "time": ticket.get("time"),
+            "hungry": sum(1 for x in seats_ if not x.get("ate")) if seats_ else 0,
+            "seats": seats_,
+            "checks": ticket.get("checks", {}),
+            "whys": ticket.get("whys", []),
+            "judges": {
+                "exact": {"ok": ex_ok, "why": ex_why},
+                "in_order": {"ok": in_ok, "why": in_why},
+                "any_order": {"ok": any_ok, "why": any_why},
+                "ticket": {"ok": ticket.get("passed", False), "score": ticket.get("score", 0.0), "whys": ticket.get("whys", [])},
+            },
+        })
+    return out
+
+
+def _finish_traj_exam(job: Job) -> None:
+    text = "\n".join(job.log)
+    passed = re.search(r"Tests passed:\s*(\d+)", text)
+    failed = re.search(r"Tests failed:\s*(\d+)", text)
+    rows = []
+    rp = ROOT / job.meta["receipts"]
+    if rp.exists():
+        for line in rp.read_text().splitlines():
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+    parties = _traj_parties(text, rows)
+    hungry = sum(p.get("hungry", 0) for p in parties)
+    seats = sum(len(p.get("seats") or []) for p in parties)
+    job.summary = {
+        "passed": int(passed.group(1)) if passed else None,
+        "failed": int(failed.group(1)) if failed else None,
+        "hungry": hungry if seats else None,
+        "seats": seats or None,
+        "exact_passed": sum(1 for p in parties if p.get("judges", {}).get("exact", {}).get("ok")),
+        "in_order_passed": sum(1 for p in parties if p.get("judges", {}).get("in_order", {}).get("ok")),
+        "any_order_passed": sum(1 for p in parties if p.get("judges", {}).get("any_order", {}).get("ok")),
+        "ticket_passed": sum(1 for p in parties if p.get("judges", {}).get("ticket", {}).get("ok")),
+        "parties": parties,
+        "judge": job.meta["judge"],
+        "criteria": job.meta["criteria"],
+        "instruction": job.meta["instruction"],
+    }
+    if job.rc == 0 and passed:
+        state.push("traj_exams", {k: v for k, v in job.summary.items() if k != "parties"} | {"parties": parties})
+    events.emit("traj_exam_scored", **{k: v for k, v in job.summary.items() if k != "parties"})
+
+
+# ── course IX: multi-turn exam ───────────────────────────────────────────────
+def _mt_exam(**_) -> Job:
+    cfg = "exam/eval_config_multiturn.json"
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    receipts = RUNS / "mt_exam" / f"{stamp}.jsonl"
+    receipts.parent.mkdir(parents=True, exist_ok=True)
+    criteria = _criteria(ROOT / cfg)
+    job = Job("mt_exam",
+              [PY, "scripts/exam.py", "concierge", "exam/concierge_multiturn.evalset.json", "--config_file_path", cfg],
+              extra_env={"TABLE_RECEIPTS": str(receipts)},
+              meta={"judge": "multiturn_dinner", "config": cfg, "criteria": criteria, "instruction": concierge_kind(),
+                    "receipts": str(receipts.relative_to(ROOT))})
+    job.episode = events.start_episode("mt_exam", judge="multiturn_dinner", instruction=job.meta["instruction"])
+    return job
+
+
+def _mt_parties(log_text: str, receipts: list[dict]) -> list[dict]:
+    import world
+    by_party = {r.get("party"): r for r in receipts if r.get("party")}
+    verdicts: dict[str, dict] = {}
+    m = re.search(r"Writing eval result to file:\s*(\S+?\.json)", log_text)
+    if m and Path(m.group(1)).exists():
+        try:
+            data = json.loads(Path(m.group(1)).read_text())
+            for c in data.get("eval_case_results", []):
+                eid = c.get("eval_id")
+                om = (c.get("overall_eval_metric_results") or [{}])[0]
+                per_list = c.get("eval_metric_result_per_invocation") or []
+                per_statuses = [
+                    {1: "PASSED", 2: "FAILED", 3: "NOT_EVALUATED"}.get(
+                        ((p.get("eval_metric_results") or [{}])[0]).get("eval_status", p.get("eval_status")),
+                        "NOT_EVALUATED",
+                    )
+                    for p in per_list
+                ]
+                raw_turns = []
+                for idx, p in enumerate(per_list):
+                    act = p.get("actual_invocation") or {}
+                    raw_turns.append({
+                        "user": _text_of(act.get("user_content")),
+                        "tools": _extract_calls_dict(act.get("intermediate_data")),
+                        "agent": _text_of(act.get("final_response")),
+                        "eval_status": per_statuses[idx],
+                    })
+                verdicts[eid] = {
+                    "status": {1: "PASSED", 2: "FAILED"}.get(c.get("final_eval_status"), "NOT_EVALUATED"),
+                    "score": om.get("score"),
+                    "per_statuses": per_statuses,
+                    "turns": raw_turns,
+                }
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    mt_order = ["p1", "p2", "p10", "p16"] + [p for p in list(verdicts) + list(by_party) if p not in ("p1", "p2", "p10", "p16")]
+    out = []
+    for pid in dict.fromkeys(mt_order):
+        v, r = verdicts.get(pid, {}), by_party.get(pid, {})
+        if not v and not r:
+            continue
+        turns = r.get("turns") or v.get("turns") or []
+        per_st = v.get("per_statuses") or []
+        enriched_turns = []
+        for idx, t in enumerate(turns):
+            st = t.get("eval_status") or (per_st[idx] if idx < len(per_st) else ("NOT_EVALUATED" if idx + 1 < len(turns) else v.get("status", "NOT_EVALUATED")))
+            enriched_turns.append({**t, "eval_status": st})
+        seats_ = r.get("seats", [])
+        first_tools = (enriched_turns[0].get("tools") or []) if enriched_turns else []
+        booked_turn_1 = any(tc.get("name") == "book_table" for tc in first_tools)
+        out.append({
+            "party": pid,
+            "status": v.get("status"),
+            "score": v.get("score", r.get("score")),
+            "elicited": bool(r.get("elicited", False)),
+            "booked_turn_1": booked_turn_1,
+            "turn_count": len(enriched_turns),
+            "turns": enriched_turns,
+            "restaurant": r.get("restaurant"),
+            "time": r.get("time"),
+            "hungry": sum(1 for x in seats_ if not x.get("ate")) if seats_ else (len(world.PARTIES.get(pid, [])) if not r.get("restaurant") else 0),
+            "seats": seats_,
+            "whys": r.get("whys", []),
+        })
+    return out
+
+
+def _finish_mt_exam(job: Job) -> None:
+    text = "\n".join(job.log)
+    passed = re.search(r"Tests passed:\s*(\d+)", text)
+    failed = re.search(r"Tests failed:\s*(\d+)", text)
+    rows = []
+    rp = ROOT / job.meta["receipts"]
+    if rp.exists():
+        for line in rp.read_text().splitlines():
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+    parties = _mt_parties(text, rows)
+    hungry = sum(p.get("hungry", 0) for p in parties)
+    seats = sum(len(p.get("seats") or []) for p in parties)
+    job.summary = {
+        "passed": int(passed.group(1)) if passed else None,
+        "failed": int(failed.group(1)) if failed else None,
+        "hungry": hungry if seats else None,
+        "seats": seats or None,
+        "elicited_count": sum(1 for p in parties if p.get("elicited")),
+        "parties": parties,
+        "judge": "multiturn_dinner",
+        "criteria": job.meta["criteria"],
+        "instruction": job.meta["instruction"],
+    }
+    if job.rc == 0 and passed:
+        state.push("mt_exams", {k: v for k, v in job.summary.items() if k != "parties"} | {"parties": parties})
+    events.emit("mt_exam_scored", **{k: v for k, v in job.summary.items() if k != "parties"})
+
+
 BUILDERS = {"exam": _exam, "optimize": _optimize, "loop": _loop, "deploy": _deploy,
-            "traffic": _traffic, "pipe": _pipe, "harvest": _harvest}
+            "traffic": _traffic, "pipe": _pipe, "harvest": _harvest,
+            "traj_exam": _traj_exam, "mt_exam": _mt_exam}
 FINISHERS = {"exam": _finish_exam, "optimize": _finish_optimize, "loop": _finish_loop, "deploy": _finish_deploy,
-             "traffic": _noop, "pipe": _noop, "harvest": _finish_harvest}
+             "traffic": _noop, "pipe": _noop, "harvest": _finish_harvest,
+             "traj_exam": _finish_traj_exam, "mt_exam": _finish_mt_exam}
 
 
 def views() -> dict:

@@ -20,7 +20,7 @@ export default function Cover() {
         <div className="rsv">
           <div className="eyebrow">A reservation · agent eval → the self-evolving loop</div>
           <h1 className="display">Table for <em>N</em></h1>
-          <p>One table. N people. One agent books the restaurant. <b>How many of them actually ate?</b> Eight courses: you watch a comparator fail a good dinner, build the judge and walk a table yourself, put three judges on the same answers, let the agent rewrite itself, swap the judge and watch the number lie, and close the loop.</p>
+          <p>One table. N people. One agent books the restaurant. <b>How many of them actually ate?</b> Ten courses: you watch a comparator fail a good dinner, build the judge and walk a table yourself, put three judges on the same answers, let the agent rewrite itself, swap the judge and watch the number lie, close the loop, grade the tool trajectory before the reply, and test multi-turn elicitation against a simulated user.</p>
           <div><label>YOUR NAME · it goes on the check</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="who is booking?" onKeyDown={(e) => { if (e.key === "Enter") go(); }} /></div>
           <div><label>TABLE FOR</label><select value={party} onChange={(e) => setParty(e.target.value)}>{PARTIES.map((id) => <option key={id} value={id}>{id === "p1" ? "5 · tonight’s party (p1)" : `party ${id}`}</option>)}</select></div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 6 }}>

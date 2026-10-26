@@ -3,10 +3,12 @@
 One table. N people. One agent books the restaurant. **How many of them actually ate?**
 
 An interactive lab on **agent evaluation** and the **self-evolving loop**, built on the
-[Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Eight courses, one page:
+[Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Ten courses, one page:
 you watch a comparator fail a good dinner, build the judge and walk a table yourself, put
 three judges on the same answers, let the agent rewrite itself, swap the judge and watch
-the number lie, and close the loop.
+the number lie, close the loop, grade the tool trajectory (`intermediate_data`) instead of
+just the final text, and test multi-turn elicitation against ADK's `ConversationScenario`
+user simulator.
 
 | course | the concept | what you do on the page | the receipt that lights it |
 |---|---|---|---|
@@ -17,7 +19,9 @@ the number lie, and close the loop.
 | V · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |
 | VI · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
 | VII · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
-| VIII · the check | what each thing replaced | nothing | — |
+| VIII · the ticket | trajectory evaluation: `tool_trajectory_avg_score` (`EXACT`/`IN_ORDER`/`ANY_ORDER`) vs. trajectory invariants | swap one line in `exam/eval_config_trajectory.json` · 📝 run | `kitchen_ticket` passes ≥ 5/8 on `intermediate_data` |
+| IX · the group chat | multi-turn evaluation: `ConversationScenario` + `LlmBackedUserSimulator` + turn-level `NOT_EVALUATED` | edit rule 3 in `concierge/instruction_current.txt` · 📝 run | the concierge asks before `book_table` and passes ≥ 3/4 |
+| X · the check | what each thing replaced | nothing | — |
 
 Beyond the lab, `refuel/` holds the production pipe — deploy the shipped host to Agent
 Engine, send traffic, replay it through the BigQuery agent-analytics plugin, and `harvest.py`
@@ -85,20 +89,22 @@ under the editor says so. The `refuel/` pipe (deploy to Agent Engine) needs the 
 ## What is where
 
 ```
-world.py                 the cast (10 people, 10 restaurants, 16 parties) and the two judges as pure functions
-host/                    the agent — its instruction lives in instruction_current.txt, the one artifact that changes
-exam/                    evalsets (8 train, 8 holdout, golden answers in), eval_config.json (yours), eval_config_rating.json (the critic's)
-metrics/table.py         everyone_ate_metric and rating_metric, wired into adk eval through customMetrics
-instructions/            draft.txt · winner.txt (a real GEPA run, log included) · hacked.txt (a real run against the rating judge)
+world.py                 the cast (10 people, 10 restaurants, 16 parties) and the outcome, trajectory, and multi-turn judges
+host/                    the menu-in-prompt agent (courses I–VII) — its instruction lives in host/instruction_current.txt
+concierge/               the tool-using concierge agent (courses VIII–IX) — list_restaurants · inspect_kitchen · check_seating · book_table
+exam/                    evalsets (train, holdout, trajectory, multi-turn) and eval configs (outcome, rating, trajectory, multi-turn)
+metrics/table.py         everyone_ate_metric, rating_metric, kitchen_ticket_metric, and multiturn_dinner_metric
+instructions/            draft · winner · hacked (for host) and concierge_eager · concierge_eliciting (for concierge)
 loop/flywheel.py         the self-evolving loop as an ADK 2 Workflow; the course-VII edit is in build()
 refuel/                  send_traffic.py · replay_to_bq.py · harvest.py — the production pipe (beyond the lab)
-kitchen/                 the service: booking, jobs (exam/optimize/loop/deploy…), progress, the editor, the workbench mount
+kitchen/                 the service: booking, jobs (exam/traj_exam/mt_exam/optimize/loop/deploy…), progress, the editor, the workbench mount
 site/                    the page (Next.js, exported to static files once by table.sh)
 tests/test_host.py       the third way to run the exam: pytest + AgentEvaluator, same config, same eval store (course II's 🧪)
-tests/test_shipped.py    the three edited files are as a fresh clone must find them — run before you commit
-scripts/reset.py         clear the table: draft instruction, text metric on the exam, no back edge (--receipts forgets the runs too)
-scripts/walk.py          the headless learner: walks courses II–VII against a running kitchen and reports what lit
-scripts/make_evalsets.py regenerates the two exams from world.py
+tests/test_concierge.py  pytest + AgentEvaluator for the trajectory and multi-turn concierge evalsets (courses VIII–IX)
+tests/test_shipped.py    the five edited files are as a fresh clone must find them — run before you commit
+scripts/reset.py         clear the table: shipped instructions, shipped metrics, no back edge (--receipts forgets the runs too)
+scripts/walk.py          the headless learner: walks courses II–IX against a running kitchen and reports what lit
+scripts/make_evalsets.py regenerates the four evalsets from world.py
 ```
 
 ## Honest numbers
@@ -114,8 +120,9 @@ The checks are not a checklist. `kitchen/progress.py` pairs a fact read off your
 (which metric is in `criteria`, which instruction is installed, whether the back edge is in
 the graph) with a receipt of something that actually ran. Both, or the plate stays empty.
 
-Three files are the lab's exercise surface — `host/instruction_current.txt`,
-`exam/eval_config.json`, `loop/flywheel.py` — and the kitchen rewrites them as you go.
+Five files are the lab's exercise surface — `host/instruction_current.txt`,
+`exam/eval_config.json`, `loop/flywheel.py`, `exam/eval_config_trajectory.json`, and
+`concierge/instruction_current.txt` — and the kitchen rewrites them as you go.
 `uv run python scripts/reset.py` puts them back as shipped; `uv run pytest tests/test_shipped.py`
 refuses a commit that would ship them mid-course.
 

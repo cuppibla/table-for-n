@@ -23,6 +23,8 @@ STATE: dict = {
     "loops": [],                      # {ts, rounds, decision, closed, edge}
     "bookings": [],                   # {ts, party, judge, restaurant, time, honest, rating, hungry, instruction}
     "flights": [],                    # course IV  · {ts, n, comparator_passed, checker_passed, llm_passed, …, rows}
+    "traj_exams": [],                 # course VIII · {ts, judge, criteria, instruction, passed, failed, hungry, avg_calls, parties}
+    "mt_exams": [],                   # course IX   · {ts, judge, criteria, instruction, passed, failed, hungry, elicited, parties}
     "optimized": False,               # runs/optimize/winner.txt exists
     "harvest": {"minted": 0, "skipped": 0, "ts": None},
     "engine": "",                     # HOST_ENGINE as last seen

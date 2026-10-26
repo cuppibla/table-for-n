@@ -1,6 +1,6 @@
 import type { Progress } from "./api";
 
-/** The eight courses. Each is what you do · what the table does (before and
+/** The ten courses. Each is what you do · what the table does (before and
  *  after) · the one edit or the buttons · one ✓. The ✓ is never ticked by
  *  the page: it comes from /api/progress, which reads your files and what
  *  actually ran. The course text is the app's; the codelab carries depth.
@@ -8,7 +8,17 @@ import type { Progress } from "./api";
  *  Logic keys off `key`, never off the number, so courses can be added or
  *  reordered without hunting for magic numbers. */
 
-export type CourseKey = "booking" | "comparator" | "judge" | "flight" | "rewrite" | "other" | "loop" | "check";
+export type CourseKey =
+  | "booking"
+  | "comparator"
+  | "judge"
+  | "flight"
+  | "rewrite"
+  | "other"
+  | "loop"
+  | "trajectory"
+  | "multiturn"
+  | "check";
 
 export type Course = {
   n: number; r: string; key: CourseKey; t: string; pill: [string, string];
@@ -17,7 +27,7 @@ export type Course = {
   table: string; tableAfter?: string;
   after: (p: Progress) => boolean;          // the code fact that flips the copy to "after"
   editor?: { path: string; symbol?: string; marker?: string; afterMarker?: string; readOnly?: boolean; fix?: (s: string) => string; afterHint?: string; foot?: string; change?: [string, string, string] };
-  run?: "compare" | "exam" | "flight" | "rewrite" | "switch" | "loop" | "cloud";
+  run?: "compare" | "exam" | "flight" | "rewrite" | "switch" | "loop" | "trajectory" | "multiturn" | "cloud";
   check: string;
   swap?: string[][];
   sources?: [string, string][];              // [label, repo path] — opens the file on GitHub
@@ -32,6 +42,13 @@ const swapCriteria = (src: string) =>
   src.replace(/"response_match_score"\s*:\s*[0-9.]+/, "\"everyone_ate\": 0.9");
 const uncommentEdge = (src: string) =>
   src.replace(/^(\s*)# (\(proposer, publish, host\),)/m, "$1$2");
+const swapTrajCriteria = (src: string) =>
+  src.replace(/"tool_trajectory_avg_score"\s*:\s*\{[^}]*\}/, "\"kitchen_ticket\": 0.9");
+const fixConciergeRule = (src: string) =>
+  src.replace(
+    /3\. If the user has not shared[^\n]*/,
+    "3. If the user has not shared the guests' constraints yet: DO NOT call `book_table` yet — ask one concise question covering diets/allergies, budget, walk limit, and arrival/departure times; once they reply, inspect and book immediately."
+  );
 
 export const COURSES: Course[] = [
   { n: 1, r: "I", key: "booking", t: "the booking", pill: ["read", "READ ONLY"],
@@ -107,14 +124,41 @@ export const COURSES: Course[] = [
     sources: [["loop/flywheel.py · the whole graph", "loop/flywheel.py"], ["loop/support.py", "loop/support.py"], ["instructions/draft.txt · the seed", "instructions/draft.txt"]],
     check: "a run reached round 2 under round 1’s rewrite and shipped" },
 
-  { n: 8, r: "VIII", key: "check", t: "the check", pill: ["gold", "THE CHECK"], judge: "everyone_ate",
-    you: "Nothing. Eight courses served.", table: "Everyone ate. The check is on the table.",
+  { n: 8, r: "VIII", key: "trajectory", t: "the ticket", pill: ["olive", "TRAJECTORY"], judge: "everyone_ate",
+    you: "📝 <b>Run the trajectory exam</b> as shipped (<code>tool_trajectory_avg_score</code>, <code>EXACT</code>). Read why the golden trace fails a valid dinner — then change <b>line 3</b> of <code>exam/eval_config_trajectory.json</code> to <code>\"kitchen_ticket\": 0.9</code> and 📝 run it again.",
+    table: "Courses I–VII handed the whole menu to <code>host</code> in its prompt; real agents call tools. Meet <b>concierge</b>: public listings hide allergens and last-order cutoffs behind <code>inspect_kitchen(id)</code>, and <code>book_table</code> has side effects. ADK records every tool call in <code>intermediate_data</code> — and as shipped, <code>EXACT</code> trajectory match compares that trace step for step against one 3-call golden path.",
+    tableAfter: "<b>kitchen_ticket</b> is on the trajectory exam. Instead of demanding one script, it checks four invariants on <code>intermediate_data</code> — listed candidates, called <code>inspect_kitchen</code> <i>before</i> <code>book_table</code> on the chosen room, booked once matching the reply, stayed within budget — and then walks every seat with <code>everyone_ate</code>.",
+    after: (p) => Boolean(p.code?.ticket_on_exam),
+    editor: { path: "exam/eval_config_trajectory.json", marker: "\"tool_trajectory_avg_score\"", afterMarker: "\"kitchen_ticket\": 0.9", fix: swapTrajCriteria, afterHint: "It lands on your next 📝 trajectory exam.",
+      change: ["line 3", "\"tool_trajectory_avg_score\": { \"threshold\": 1.0, \"match_type\": \"EXACT\" }", "\"kitchen_ticket\": 0.9"],
+      foot: "👉 Course II showed why one golden text fails when multiple rooms work; Course VIII is the exact same trap on <b>intermediate_data</b>. Compare <code>EXACT</code> · <code>IN_ORDER</code> · <code>ANY_ORDER</code> · <code>kitchen_ticket</code> below." },
+    run: "trajectory",
+    sources: [["concierge/agent.py · 4 tools", "concierge/agent.py"], ["exam/eval_config_trajectory.json", "exam/eval_config_trajectory.json"], ["concierge_trajectory.evalset.json", "exam/concierge_trajectory.evalset.json"], ["metrics/table.py · kitchen_ticket_metric", "metrics/table.py"], ["tests/test_concierge.py", "tests/test_concierge.py"]],
+    check: "kitchen_ticket is on the trajectory exam — 5 of 8 or better, inspected before booked" },
+
+  { n: 9, r: "IX", key: "multiturn", t: "the group chat", pill: ["gold", "MULTI-TURN"], judge: "everyone_ate",
+    you: "📝 <b>Run the multi-turn exam</b> as shipped. Read the simulated chat: the user starts vague, the eager concierge calls <code>book_table</code> on turn 1, and the polite <code>NOVICE</code> simulator thanks it while guests go hungry. Rewrite <b>rule 3</b> in <code>concierge/instruction_current.txt</code> so it asks before booking, then 📝 run it again.",
+    table: "Real diners do not paste a complete spec on turn 1 — they say <i>“book dinner for 5 tonight”</i> and only mention Priya’s nut allergy or Lena’s late train if asked. <code>concierge_multiturn.evalset.json</code> replaces static invocations with a <code>ConversationScenario</code> driven live by ADK’s <code>LlmBackedUserSimulator</code>.",
+    tableAfter: "Rule 3 holds <code>book_table</code> until constraints are on the table. Clarification turns return <code>EvalStatus.NOT_EVALUATED</code> (asking is free); the final turn wakes up <code>scenario</code> to check that the concierge elicited first, inspected the kitchen, and fed every guest across the conversation.",
+    after: (p) => (p.code?.concierge_instruction || "eager") !== "eager",
+    editor: { path: "concierge/instruction_current.txt", marker: "pick a welcoming spot right away", afterMarker: "DO NOT call `book_table` yet", fix: fixConciergeRule, afterHint: "It lands on your next 📝 multi-turn exam.",
+      change: ["line 5 · rule 3", "do not delay with questions — pick a welcoming spot right away and call `book_table` on turn 1.", "DO NOT call `book_table` yet — ask one concise question covering diets/allergies, budget, walk limit, and arrival/departure times; once they reply, inspect and book immediately."],
+      foot: "👉 Notice the 4th parameter of every ADK custom metric: <code>fn(eval_metric, actual_invocations, expected_invocations, scenario)</code>. Courses I–VIII left <code>scenario=None</code>; Course IX wakes it up." },
+    run: "multiturn",
+    sources: [["concierge/instruction_current.txt", "concierge/instruction_current.txt"], ["concierge_multiturn.evalset.json · scenarios", "exam/concierge_multiturn.evalset.json"], ["exam/eval_config_multiturn.json · simulator", "exam/eval_config_multiturn.json"], ["metrics/table.py · multiturn_dinner_metric", "metrics/table.py"]],
+    check: "the concierge asks before booking — 3 of 4 multi-turn scenarios or better" },
+
+  { n: 10, r: "X", key: "check", t: "the check", pill: ["gold", "THE CHECK"], judge: "everyone_ate",
+    you: "Nothing. Ten courses served.", table: "Everyone ate. The check is on the table.",
     after: () => false,
     swap: [["before", "after"], ["a demo that looks right", "an exam that counts who ate"], ["one golden answer", "a set of right answers, and a rule"],
       ["a prompt you edit by hand", "an instruction the loop rewrites"],
-      ["a number that goes up", "a judge that explains itself"], ["one run", "a round, with a way back"], ["the metric you were handed", "the number you chose"]],
+      ["a number that goes up", "a judge that explains itself"], ["one run", "a round, with a way back"],
+      ["final text that sounds right", "a tool trajectory that inspected before it booked"],
+      ["a polite thank-you in chat", "a multi-turn scenario that tests whether the agent asked"],
+      ["the metric you were handed", "the number you chose"]],
     sources: [["kitchen/progress.py · what lights a plate", "kitchen/progress.py"], ["scripts/walk.py · the headless learner", "scripts/walk.py"]],
-    check: "eight courses · the check" },
+    check: "ten courses · the check" },
 ];
 
 export const LAST = COURSES.length;

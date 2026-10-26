@@ -1,0 +1,59 @@
+{
+  "eval_set_id": "concierge_multiturn",
+  "name": "concierge_multiturn",
+  "eval_cases": [
+    {
+      "eval_id": "p1",
+      "conversation_scenario": {
+        "starting_prompt": "Hey! Can you book a dinner table tonight for the 5 of us (p1 \u2014 Nadia, Tom, Amara, Lena, and Ben)?",
+        "conversation_plan": "You are coordinating dinner for 5 friends (party p1): Nadia, Tom, Amara, Lena, and Ben. Do NOT volunteer dietary, budget, walking, or timing details unless the concierge asks. When the concierge asks about constraints, share ALL of them clearly in one reply: (1) Nadia is strictly vegan (plant-based only), (2) Tom has a hard $25/person max budget, (3) Amara is on crutches and can walk at most 10 minutes, (4) Ben has zero requirements, and (5) curveball \u2014 Lena just texted that her train is late so she cannot arrive before 19:45 (7:45 PM), and she needs the kitchen to still be taking orders when she arrives. Once the concierge books a valid table (such as Pho Saigon at 19:45) and confirms, thank them and finish.",
+        "user_persona": "NOVICE"
+      },
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p2",
+      "conversation_scenario": {
+        "starting_prompt": "Hi! Looking to grab dinner tonight for 4 people (p2 \u2014 Sam, Lena, Tom, and Ben). Can you book us somewhere?",
+        "conversation_plan": "You are coordinating dinner for 4 friends (party p2): Sam, Lena, Tom, and Ben. Hold back restrictions until the concierge asks. When asked, share ALL of them clearly in one reply: (1) Sam has a shellfish allergy including sneaky fish sauce, (2) Tom has a strict $25/person max budget, (3) Lena cannot arrive before 19:45 (7:45 PM), and (4) Ben has no requirements (walking distance and spice are fine for this group). Once the concierge books a valid table (such as Curry House or Noodle Bar at 19:45) and confirms, thank them and finish.",
+        "user_persona": "NOVICE"
+      },
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p10",
+      "conversation_scenario": {
+        "starting_prompt": "Could you book an early-ish dinner tonight for 5 of us (p10 \u2014 Priya, Sam, Tom, Yuki, and Diego)?",
+        "conversation_plan": "You are coordinating dinner for 5 friends (party p10): Priya, Sam, Tom, Yuki, and Diego. Wait until the concierge asks about dietary/budget/timing needs before sharing them. When asked, share ALL of them clearly in one reply: (1) Priya has a severe nut allergy (epipen \u2014 no peanuts, cashews, or pine nuts), (2) Sam has a shellfish allergy including fish sauce, (3) Tom has a strict $25/person budget cap, (4) Diego cannot do spicy food unless spice/salsa is strictly on the side, and (5) Yuki has daycare pickup and MUST leave by 19:15 (7:15 PM), so the table must be seated by 18:30 or earlier for a 45-minute dinner. Once the concierge books a valid table (such as Taqueria Luna at 18:00 or 18:30) and confirms, thank them and finish.",
+        "user_persona": "NOVICE"
+      },
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p16",
+      "conversation_scenario": {
+        "starting_prompt": "Hey there \u2014 need a table for 4 tonight (p16 \u2014 Priya, Tom, Amara, and Ben). Where should we go?",
+        "conversation_plan": "You are coordinating dinner for 4 friends (party p16): Priya, Tom, Amara, and Ben. Only reveal the group's constraints when the concierge asks. When asked, share ALL of them clearly in one reply: (1) Priya has a severe nut allergy (no peanuts, peanut oil, peanut sauce, cashews, or pine nuts), (2) Tom has a hard $25/person budget limit, (3) Amara is on crutches and can walk at most 10 minutes, and (4) Ben is free all evening with zero restrictions. Once the concierge books a valid table (such as Taqueria Luna) and confirms, thank them and finish.",
+        "user_persona": "NOVICE"
+      },
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    }
+  ],
+  "creation_timestamp": 0.0
+}

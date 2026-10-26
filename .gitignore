@@ -1,6 +1,7 @@
 # secrets and local state — never committed
 .env
 host/.env
+concierge/.env
 *.db
 *.db-journal
 runs/

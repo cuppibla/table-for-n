@@ -1,0 +1,423 @@
+{
+  "eval_set_id": "concierge_trajectory",
+  "name": "concierge_trajectory",
+  "eval_cases": [
+    {
+      "eval_id": "p1",
+      "conversation": [
+        {
+          "invocation_id": "traj-p1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p1) \u2014 5 going. The group chat:\n  Nadia: \"yes! plant-based only for me (strict, not a vibe thing)\"\n  Tom: \"real talk: $25 a head is my max this month (rent week \ud83d\udcb8) \u2014 anything over and I'll have to sit it out\"\n  Amara: \"in if it's close! on crutches this month \u2014 10 minutes on foot is my ceiling\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat \u2014 I'm coming hungry \ud83d\ude02\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"19:00\", \"reason\": \"Pho Saigon at 19:00 works for every seat \\u2014 Nadia, Tom, Amara, Lena, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "pho"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 5,
+                  "restaurant_id": "pho",
+                  "time": "19:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p2",
+      "conversation": [
+        {
+          "invocation_id": "traj-p2",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p2) \u2014 4 going. The group chat:\n  Sam: \"in \u2014 just no shellfish for me, that includes the sneaky stuff like fish sauce\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat \u2014 I'm coming hungry \ud83d\ude02\"\n  Tom: \"real talk: $25 a head is my max this month (rent week \ud83d\udcb8) \u2014 anything over and I'll have to sit it out\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Curry House\", \"time\": \"19:00\", \"reason\": \"Curry House at 19:00 works for every seat \\u2014 Sam, Lena, Tom, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "curry"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 4,
+                  "restaurant_id": "curry",
+                  "time": "19:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p3",
+      "conversation": [
+        {
+          "invocation_id": "traj-p3",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p3) \u2014 6 going. The group chat:\n  Marcus: \"in! I'm still off meat \u2014 somewhere with a real veggie main please \ud83c\udf31\"\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Yuki: \"i can do it IF we're eating by 6:30 \u2014 daycare pickup at 7:15, cannot miss it\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. \ud83d\ude45\"\n  Amara: \"in if it's close! on crutches this month \u2014 10 minutes on foot is my ceiling\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"17:00\", \"reason\": \"Olive & Thyme at 17:00 works for every seat \\u2014 Marcus, Priya, Yuki, Diego, Amara, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "olive"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 6,
+                  "restaurant_id": "olive",
+                  "time": "17:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p10",
+      "conversation": [
+        {
+          "invocation_id": "traj-p10",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p10) \u2014 5 going. The group chat:\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Sam: \"in \u2014 just no shellfish for me, that includes the sneaky stuff like fish sauce\"\n  Tom: \"real talk: $25 a head is my max this month (rent week \ud83d\udcb8) \u2014 anything over and I'll have to sit it out\"\n  Yuki: \"i can do it IF we're eating by 6:30 \u2014 daycare pickup at 7:15, cannot miss it\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. \ud83d\ude45\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:00\", \"reason\": \"Taqueria Luna at 17:00 works for every seat \\u2014 Priya, Sam, Tom, Yuki, Diego all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "taqueria"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 5,
+                  "restaurant_id": "taqueria",
+                  "time": "17:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p13",
+      "conversation": [
+        {
+          "invocation_id": "traj-p13",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p13) \u2014 4 going. The group chat:\n  Marcus: \"in! I'm still off meat \u2014 somewhere with a real veggie main please \ud83c\udf31\"\n  Tom: \"real talk: $25 a head is my max this month (rent week \ud83d\udcb8) \u2014 anything over and I'll have to sit it out\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. \ud83d\ude45\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"17:00\", \"reason\": \"Pho Saigon at 17:00 works for every seat \\u2014 Marcus, Tom, Diego, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "pho"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 4,
+                  "restaurant_id": "pho",
+                  "time": "17:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p14",
+      "conversation": [
+        {
+          "invocation_id": "traj-p14",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p14) \u2014 4 going. The group chat:\n  Nadia: \"yes! plant-based only for me (strict, not a vibe thing)\"\n  Yuki: \"i can do it IF we're eating by 6:30 \u2014 daycare pickup at 7:15, cannot miss it\"\n  Amara: \"in if it's close! on crutches this month \u2014 10 minutes on foot is my ceiling\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"17:00\", \"reason\": \"Olive & Thyme at 17:00 works for every seat \\u2014 Nadia, Yuki, Amara, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "olive"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 4,
+                  "restaurant_id": "olive",
+                  "time": "17:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p15",
+      "conversation": [
+        {
+          "invocation_id": "traj-p15",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p15) \u2014 4 going. The group chat:\n  Sam: \"in \u2014 just no shellfish for me, that includes the sneaky stuff like fish sauce\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. \ud83d\ude45\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat \u2014 I'm coming hungry \ud83d\ude02\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"17:00\", \"reason\": \"Smoke & Barrel at 17:00 works for every seat \\u2014 Sam, Diego, Lena, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "smoke"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 4,
+                  "restaurant_id": "smoke",
+                  "time": "17:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p16",
+      "conversation": [
+        {
+          "invocation_id": "traj-p16",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p16) \u2014 4 going. The group chat:\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Tom: \"real talk: $25 a head is my max this month (rent week \ud83d\udcb8) \u2014 anything over and I'll have to sit it out\"\n  Amara: \"in if it's close! on crutches this month \u2014 10 minutes on foot is my ceiling\"\n  Ben: \"free all night, zero requirements \ud83d\ude0e\"\n\nUse your tools to check the restaurants nearby, inspect any kitchen before you commit to it, and book one table for the whole party."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:00\", \"reason\": \"Taqueria Luna at 17:00 works for every seat \\u2014 Priya, Tom, Amara, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_restaurants",
+                "args": {}
+              },
+              {
+                "name": "inspect_kitchen",
+                "args": {
+                  "restaurant_id": "taqueria"
+                }
+              },
+              {
+                "name": "book_table",
+                "args": {
+                  "party_size": 4,
+                  "restaurant_id": "taqueria",
+                  "time": "17:00"
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "concierge",
+        "user_id": "lab",
+        "state": {}
+      }
+    }
+  ],
+  "creation_timestamp": 0.0
+}

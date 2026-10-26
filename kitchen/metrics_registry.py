@@ -15,7 +15,12 @@ from pathlib import Path
 
 log = logging.getLogger("kitchen.metrics")
 ROOT = Path(__file__).resolve().parents[1]
-CONFIGS = (ROOT / "exam" / "eval_config.json", ROOT / "exam" / "eval_config_rating.json")
+CONFIGS = (
+    ROOT / "exam" / "eval_config.json",
+    ROOT / "exam" / "eval_config_rating.json",
+    ROOT / "exam" / "eval_config_trajectory.json",
+    ROOT / "exam" / "eval_config_multiturn.json",
+)
 
 
 def register() -> list[str]:

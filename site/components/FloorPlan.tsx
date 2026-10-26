@@ -52,13 +52,17 @@ export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; 
   const packets: (keyof typeof P)[] = [];
   if (f.running) {
     if (f.kind === "booking") packets.push("book");
-    if (f.kind === "exam") packets.push("exam");
+    if (f.kind === "exam" || f.kind === "traj_exam" || f.kind === "mt_exam") packets.push("exam");
     if (f.kind === "loop") packets.push(edge ? "loop" : "exam");
     if (f.kind === "optimize") packets.push("install");
   }
   const critic = judge === "rating";
   const bell = reached(n, "loop") && loop?.decision === "SHIP";
-  const judgeSub = critic ? "rating · pick.rating / 5" : (code?.criteria?.length ? code.criteria.join(", ") : "everyone_ate");
+  const isConcierge = key === "trajectory" || key === "multiturn";
+  const judgeSub =
+    key === "trajectory" ? ((code?.traj_criteria || []).join(", ") || "tool_trajectory_avg_score") :
+    key === "multiturn" ? "multiturn_dinner + scenario" :
+    critic ? "rating · pick.rating / 5" : (code?.criteria?.length ? code.criteria.join(", ") : "everyone_ate");
 
   const legend =
     key === "booking" ? "the workbench talks to the same host. a booking is a reply; nothing grades it." :
@@ -68,7 +72,9 @@ export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; 
     key === "rewrite" ? (["winner", "optimized"].includes(code?.instruction || "") ? "the gate reads the eight parties the optimizer never saw. one artifact changed — the instruction." : "one pass: the proposer reads the failures, writes a candidate, you install it. the dashed edge is you — a file copy, by hand.") :
     key === "other" ? (critic ? "✕ the rating judge never looks at the table. the gate opens on a number that cannot see harm." : "hacked instruction, honest judge: the honest judge reads every seat and says why.") :
     key === "loop" ? (edge ? "the back edge: publish → host. round n+1 runs under round n’s rewrite. the bell is the gate." : "✕ the proposer writes a rewrite — and nothing carries it back to the host. the graph ends. the loop is one missing edge.") :
-    "one host · one judge · one gate · one back edge.";
+    key === "trajectory" ? (code?.ticket_on_exam ? "kitchen_ticket reads intermediate_data: inspect_kitchen BEFORE book_table, committed once, plus everyone_ate." : "concierge calls 4 tools. EXACT golden trajectory matching punishes valid exploration; invariants grade the contract.") :
+    key === "multiturn" ? ((code?.concierge_instruction || "eager") !== "eager" ? "LlmBackedUserSimulator (NOVICE) drives the chat; clarification turns return NOT_EVALUATED, final turn grades the scenario." : "✕ eager concierge calls book_table on turn 1 before asking constraints; NOVICE simulator says thanks while seats go hungry.") :
+    "host + concierge · outcome + trajectory + multi-turn judges · one gate · one back edge.";
 
   return (
     <div className="card floor">
@@ -81,8 +87,14 @@ export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; 
         })}
         {Object.entries(N).map(([k, nd]) => {
           const isLit = lit.has(k);
-          const label = k === "judge" && critic ? "🦚 judge" : nd.l;
-          const sub = k === "judge" ? judgeSub : k === "host" ? `LlmAgent · ${code?.instruction || "the instruction"}` : nd.s;
+          const label = k === "judge" && critic ? "🦚 judge" : k === "host" && isConcierge ? "🛎 concierge" : k === "brief" && key === "multiturn" ? "💬 simulator" : nd.l;
+          const sub =
+            k === "judge" ? judgeSub :
+            k === "host" ? (isConcierge ? `4 tools · ${code?.concierge_instruction || "eager"}` : `LlmAgent · ${code?.instruction || "the instruction"}`) :
+            k === "brief" && key === "multiturn" ? "NOVICE · 4 scenarios" :
+            k === "exam" && key === "trajectory" ? "intermediate_data · 8" :
+            k === "exam" && key === "multiturn" ? "ConversationScenario" :
+            nd.s;
           return (
             <g key={k}>
               <rect x={nd.x} y={nd.y} width={nd.w} height={nd.h} rx="9" className={"node" + (isLit ? " lit" : "") + (critic && k === "judge" ? " hot" : "") + (bell && k === "gate" ? " bell" : "")} />
