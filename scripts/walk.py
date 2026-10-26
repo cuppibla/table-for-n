@@ -1,11 +1,11 @@
-"""The headless learner: walks courses II–VII against a running kitchen, the way
+"""The headless learner: walks courses II–IX against a running kitchen, the way
 a person would from the page — the same /api routes, the same edits, the
 same jobs — and reports which courses lit. Course I (the workbench) and
-course VIII (the check) are not walked.
+course X (the check) are not walked.
 
-    uv run python scripts/walk.py                 # II–V, leaves the repo as the walk left it
+    uv run python scripts/walk.py                 # II–IX, leaves the repo as the walk left it
     uv run python scripts/walk.py --restore       # …then puts the files back as shipped
-    uv run python scripts/walk.py --only 7        # one course
+    uv run python scripts/walk.py --only 8        # one course
     TABLE_URL=http://localhost:3480 …             # another port
 
 Exit code 0 when every walked course lit.
@@ -36,7 +36,7 @@ def say(msg: str) -> None:
     print(f"[walk] {msg}", flush=True)
 
 
-def wait_job(kind: str, limit: float = 240) -> dict:
+def wait_job(kind: str, limit: float = 360) -> dict:
     t0 = time.time()
     while time.time() - t0 < limit:
         j = api(f"/job?kind={kind}")
@@ -120,11 +120,31 @@ def course7() -> bool:
     return lit(7)
 
 
+def course8() -> bool:
+    run_job("traj_exam")                                        # as shipped: tool_trajectory_avg_score (EXACT)
+    edit("exam/eval_config_trajectory.json",
+         lambda s: re.sub(r'"tool_trajectory_avg_score"\s*:\s*\{[^}]*\}', '"kitchen_ticket": 0.9', s))
+    run_job("traj_exam")
+    return lit(8)
+
+
+def course9() -> bool:
+    run_job("mt_exam")                                          # as shipped: eager concierge books on turn 1
+    from pathlib import Path
+    eliciting = (Path(__file__).resolve().parents[1] / "instructions" / "concierge_eliciting.txt").read_text()
+    edit("concierge/instruction_current.txt", lambda _s: eliciting)
+    run_job("mt_exam")
+    return lit(9)
+
+
 def restore() -> None:
     say("restoring the files as shipped")
     edit("exam/eval_config.json", lambda s: re.sub(r'"everyone_ate"\s*:\s*0\.9', '"response_match_score": 0.3', s, count=1))
+    edit("exam/eval_config_trajectory.json",
+         lambda s: re.sub(r'"kitchen_ticket"\s*:\s*[0-9.]+', '"tool_trajectory_avg_score": { "threshold": 1.0, "match_type": "EXACT" }', s, count=1))
     edit("loop/flywheel.py", lambda s: re.sub(r"^(\s*)(\(proposer, publish, host\),)", r"\1# \2", s, flags=re.M), symbol="build")
     api("/install", {"which": "draft"})
+    api("/install", {"which": "eager", "target": "concierge"})
     api("/judge", {"to": "everyone_ate"})
 
 
@@ -139,8 +159,8 @@ def main() -> int:
         print(f"no kitchen at {URL}: {exc}")
         return 2
     say(f"kitchen at {URL} · mode {h['mode']} · instruction {h['instruction']}")
-    steps = {2: course2, 3: course3, 4: course4, 5: course5, 6: course6, 7: course7}
-    todo = [a.only] if a.only else [2, 3, 4, 5, 6, 7]
+    steps = {2: course2, 3: course3, 4: course4, 5: course5, 6: course6, 7: course7, 8: course8, 9: course9}
+    todo = [a.only] if a.only else [2, 3, 4, 5, 6, 7, 8, 9]
     results: dict[int, bool] = {}
     for n in todo:
         say(f"── course {n} ──")
@@ -153,9 +173,13 @@ def main() -> int:
     p = api("/progress")
     print("\nlit:", p["lit"])
     for e in p.get("exams", [])[-6:]:
-        print(f"  exam  {e['judge']:<13} {e['instruction']:<10} passed {e['passed']}/8  hungry {e['hungry']}")
+        print(f"  exam       {e['judge']:<14} {e['instruction']:<10} passed {e['passed']}/8  hungry {e['hungry']}")
+    for e in p.get("traj_exams", [])[-4:]:
+        print(f"  traj_exam  {e['judge']:<14} {e['instruction']:<10} passed {e['passed']}/8  hungry {e['hungry']}")
+    for e in p.get("mt_exams", [])[-4:]:
+        print(f"  mt_exam    {e['judge']:<14} {e['instruction']:<10} passed {e['passed']}/4  hungry {e['hungry']}")
     for l in p.get("loops", [])[-3:]:
-        print(f"  loop  rounds {l['rounds']}  decision {l['decision']}  edge {l['edge']}")
+        print(f"  loop       rounds {l['rounds']}  decision {l['decision']}  edge {l['edge']}")
     if a.restore:
         restore()
     return 0 if all(results.values()) else 1

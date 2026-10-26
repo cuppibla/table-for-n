@@ -1,0 +1,20 @@
+{
+  "criteria": {
+    "multiturn_dinner": 0.9
+  },
+  "customMetrics": {
+    "multiturn_dinner": {
+      "codeConfig": { "name": "metrics.table.multiturn_dinner_metric" },
+      "description": "Did the concierge ask before booking, remember every turn's constraint, and feed everyone?"
+    }
+  },
+  "user_simulator_config": {
+    "type": "llm_backed",
+    "model": "gemini-2.5-flash",
+    "model_configuration": {
+      "thinking_config": { "thinking_budget": 0 },
+      "temperature": 0.0
+    },
+    "max_allowed_invocations": 4
+  }
+}

@@ -73,7 +73,7 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .menu { position: relative; margin-bottom: 16px; padding: 12px 18px 11px; display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; }
 .menu .lbl { font-family: var(--font-display), serif; font-style: italic; font-size: 17px; color: var(--olive-ink); line-height: 1.1; }
 .menu .lbl small { display: block; font-style: normal; font-family: var(--font-mono), monospace; font-size: 10px; letter-spacing: .2em; color: var(--faint); margin-top: 3px; }
-.courses { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.courses { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .course { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all .18s ease; background: transparent; text-align: left; }
 .course:hover { background: var(--paper-2); }
 .course.now { background: var(--paper-2); border-color: var(--olive); box-shadow: 0 6px 16px rgba(111,127,63,.18); }
@@ -378,3 +378,25 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .btn.replay { color: var(--mustard-deep); border-color: rgba(168,119,28,.5); background: #FBF3DF; }
 .btn.replay:hover { color: #4a3208; border-color: var(--mustard-deep); }
 .replayed { font-style: normal; font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mustard-deep); background: #FBF3DF; padding: 1px 6px; border-radius: 4px; }
+
+/* courses VIII & IX — trajectory call chips + multi-turn conversation cards */
+.calllist { display: grid; gap: 4px; margin-top: 6px; }
+.callchip { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; padding: 4px 8px; border-radius: 6px; background: #fff; border: 1px solid var(--rule); font-family: var(--font-mono), monospace; font-size: 11px; color: var(--ink); }
+.callchip b { font-size: 10px; color: var(--olive); min-width: 14px; }
+.callchip.inspect { border-color: rgba(111,127,63,.45); background: #F7F9EF; }
+.callchip.commit { border-color: rgba(127,168,107,.65); background: #EEF5E8; }
+.callchip.premature { border-color: var(--tomato); background: #FBEDE8; color: var(--tomato); }
+.warnchip { font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--tomato); padding: 1px 6px; border-radius: 4px; margin-left: auto; }
+
+.turns { display: grid; gap: 8px; }
+.turncard { padding: 9px 11px; border-radius: 8px; border: 1px solid var(--rule); background: var(--paper-2); display: grid; gap: 6px; }
+.turncard.bad { border-color: rgba(217,96,63,.6); background: #FDF5F2; }
+.turnhd { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--font-mono), monospace; font-size: 10.5px; color: var(--olive-ink); }
+.turnhd .vd { font-family: var(--font-mono), monospace; font-size: 10px; padding: 2px 7px; border-radius: 4px; }
+.turnhd .vd.p { color: var(--sage-ink); background: #E3EED8; }
+.turnhd .vd.f { color: #fff; background: var(--tomato); }
+.turnhd .vd.na { color: var(--sub); background: #EFE9DA; }
+.msg { padding: 6px 9px; border-radius: 7px; background: #fff; border: 1px solid var(--rule); font-size: 12.5px; line-height: 1.45; color: var(--ink); }
+.msg .who { display: block; font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .12em; color: var(--olive); margin-bottom: 3px; }
+.msg.user { background: #FFFDF7; border-color: rgba(217,164,65,.45); }
+.msg.agent pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--font-mono), monospace; font-size: 11px; color: var(--ink); }

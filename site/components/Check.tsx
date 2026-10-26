@@ -14,6 +14,8 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
   const lb = p?.last_booking as { hungry?: number; restaurant?: string; party?: string } | null;
   const text = exams.filter((e) => e.judge === "text").slice(-1)[0];
   const fl = p?.flights?.[p.flights.length - 1];
+  const tj = (p?.traj_exams || []).filter((e) => e.judge === "kitchen_ticket").slice(-1)[0];
+  const mt = (p?.mt_exams || []).filter((e) => e.instruction !== "eager").slice(-1)[0];
   const lines: [string, string][] = [
     [`the booking${p?.workbench_calls ? ` · ${p.workbench_calls} in the workbench` : ""}`, p?.workbench_calls ? "served" : "—"],
     ["the comparator · response_match_score", text ? `${text.passed}/8 · for word overlap, no reasons` : "—"],
@@ -22,6 +24,8 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
     ["the rewrite · " + (win?.instruction === "optimized" ? "your winner" : "the winner"), win ? `${win.passed}/8 · ${win.hungry} hungry` : "—"],
     ["the other judge · rating", hr || hh ? `★ ${hr ? hr.passed : "–"}/8 · honest ${hh ? hh.passed : "–"}/8` : "—"],
     ["the loop · (proposer, publish, host)", lp ? `R${lp.rounds} · ${lp.decision || "stalled"}` : "—"],
+    ["the ticket · kitchen_ticket", tj ? `${tj.passed}/8 · ${tj.hungry ?? 0} hungry` : "—"],
+    ["the group chat · multiturn_dinner", mt ? `${mt.passed}/4 · ${mt.elicited_count ?? 0}/4 asked` : "—"],
     ["the check", p?.lit?.[String(LAST)] ? "paid" : "open"],
   ];
   return (

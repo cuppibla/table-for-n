@@ -381,6 +381,265 @@ def brief(party_id: str) -> str:
     )
 
 
+# ---------------------------------------------- trajectory & multi-turn world
+# Courses VIII & IX give the concierge four tools instead of pasting CARDS into
+# the prompt: public listings hide the kitchen traps (peanut oil, cashew base,
+# pork broth, last orders), so the agent must inspect before it books.
+
+MAX_TOOL_CALLS = 10
+_CONSTRAINT_HINTS = (
+    "vegan", "plant-based", "vegetarian", "off meat", "allergy", "epipen", "nut",
+    "shellfish", "fish sauce", "budget", "$", "crutches", "walk", "spicy",
+    "7:45", "19:45", "6:30", "18:30", "7:15", "19:15", "daycare",
+)
+
+
+def public_listings(max_price: int = 100, max_walk_min: int = 60) -> list[dict]:
+    """What the listings app shows up front — rating, price, walk, hours, line.
+    Dietary flags, allergen traps and last-order cutoffs live in the kitchen."""
+    rows = []
+    for rid, r in sorted(RESTAURANTS.items(), key=lambda kv: -kv[1]["rating"]):
+        if r["price"] <= max_price and r["walk_min"] <= max_walk_min:
+            rows.append({
+                "restaurant_id": rid,
+                "name": r["name"],
+                "cuisine": r["cuisine"],
+                "rating": r["rating"],
+                "tag": r["tag"],
+                "price_per_person": r["price"],
+                "walk_min": r["walk_min"],
+                "earliest_seating": r["earliest"],
+                "queue_min": r["queue_min"],
+            })
+    return rows
+
+
+def kitchen_sheet(restaurant_id: str) -> dict:
+    """What calling the kitchen reveals: diets, allergens, spice, last orders."""
+    rid = find_restaurant(restaurant_id)
+    if rid is None:
+        return {"ok": False, "error": f"unknown restaurant {restaurant_id!r}"}
+    r = RESTAURANTS[rid]
+    return {
+        "ok": True,
+        "restaurant_id": rid,
+        "name": r["name"],
+        "vegetarian_main": r["veg"],
+        "vegan_main": r["vegan"],
+        "nut_safe": r["nut_safe"],
+        "shellfish_safe": r["shellfish_safe"],
+        "default_spice": r["spice"],
+        "spice_on_the_side": r["spice_optional"],
+        "last_order": r.get("last_order", "21:30"),
+        "kitchen_notes": r["notes"],
+    }
+
+
+def seating_status(restaurant_id: str, time_str: str, party_size: int = 2) -> dict:
+    """When a party asking for `time_str` actually sits, and whether the kitchen is still serving."""
+    rid = find_restaurant(restaurant_id)
+    if rid is None:
+        return {"ok": False, "error": f"unknown restaurant {restaurant_id!r}"}
+    r = RESTAURANTS[rid]
+    try:
+        chosen = _t(time_str.strip())
+    except Exception:
+        return {"ok": False, "error": f"time must be HH:MM (24-hour), got {time_str!r}"}
+    sat = seated_at(r, chosen)
+    last_ord = _t(r.get("last_order", "21:30"))
+    return {
+        "ok": True,
+        "restaurant_id": rid,
+        "name": r["name"],
+        "party_size": party_size,
+        "requested_time": _fmt(chosen),
+        "actual_seated_time": _fmt(sat),
+        "queue_min": r["queue_min"],
+        "last_order": _fmt(last_ord),
+        "wraps_up_around": _fmt(sat + DINNER_FULL),
+        "kitchen_open_at_seating": sat <= last_ord,
+    }
+
+
+def concierge_brief(party_id: str) -> str:
+    """Course VIII's prompt: the group chat ONLY. The restaurants are behind tools."""
+    ids = PARTIES[party_id]
+    chat = "\n".join(f'  {PEOPLE[i]["name"]}: "{CHAT[i]}"' for i in ids)
+    return (
+        f"Tonight's dinner ({party_id}) — {len(ids)} going. The group chat:\n{chat}\n\n"
+        "Use your tools to check the restaurants nearby, inspect any kitchen before "
+        "you commit to it, and book one table for the whole party."
+    )
+
+
+def _norm_call(c: dict) -> tuple[str, dict]:
+    name = str(c.get("name", ""))
+    args = dict(c.get("args") or {})
+    if "restaurant_id" in args:
+        rid = find_restaurant(str(args["restaurant_id"]))
+        if rid:
+            args["restaurant_id"] = rid
+    return name, args
+
+
+def trajectory_match(actual_calls: list[dict], expected_calls: list[dict],
+                     mode: str = "EXACT", ignore_args: bool = False) -> tuple[bool, str]:
+    """Mirror ADK's TrajectoryEvaluator (EXACT / IN_ORDER / ANY_ORDER) on a recorded trace."""
+    act = [_norm_call(c) for c in actual_calls]
+    exp = [_norm_call(c) for c in expected_calls]
+    same = (lambda a, b: a[0] == b[0]) if ignore_args else (lambda a, b: a == b)
+    fmt = lambda seq: " → ".join(f"{n}({a.get('restaurant_id', '')})" if a.get("restaurant_id") else f"{n}()" for n, a in seq) or "(no tool calls)"
+
+    if mode == "EXACT":
+        ok = len(act) == len(exp) and all(same(a, b) for a, b in zip(act, exp))
+        why = f"matched all {len(exp)} expected calls step for step" if ok else f"made {len(act)} calls ({fmt(act)}); golden trajectory had {len(exp)} ({fmt(exp)})"
+        return ok, why
+    if mode == "IN_ORDER":
+        it = iter(act)
+        ok = all(any(same(a, e) for a in it) for e in exp)
+        why = "golden calls appeared in order (extra inspections allowed)" if ok else f"did not follow golden room/order ({fmt(exp)})"
+        return ok, why
+    if mode == "ANY_ORDER":
+        pool = list(act)
+        ok = True
+        for e in exp:
+            idx = next((i for i, a in enumerate(pool) if same(a, e)), None)
+            if idx is None:
+                ok = False
+                break
+            pool.pop(idx)
+        why = "every expected tool appeared somewhere (order ignored — book before inspect still passes)" if ok else f"missing expected call from {fmt(exp)}"
+        return ok, why
+    raise ValueError(f"unknown mode {mode!r}")
+
+
+def ticket_check(party_ids: list[str], calls: list[dict],
+                 final_rid: str | None = None, final_time: str = "19:00") -> tuple[float, dict]:
+    """Course VIII's trajectory checker: grade the STEPS and the DINNER together.
+
+    Four invariants on `intermediate_data`:
+      1. listed                — called `list_restaurants`
+      2. inspected_before_book — called `inspect_kitchen(rid)` BEFORE `book_table(rid)`
+      3. committed_once        — called `book_table` once, matching the final reply
+      4. within_budget         — at most MAX_TOOL_CALLS tool calls
+    Plus `everyone_ate` on the committed table.
+    """
+    norm = [_norm_call(c) for c in calls]
+    listed = any(n == "list_restaurants" for n, _ in norm)
+    inspected_at: dict[str, int] = {}
+    books: list[tuple[int, str | None, str]] = []
+    for idx, (n, a) in enumerate(norm):
+        if n == "inspect_kitchen" and a.get("restaurant_id"):
+            inspected_at.setdefault(a["restaurant_id"], idx)
+        elif n == "book_table":
+            t = str(a.get("time", "") or final_time or "19:00").strip()
+            books.append((idx, a.get("restaurant_id"), t if ":" in t else "19:00"))
+
+    traj_whys: list[str] = []
+    if not listed:
+        traj_whys.append("trajectory: never called list_restaurants")
+
+    committed_once = len(books) == 1 and books[0][1] in RESTAURANTS
+    booked_rid: str | None = books[0][1] if books and books[0][1] in RESTAURANTS else None
+    booked_time: str = books[0][2] if books else final_time
+    if len(books) == 0:
+        traj_whys.append("trajectory: phantom booking — answered in text without calling book_table")
+    elif len(books) > 1:
+        names = ", ".join(RESTAURANTS[r]["name"] if r in RESTAURANTS else "?" for _, r, _ in books)
+        traj_whys.append(f"trajectory: double-booked {len(books)} tables ({names})")
+    elif booked_rid is None:
+        traj_whys.append("trajectory: book_table called with an unknown restaurant")
+    elif final_rid and final_rid != booked_rid:
+        committed_once = False
+        traj_whys.append(f"trajectory: reply named {RESTAURANTS[final_rid]['name']} but book_table reserved {RESTAURANTS[booked_rid]['name']}")
+
+    inspected_before = False
+    if booked_rid:
+        if booked_rid not in inspected_at:
+            traj_whys.append(f"trajectory: booked {RESTAURANTS[booked_rid]['name']} blind — never called inspect_kitchen")
+        elif inspected_at[booked_rid] > books[0][0]:
+            traj_whys.append(f"trajectory: called inspect_kitchen on {RESTAURANTS[booked_rid]['name']} AFTER book_table")
+        else:
+            inspected_before = True
+
+    within_budget = len(norm) <= MAX_TOOL_CALLS
+    if not within_budget:
+        traj_whys.append(f"trajectory: {len(norm)} tool calls exceeded budget ({MAX_TOOL_CALLS})")
+
+    target_rid = booked_rid or (final_rid if final_rid in RESTAURANTS else None)
+    if target_rid:
+        meal_score, seats = everyone_ate(party_ids, target_rid, booked_time)
+    else:
+        meal_score = 0.0
+        seats = [{"id": pid, "name": PEOPLE[pid]["name"], "label": PEOPLE[pid]["label"],
+                  "ate": False, "why": "no table booked"} for pid in party_ids]
+
+    seat_whys = [f"{s['name']}: {s['why']}" for s in seats if not s["ate"]]
+    traj_ok = listed and committed_once and inspected_before and within_budget
+    score = round(meal_score if traj_ok else min(0.45, 0.45 * meal_score), 4)
+    checks = {
+        "listed": listed,
+        "inspected_before_book": inspected_before,
+        "committed_once": committed_once,
+        "within_budget": within_budget,
+        "everyone_ate": meal_score >= THRESHOLD,
+    }
+    return score, {
+        "score": score,
+        "meal_score": round(meal_score, 4),
+        "passed": score >= THRESHOLD,
+        "traj_ok": traj_ok,
+        "restaurant": target_rid,
+        "time": booked_time,
+        "tool_calls": len(norm),
+        "checks": checks,
+        "seats": seats,
+        "whys": traj_whys + seat_whys,
+    }
+
+
+def _has_constraints(text: str) -> bool:
+    low = (text or "").lower()
+    return sum(1 for h in _CONSTRAINT_HINTS if h in low) >= 2
+
+
+def multiturn_check(party_ids: list[str], turns: list[dict],
+                    final_rid: str | None = None, final_time: str = "19:00") -> tuple[float, dict]:
+    """Course IX's multi-turn checker: did the concierge elicit missing constraints
+    before committing `book_table`, keep every turn's constraint in mind, and feed everyone?"""
+    if not turns:
+        return 0.0, {"score": 0.0, "passed": False, "elicited": False, "turns": 0,
+                     "restaurant": None, "time": final_time, "seats": [], "whys": ["empty conversation"]}
+
+    first_user = str(turns[0].get("user", ""))
+    first_tools = [_norm_call(c) for c in (turns[0].get("tools") or [])]
+    withheld_up_front = not _has_constraints(first_user)
+    booked_turn_1 = any(n == "book_table" for n, _ in first_tools)
+    elicited = (not booked_turn_1 and len(turns) >= 2) if withheld_up_front else True
+
+    all_calls = [c for t in turns for c in (t.get("tools") or [])]
+    _, ticket = ticket_check(party_ids, all_calls, final_rid=final_rid, final_time=final_time)
+
+    whys: list[str] = []
+    if withheld_up_front and booked_turn_1:
+        whys.append("multi-turn: premature commit — called book_table on turn 1 before asking the group's constraints")
+    elif withheld_up_front and len(turns) < 2:
+        whys.append("multi-turn: ended on turn 1 without gathering the group's constraints")
+    whys.extend(ticket["whys"])
+
+    ok = elicited and ticket["passed"]
+    score = round(ticket["score"] if elicited else min(0.4, 0.4 * ticket["meal_score"]), 4)
+    return score, {
+        **ticket,
+        "score": score,
+        "passed": ok,
+        "elicited": elicited,
+        "booked_turn_1": booked_turn_1,
+        "turns": len(turns),
+        "whys": whys,
+    }
+
+
 # ------------------------------------------------------------------ self-demo
 
 if __name__ == "__main__":

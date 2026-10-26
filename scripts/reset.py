@@ -1,8 +1,8 @@
-"""Clear the table: put the three files the courses edit back the way a fresh
+"""Clear the table: put the five files the courses edit back the way a fresh
 clone ships them, and the switch back to everyone_ate.
 
     uv run python scripts/reset.py            # files + the switch
-    uv run python scripts/reset.py --receipts # …and forget every exam, loop, flight and walk
+    uv run python scripts/reset.py --receipts # …and forget every exam, loop, flight and simulation
 
 Nothing to restart — the kitchen re-reads the files on the next 📋 or 📝.
 For the author: run this before `git commit`; tests/test_shipped.py checks it.
@@ -33,6 +33,19 @@ SHIPPED_EVAL_CONFIG = """{
 }
 """
 
+SHIPPED_TRAJECTORY_CONFIG = """{
+  "criteria": {
+    "tool_trajectory_avg_score": { "threshold": 1.0, "match_type": "EXACT" }
+  },
+  "customMetrics": {
+    "kitchen_ticket": {
+      "codeConfig": { "name": "metrics.table.kitchen_ticket_metric" },
+      "description": "Did the concierge inspect the kitchen before booking once — and did everyone eat?"
+    }
+  }
+}
+"""
+
 
 def main() -> int:
     # 1 · the host runs the day-one draft
@@ -51,7 +64,15 @@ def main() -> int:
     fw.write_text(src2)
     print("  ✓ loop/flywheel.py · the back edge is commented out" + ("" if src2 != src else " (already)"))
 
-    # 4 · the switch
+    # 4 · course VIII's trajectory exam ships with ADK's EXACT trajectory comparator
+    (ROOT / "exam" / "eval_config_trajectory.json").write_text(SHIPPED_TRAJECTORY_CONFIG)
+    print("  ✓ exam/eval_config_trajectory.json · criteria: tool_trajectory_avg_score (EXACT)")
+
+    # 5 · course IX's concierge ships with the eager turn-1 booking instruction
+    shutil.copyfile(ROOT / "instructions" / "concierge_eager.txt", ROOT / "concierge" / "instruction_current.txt")
+    print("  ✓ concierge/instruction_current.txt ← instructions/concierge_eager.txt")
+
+    # 6 · the switch
     st = ROOT / "runs" / "state.json"
     if st.exists():
         try:
@@ -60,9 +81,9 @@ def main() -> int:
             data = {}
         data["judge"] = "everyone_ate"
         if "--receipts" in sys.argv:
-            for k in ("exams", "loops", "bookings", "flights"):
+            for k in ("exams", "loops", "bookings", "flights", "traj_exams", "mt_exams"):
                 data[k] = []
-            print("  ✓ receipts forgotten (exams, loops, bookings, flights)")
+            print("  ✓ receipts forgotten (exams, loops, bookings, flights, traj_exams, mt_exams)")
         st.write_text(json.dumps(data, indent=1))
     print("  ✓ the switch · everyone_ate")
     print("\n  the table is cleared. nothing to restart.")

@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ORIGIN, getBrief, getJob, getReplay, install, replay, startJob, stopJob, type Exam, type Job, type Progress, type Replay } from "@/lib/api";
 import Flight from "./Flight";
+import Trajectory from "./Trajectory";
+import MultiTurn from "./MultiTurn";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
 // older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
@@ -114,12 +116,15 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
+  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : c.run === "trajectory" ? ["traj_exam"] : c.run === "multiturn" ? ["mt_exam"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
+  const trajExams = p?.traj_exams || [];
+  const mtExams = p?.mt_exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
-  const doInstall = async (which: string) => { try { await install(which); onChanged(); } catch (e) { alert((e as Error).message); } };
+  const doInstall = async (which: string, target: "host" | "concierge" = "host") => { try { await install(which, target); onChanged(); } catch (e) { alert((e as Error).message); } };
   const kind = p?.code?.instruction || "?";
+  const cKind = p?.code?.concierge_instruction || "eager";
   const chars = p?.code?.instruction_chars || 0;
 
   // what to do next — read from what actually ran, never from clicks
@@ -158,7 +163,17 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     : c.run === "loop" ? (!lp && !p?.code?.edge ? "↻ run the loop as shipped — watch it stop after one round"
       : !p?.code?.edge ? "delete the “# ” on the green line in the editor above (or press “apply the edit for me”)"
       : lp?.decision !== "SHIP" || !lp?.edge ? "↻ run the loop again — round 2 runs under round 1’s rewrite"
-      : "✓ the loop earned its exit")
+      : "✓ the loop earned its exit. Course VIII looks inside intermediate_data.")
+    : c.run === "trajectory" ? (!trajExams.some((e) => e.judge !== "kitchen_ticket") && !p?.code?.ticket_on_exam
+      ? "📝 run the trajectory exam as shipped — watch EXACT golden-trace matching fail a valid dinner"
+      : !p?.code?.ticket_on_exam ? "change line 3 in exam/eval_config_trajectory.json to \"kitchen_ticket\": 0.9 (or press “apply the edit for me”)"
+      : !trajExams.some((e) => e.judge === "kitchen_ticket" && (e.passed || 0) >= 5) ? "📝 run the trajectory exam again — now kitchen_ticket grades the 4 trajectory invariants + everyone_ate"
+      : "✓ trajectory invariants passed. Course IX puts the concierge in a live multi-turn group chat.")
+    : c.run === "multiturn" ? (!mtExams.some((e) => e.instruction === "eager") && cKind === "eager"
+      ? "📝 run the multi-turn exam as shipped — watch the eager concierge book blind on turn 1 while the NOVICE simulator thanks it"
+      : cKind === "eager" ? "rewrite rule 3 in concierge/instruction_current.txt above (or press “apply the edit for me”) so it asks before calling book_table"
+      : !mtExams.some((e) => e.instruction !== "eager" && (e.passed || 0) >= 3) ? "📝 run the multi-turn exam again — watch the concierge ask first, remember every constraint, and book once"
+      : "✓ the concierge asked first and fed the group. Course X brings the check.")
     : "";
   // Plain JSX, not inline components: a component type defined inside render
   // is a new type every render, so React would unmount and remount the Editor
@@ -167,8 +182,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const nextCue = cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
   const running = Object.values(jobs).find((j) => j.state === "running");
   const [rp, setRp] = useState<Replay | null>(null);
-  useEffect(() => { getReplay().then(setRp).catch(() => setRp(null)); }, [p?.code?.criteria?.join(","), p?.code?.instruction, p?.judge, p?.code?.edge]);   // eslint-disable-line react-hooks/exhaustive-deps
-  const doReplay = async (what: "exam" | "loop") => { try { await replay(what); onChanged(); } catch (e) { alert((e as Error).message); } };
+  useEffect(() => { getReplay().then(setRp).catch(() => setRp(null)); }, [p?.code?.criteria?.join(","), p?.code?.traj_criteria?.join(","), p?.code?.instruction, p?.code?.concierge_instruction, p?.judge, p?.code?.edge]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const doReplay = async (what: "exam" | "loop" | "traj_exam" | "mt_exam") => { try { await replay(what); onChanged(); } catch (e) { alert((e as Error).message); } };
   // the replay only makes sense when the files are in the state THIS course is
   // about — otherwise it would install a receipt for some other course's tile
   const wantsReplay = !rp ? false
@@ -287,6 +302,56 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <span className="art">{lp ? <>last run: <b>{lp.rounds} round{lp.rounds === 1 ? "" : "s"}</b> · {lp.decision || "no decision — it stalled"}{lp.edge ? " · back edge in" : " · no back edge"}{lp.replayed ? <> · <i className="replayed">replayed from our run</i></> : ""}</> : "not run yet"}</span>
         </div>
         <Log job={latest} onStopped={onChanged} />
+      </div>
+    );
+  } else if (c.run === "trajectory") {
+    const tCrit = p?.code?.traj_criteria || [];
+    body = (
+      <div className="runbox">
+        {nextCue}
+        <div className="opts">
+          <button className="btn gold" disabled={anyRunning} onClick={() => start("traj_exam")}>
+            📝 run trajectory exam · {p?.code?.ticket_on_exam ? "kitchen_ticket" : (tCrit[0] || "EXACT")}
+          </button>
+          {stopBtn}
+          {rp?.traj_available && !running && (
+            <button className="btn replay" onClick={() => doReplay("traj_exam")} title={`Out of quota? Replay our recorded trajectory exam (${rp.traj_now?.judge}).`}>
+              ⤵ out of quota? replay our run · {rp.traj_now?.judge}
+            </button>
+          )}
+          <span className="art">
+            8 parties · concierge + 4 tools · criteria: <b>{tCrit.join(", ") || "—"}</b>
+          </span>
+        </div>
+        <Log job={latest} onStopped={onChanged} />
+        <Trajectory trajExams={trajExams} party={party} />
+      </div>
+    );
+  } else if (c.run === "multiturn") {
+    body = (
+      <div className="runbox">
+        {nextCue}
+        <div className="opts">
+          <button className="btn gold" disabled={anyRunning} onClick={() => start("mt_exam")}>
+            📝 run multi-turn exam · {cKind} concierge
+          </button>
+          {stopBtn}
+          {cKind !== "eager" && (
+            <button className="btn" disabled={anyRunning} onClick={() => doInstall("eager", "concierge")}>
+              ↺ back to eager
+            </button>
+          )}
+          {rp?.mt_available && !running && (
+            <button className="btn replay" onClick={() => doReplay("mt_exam")} title={`Out of quota? Replay our recorded multi-turn exam (${rp.mt_now?.instruction}).`}>
+              ⤵ out of quota? replay our run · {rp.mt_now?.instruction}
+            </button>
+          )}
+          <span className="art">
+            4 ConversationScenarios · LlmBackedUserSimulator (NOVICE) · concierge runs <b>{cKind}</b>
+          </span>
+        </div>
+        <Log job={latest} onStopped={onChanged} />
+        <MultiTurn mtExams={mtExams} party={party} />
       </div>
     );
   }

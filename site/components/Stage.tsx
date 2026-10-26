@@ -50,6 +50,14 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
       : [`holdout`, lastHonest ? `${lastHonest.passed}/8` : "—", "bad"];
     if (k === "other") return ["exam", `★ ${r ? r.passed : "–"}/8 · honest ${h ? h.passed : "–"}/8`, r && h ? "bad" : ""];
     if (k === "loop") return ["rounds", loop ? `${loop.rounds} · ${loop.decision || "stalled"}` : "—", loop?.decision === "SHIP" ? "good" : "bad"];
+    if (k === "trajectory") {
+      const tj = p?.last_traj_exam || (p?.traj_exams || []).slice(-1)[0];
+      return tj ? ["trajectory", `${tj.passed}/8 · ${tj.judge}`, tj.judge === "kitchen_ticket" && (tj.passed || 0) >= 5 ? "good" : "bad"] : ["trajectory", "not run yet", ""];
+    }
+    if (k === "multiturn") {
+      const mt = p?.last_mt_exam || (p?.mt_exams || []).slice(-1)[0];
+      return mt ? ["multi-turn", `${mt.passed}/4 · ${mt.instruction}`, mt.instruction !== "eager" && (mt.passed || 0) >= 3 ? "good" : "bad"] : ["multi-turn", "not run yet", ""];
+    }
     return ["hungry tonight", lb?.hungry === undefined ? "—" : String(lb.hungry), lb?.hungry === 0 ? "good" : "bad"];
   }, [course.key, p, exams, honestExams, lastHonest, lastText]);
 

@@ -1,6 +1,6 @@
 {
  "recorded": "2026-10-13",
- "model": "gemini-2.5-flash · Vertex AI · thinking_budget=0 · temperature=0",
+ "model": "gemini-2.5-flash \u00b7 Vertex AI \u00b7 thinking_budget=0 \u00b7 temperature=0",
  "note": "Real runs of adk eval on the eight holdout parties, kept so a student whose project is out of quota can replay them. Every receipt made from these is tagged replayed.",
  "exams": [
   {
@@ -117,7 +117,7 @@
      "hungry": 2,
      "whys": [
       "Tom: ~$28/person against Tom's $25 budget",
-      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45"
+      "Lena: kitchen takes last orders at 19:30 \u2014 Lena isn't at the table until 19:45"
      ]
     },
     {
@@ -183,7 +183,7 @@
      "time": "19:00",
      "hungry": 1,
      "whys": [
-      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45"
+      "Lena: kitchen takes last orders at 19:30 \u2014 Lena isn't at the table until 19:45"
      ]
     },
     {
@@ -220,11 +220,11 @@
      "time": "19:45",
      "hungry": 5,
      "whys": [
-      "Nadia: kitchen takes last orders at 19:30 — Nadia isn't at the table until 19:45",
-      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
-      "Amara: kitchen takes last orders at 19:30 — Amara isn't at the table until 19:45",
-      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
-      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+      "Nadia: kitchen takes last orders at 19:30 \u2014 Nadia isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 \u2014 Tom isn't at the table until 19:45",
+      "Amara: kitchen takes last orders at 19:30 \u2014 Amara isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 \u2014 Lena isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 \u2014 Ben isn't at the table until 19:45"
      ]
     },
     {
@@ -236,10 +236,10 @@
      "time": "19:45",
      "hungry": 4,
      "whys": [
-      "Sam: kitchen takes last orders at 19:30 — Sam isn't at the table until 19:45",
-      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
-      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
-      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+      "Sam: kitchen takes last orders at 19:30 \u2014 Sam isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 \u2014 Lena isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 \u2014 Tom isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 \u2014 Ben isn't at the table until 19:45"
      ]
     },
     {
@@ -520,6 +520,3143 @@
    "score": 1.0,
    "closed": true,
    "edge": true
+  }
+ ],
+ "traj_exams": [
+  {
+   "passed": 0,
+   "failed": 8,
+   "hungry": 9,
+   "seats": 36,
+   "exact_passed": 0,
+   "in_order_passed": 0,
+   "any_order_passed": 0,
+   "ticket_passed": 5,
+   "judge": "exact",
+   "criteria": [
+    "tool_trajectory_avg_score"
+   ],
+   "instruction": "eager",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "Taqueria Luna's kitchen closes at 7:30 PM, so they won't be able to serve Lena who arrives at 7:45 PM. Pho Saigon and Noodle Bar are not suitable as they are not nut-safe. I'll check other options.\n",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 10,
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "time": "19:45",
+        "restaurant_id": "taqueria",
+        "party_size": 5
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 5,
+        "restaurant_id": "pho",
+        "time": "19:00"
+       }
+      }
+     ],
+     "restaurant": null,
+     "time": "19:00",
+     "hungry": 5,
+     "seats": [
+      {
+       "id": "nadia",
+       "name": "Nadia",
+       "label": "vegan",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": false,
+       "why": "no table booked"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": false,
+      "committed_once": false,
+      "within_budget": true,
+      "everyone_ate": false
+     },
+     "whys": [
+      "trajectory: phantom booking \u2014 answered in text without calling book_table",
+      "Nadia: no table booked",
+      "Tom: no table booked",
+      "Amara: no table booked",
+      "Lena: no table booked",
+      "Ben: no table booked"
+     ],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 5 calls (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 check_seating(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho)"
+      },
+      "ticket": {
+       "ok": false,
+       "score": 0.0,
+       "whys": [
+        "trajectory: phantom booking \u2014 answered in text without calling book_table",
+        "Nadia: no table booked",
+        "Tom: no table booked",
+        "Amara: no table booked",
+        "Lena: no table booked",
+        "Ben: no table booked"
+       ]
+      }
+     }
+    },
+    {
+     "party": "p2",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "{\"restaurant\": \"Curry House\", \"time\": \"19:45\", \"reason\": \"Curry House is within everyone's budget and walk limits, has no shellfish, and can accommodate a party of 4 at 7:45 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "time": "19:45",
+        "restaurant_id": "taqueria",
+        "party_size": 4
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "curry",
+        "time": "19:45"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "curry",
+        "time": "19:00"
+       }
+      }
+     ],
+     "restaurant": "curry",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 7 calls (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 check_seating(taqueria) \u2192 book_table(curry)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 book_table(curry))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 book_table(curry))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(curry) \u2192 book_table(curry)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p3",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, has spice on the side, and can seat you by 6:00 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "smoke"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "sakura"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "bella"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "restaurant_id": "olive",
+        "party_size": 6,
+        "time": "18:00"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "restaurant_id": "olive",
+        "party_size": 6,
+        "time": "18:00"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 6,
+        "restaurant_id": "olive",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "marcus",
+       "name": "Marcus",
+       "label": "vegetarian",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 7 calls (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 inspect_kitchen(sakura) \u2192 inspect_kitchen(bella) \u2192 inspect_kitchen(olive) \u2192 check_seating(olive) \u2192 book_table(olive)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p10",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"18:30\", \"reason\": \"Taqueria Luna is nut-safe, shellfish-safe, and offers spice on the side. You'll be seated by 6:30 PM, well before daycare pickup, and the kitchen is open until 7:30 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 5,
+        "restaurant_id": "taqueria",
+        "time": "18:30"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "time": "18:30",
+        "party_size": 5,
+        "restaurant_id": "taqueria"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 5,
+        "restaurant_id": "taqueria",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "18:30",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 6 calls (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 check_seating(taqueria) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p13",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna has great vegan options, salsas on the side for Diego, and is within everyone's budget!\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "taqueria",
+        "time": "19:00"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "time": "19:00",
+        "restaurant_id": "taqueria",
+        "party_size": 4
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "pho",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "marcus",
+       "name": "Marcus",
+       "label": "vegetarian",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 6 calls (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 check_seating(taqueria) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p14",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"18:00\", \"reason\": \"Taqueria Luna has vegan options, is within 10 minutes walk, and can seat you by 6:30 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "smoke"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "sakura"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "bella"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "restaurant_id": "olive",
+        "time": "18:00",
+        "party_size": 4
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "time": "18:00",
+        "restaurant_id": "taqueria",
+        "party_size": 4
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "restaurant_id": "taqueria",
+        "party_size": 4,
+        "time": "18:00"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "olive",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "18:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "nadia",
+       "name": "Nadia",
+       "label": "vegan",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": false,
+      "everyone_ate": true
+     },
+     "whys": [
+      "trajectory: 11 tool calls exceeded budget (10)"
+     ],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 11 calls (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 inspect_kitchen(sakura) \u2192 inspect_kitchen(bella) \u2192 inspect_kitchen(olive) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 check_seating(olive) \u2192 check_seating(taqueria) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive)"
+      },
+      "ticket": {
+       "ok": false,
+       "score": 0.45,
+       "whys": [
+        "trajectory: 11 tool calls exceeded budget (10)"
+       ]
+      }
+     }
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "There are no restaurants that fit everyone's criteria. Would you like to try a different price range or walk time?",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 60,
+        "max_price": 15
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "smoke"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "smoke",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": null,
+     "time": "19:00",
+     "hungry": 4,
+     "seats": [
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": false,
+       "why": "no table booked"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": false,
+      "committed_once": false,
+      "within_budget": true,
+      "everyone_ate": false
+     },
+     "whys": [
+      "trajectory: phantom booking \u2014 answered in text without calling book_table",
+      "Sam: no table booked",
+      "Diego: no table booked",
+      "Lena: no table booked",
+      "Ben: no table booked"
+     ],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 1 calls (list_restaurants()); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 book_table(smoke))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 book_table(smoke))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 book_table(smoke)"
+      },
+      "ticket": {
+       "ok": false,
+       "score": 0.0,
+       "whys": [
+        "trajectory: phantom booking \u2014 answered in text without calling book_table",
+        "Sam: no table booked",
+        "Diego: no table booked",
+        "Lena: no table booked",
+        "Ben: no table booked"
+       ]
+      }
+     }
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "tool_trajectory_avg_score",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna is within everyone's budget and walk limits, is nut-safe, and has availability for 4 people at 7 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25,
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 4,
+        "time": "19:00",
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "taqueria",
+        "time": "19:00"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "taqueria",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 5 calls (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 check_seating(taqueria) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "passed": 7,
+   "failed": 1,
+   "hungry": 4,
+   "seats": 36,
+   "exact_passed": 0,
+   "in_order_passed": 0,
+   "any_order_passed": 0,
+   "ticket_passed": 7,
+   "judge": "kitchen_ticket",
+   "criteria": [
+    "kitchen_ticket"
+   ],
+   "instruction": "eager",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Pho Saigon\", \"time\": \"19:45\", \"reason\": \"Pho Saigon is within everyone's budget and walking distance, offers vegan options, and can accommodate a party of 5 at 19:45.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25,
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 5,
+        "time": "19:45",
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "time": "19:45",
+        "party_size": 5,
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "time": "19:45",
+        "restaurant_id": "pho",
+        "party_size": 5
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 5,
+        "restaurant_id": "pho",
+        "time": "19:00"
+       }
+      }
+     ],
+     "restaurant": "pho",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "nadia",
+       "name": "Nadia",
+       "label": "vegan",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 7 calls (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 check_seating(taqueria) \u2192 check_seating(pho) \u2192 book_table(pho)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Curry House\", \"time\": \"19:45\", \"reason\": \"Curry House is within budget, has shellfish-safe options, and can seat your party of 4 at 19:45.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 4,
+        "time": "19:45",
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "curry",
+        "time": "19:45"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "curry",
+        "time": "19:45"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "curry",
+        "time": "19:00"
+       }
+      }
+     ],
+     "restaurant": "curry",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 8 calls (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 check_seating(taqueria) \u2192 check_seating(curry) \u2192 book_table(curry)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 book_table(curry))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 book_table(curry))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(curry) \u2192 book_table(curry)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p3",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, has spice on the side, and can seat you by 6 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "smoke"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "sakura"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "bella"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "restaurant_id": "olive",
+        "party_size": 6,
+        "time": "18:00"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 6,
+        "time": "18:00",
+        "restaurant_id": "olive"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 6,
+        "restaurant_id": "olive",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "marcus",
+       "name": "Marcus",
+       "label": "vegetarian",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 7 calls (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 inspect_kitchen(sakura) \u2192 inspect_kitchen(bella) \u2192 inspect_kitchen(olive) \u2192 check_seating(olive) \u2192 book_table(olive)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p10",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"18:30\", \"reason\": \"Taqueria Luna can accommodate all dietary restrictions, is within budget, and has availability at 18:30.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "restaurant_id": "taqueria",
+        "time": "18:30",
+        "party_size": 5
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "time": "18:30",
+        "party_size": 5,
+        "restaurant_id": "taqueria"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 5,
+        "restaurant_id": "taqueria",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "18:30",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 6 calls (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 check_seating(taqueria) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p13",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna has vegan options, is within budget, and can accommodate no-spice requests.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "curry"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "restaurant_id": "taqueria",
+        "time": "19:00",
+        "party_size": 4
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "pho",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "marcus",
+       "name": "Marcus",
+       "label": "vegetarian",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 6 calls (list_restaurants() \u2192 inspect_kitchen(curry) \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(pho) \u2192 book_table(pho)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p14",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme has vegan options, is within 10 minutes walk, and can seat you by 6:30 PM.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "smoke"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "sakura"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "bella"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "restaurant_id": "olive",
+        "time": "18:00",
+        "party_size": 4
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "time": "18:00",
+        "restaurant_id": "olive",
+        "party_size": 4
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "olive"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "olive",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "nadia",
+       "name": "Nadia",
+       "label": "vegan",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 7 calls (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 inspect_kitchen(sakura) \u2192 inspect_kitchen(bella) \u2192 inspect_kitchen(olive) \u2192 check_seating(olive) \u2192 book_table(olive)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(olive) \u2192 book_table(olive)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "score": 0.0,
+     "metric": "kitchen_ticket",
+     "answer": "There are no restaurants that fit everyone's criteria. Would you like to try a different price range or walk time?",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_walk_min": 60,
+        "max_price": 15
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "smoke"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "smoke",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": null,
+     "time": "19:00",
+     "hungry": 4,
+     "seats": [
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": false,
+       "why": "no table booked"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": false,
+       "why": "no table booked"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": false,
+      "committed_once": false,
+      "within_budget": true,
+      "everyone_ate": false
+     },
+     "whys": [
+      "trajectory: phantom booking \u2014 answered in text without calling book_table",
+      "Sam: no table booked",
+      "Diego: no table booked",
+      "Lena: no table booked",
+      "Ben: no table booked"
+     ],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 1 calls (list_restaurants()); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 book_table(smoke))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 book_table(smoke))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(smoke) \u2192 book_table(smoke)"
+      },
+      "ticket": {
+       "ok": false,
+       "score": 0.0,
+       "whys": [
+        "trajectory: phantom booking \u2014 answered in text without calling book_table",
+        "Sam: no table booked",
+        "Diego: no table booked",
+        "Lena: no table booked",
+        "Ben: no table booked"
+       ]
+      }
+     }
+    },
+    {
+     "party": "p16",
+     "status": "PASSED",
+     "score": 1.0,
+     "metric": "kitchen_ticket",
+     "answer": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna is within everyone's budget and walking distance, is nut-safe, and has availability at 19:00.\"}",
+     "calls": [
+      {
+       "name": "list_restaurants",
+       "args": {
+        "max_price": 25,
+        "max_walk_min": 10
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "pho"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "noodle"
+       }
+      },
+      {
+       "name": "check_seating",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "taqueria",
+        "time": "19:00"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "restaurant_id": "taqueria",
+        "party_size": 4,
+        "time": "19:00"
+       }
+      }
+     ],
+     "expected_calls": [
+      {
+       "name": "list_restaurants",
+       "args": {}
+      },
+      {
+       "name": "inspect_kitchen",
+       "args": {
+        "restaurant_id": "taqueria"
+       }
+      },
+      {
+       "name": "book_table",
+       "args": {
+        "party_size": 4,
+        "restaurant_id": "taqueria",
+        "time": "17:00"
+       }
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "checks": {
+      "listed": true,
+      "inspected_before_book": true,
+      "committed_once": true,
+      "within_budget": true,
+      "everyone_ate": true
+     },
+     "whys": [],
+     "judges": {
+      "exact": {
+       "ok": false,
+       "why": "made 6 calls (list_restaurants() \u2192 inspect_kitchen(pho) \u2192 inspect_kitchen(taqueria) \u2192 inspect_kitchen(noodle) \u2192 check_seating(taqueria) \u2192 book_table(taqueria)); golden trajectory had 3 (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "in_order": {
+       "ok": false,
+       "why": "did not follow golden room/order (list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria))"
+      },
+      "any_order": {
+       "ok": false,
+       "why": "missing expected call from list_restaurants() \u2192 inspect_kitchen(taqueria) \u2192 book_table(taqueria)"
+      },
+      "ticket": {
+       "ok": true,
+       "score": 1.0,
+       "whys": []
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "mt_exams": [
+  {
+   "passed": 2,
+   "failed": 2,
+   "hungry": 4,
+   "seats": 18,
+   "elicited_count": 2,
+   "judge": "multiturn_dinner",
+   "criteria": [
+    "multiturn_dinner"
+   ],
+   "instruction": "eager",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "PASSED",
+     "score": 1.0,
+     "elicited": true,
+     "booked_turn_1": false,
+     "turn_count": 2,
+     "turns": [
+      {
+       "user": "Hey! Can you book a dinner table tonight for the 5 of us (p1 \u2014 Nadia, Tom, Amara, Lena, and Ben)?",
+       "tools": [],
+       "agent": "I'd love to help! To recommend the perfect spot, could you tell me a bit about your preferences? For example:\n\n*   **What time are you thinking of for dinner?**\n*   **Are there any cuisine types you're in the mood for?**\n*   **What's your ideal price range per person?**\n*   **How far are you willing to walk to the restaurant?**\n*   **Are there any dietary restrictions or allergies within the group (e.g., vegetarian, nut allergies)?**\n\nOnce I have a better idea of what you're looking for, I can find the best available options and book a table for you.",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Okay, so for preferences, here's the deal:\n\n*   Nadia is strictly vegan.\n*   Tom has a hard $25/person max budget.\n*   Amara is on crutches and can walk at most 10 minutes.\n*   Ben has zero requirements.\n*   Lena just texted that her train is late so she cannot arrive before 7:45 PM, and she needs the kitchen to still be taking orders when she arrives.",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_walk_min": 10,
+          "max_price": 25
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "noodle"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "time": "19:45",
+          "party_size": 5,
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "time": "19:45",
+          "restaurant_id": "pho",
+          "party_size": 5
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "time": "19:45",
+          "party_size": 5,
+          "restaurant_id": "pho"
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"Pho Saigon\", \"time\": \"19:45\", \"reason\": \"Pho Saigon meets all your group's needs: it's within budget and walking distance, has vegan options, and the kitchen will still be open when Lena arrives.\"}",
+       "eval_status": "PASSED"
+      }
+     ],
+     "restaurant": "pho",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "nadia",
+       "name": "Nadia",
+       "label": "vegan",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": []
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "score": 1.0,
+     "elicited": true,
+     "booked_turn_1": false,
+     "turn_count": 2,
+     "turns": [
+      {
+       "user": "Hi! Looking to grab dinner tonight for 4 people (p2 \u2014 Sam, Lena, Tom, and Ben). Can you book us somewhere?",
+       "tools": [],
+       "agent": "I can help with that! To make sure I pick the best spot, could you tell me a bit about any dietary restrictions or preferences your group might have? For example, is anyone vegetarian, vegan, or do they have any allergies like nuts or shellfish?",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Okay, so there are a few things to keep in mind for the group.\n\nFirst, Sam has a shellfish allergy, and that includes things like fish sauce, so we need to be careful about that.\n\nSecond, Tom has a budget, and it's pretty strict: $25 per person maximum.\n\nThird, Lena can't make it before 7:45 PM.\n\nAnd finally, Ben is easygoing, no requirements for him.",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_price": 25
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "curry"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "noodle"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "time": "19:45",
+          "restaurant_id": "curry",
+          "party_size": 4
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "party_size": 4,
+          "restaurant_id": "curry",
+          "time": "19:45"
+         }
+        }
+       ],
+       "agent": "I've found a great option for you!\n\nCurry House can accommodate your group of 4 at 7:45 PM. It's within Tom's budget at $22 per person, and it's safe for Sam's shellfish allergy. They also have vegan and vegetarian options.\n\nI've gone ahead and booked a table for you.\n\n```json\n{\n  \"restaurant\": \"Curry House\",\n  \"time\": \"19:45\",\n  \"reason\": \"Curry House meets all your group's requirements: shellfish-safe, within budget, and available at 7:45 PM.\"\n}\n```",
+       "eval_status": "PASSED"
+      }
+     ],
+     "restaurant": "curry",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": []
+    },
+    {
+     "party": "p10",
+     "status": "FAILED",
+     "score": 0.24,
+     "elicited": false,
+     "booked_turn_1": true,
+     "turn_count": 4,
+     "turns": [
+      {
+       "user": "Could you book an early-ish dinner tonight for 5 of us (p10 \u2014 Priya, Sam, Tom, Yuki, and Diego)?",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_price": 100,
+          "max_walk_min": 60
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "smoke"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "bistro"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "green"
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "party_size": 5,
+          "time": "19:00",
+          "restaurant_id": "green"
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"The Green Fork\", \"time\": \"19:00\", \"reason\": \"The Green Fork has a seasonal tasting menu with vegan and vegetarian options, and can accommodate your party of 5 at 7:00 PM.\"}",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "That sounds good! What about dietary restrictions, budget, and timing?",
+       "tools": [],
+       "agent": "I've already booked a table for 5 at The Green Fork at 7:00 PM. The Green Fork has a seasonal tasting menu with vegan and vegetarian options. The price per person is $52.",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "I'm not sure that will work. We have some specific needs for the group.\n\nPriya has a severe nut allergy (epipen \u2014 no peanuts, cashews, or pine nuts). Sam has a shellfish allergy including fish sauce. Tom has a strict $25/person budget cap. Diego cannot do spicy food unless spice/salsa is strictly on the side. And Yuki has daycare pickup and MUST leave by 19:15 (7:15 PM), so the table must be seated by 18:30 or earlier for a 45-minute dinner.",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_walk_min": 60,
+          "max_price": 25
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "curry"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "restaurant_id": "taqueria",
+          "time": "18:30",
+          "party_size": 5
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "time": "18:30",
+          "restaurant_id": "taqueria",
+          "party_size": 5
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"18:30\", \"reason\": \"Taqueria Luna can accommodate all dietary restrictions and budget. They are nut-safe and shellfish-safe, offer spice on the side, and you can be seated by 6:30 PM for a 45-minute dinner, allowing Yuki to leave by 7:15 PM. The price per person is $16.\"}",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "That sounds perfect! Can you go ahead and book that for us?",
+       "tools": [],
+       "agent": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"18:30\", \"reason\": \"Taqueria Luna can accommodate all dietary restrictions and budget. They are nut-safe and shellfish-safe, offer spice on the side, and you can be seated by 6:30 PM for a 45-minute dinner, allowing Yuki to leave by 7:15 PM. The price per person is $16.\"}",
+       "eval_status": "FAILED"
+      }
+     ],
+     "restaurant": "green",
+     "time": "19:00",
+     "hungry": 2,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": false,
+       "why": "~$52/person against Tom's $25 budget"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": false,
+       "why": "Yuki has to leave by 19:15; the table isn't seated until 19:00"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": [
+      "multi-turn: premature commit \u2014 called book_table on turn 1 before asking the group's constraints",
+      "trajectory: double-booked 2 tables (The Green Fork, Taqueria Luna)",
+      "trajectory: 11 tool calls exceeded budget (10)",
+      "Tom: ~$52/person against Tom's $25 budget",
+      "Yuki: Yuki has to leave by 19:15; the table isn't seated until 19:00"
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "score": 0.2,
+     "elicited": false,
+     "booked_turn_1": true,
+     "turn_count": 2,
+     "turns": [
+      {
+       "user": "Hey there \u2014 need a table for 4 tonight (p16 \u2014 Priya, Tom, Amara, and Ben). Where should we go?",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_walk_min": 60,
+          "max_price": 100
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "smoke"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "bistro"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "green"
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "restaurant_id": "green",
+          "party_size": 4,
+          "time": "20:00"
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"The Green Fork\", \"time\": \"20:00\", \"reason\": \"The Green Fork has a seasonal tasting menu with vegan and vegetarian options, and is nut and shellfish safe. Your table for 4 is booked for 8:00 PM.\"}",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "That sounds great! Can you confirm the booking for me?",
+       "tools": [],
+       "agent": "I have already booked the table for you at The Green Fork for 4 people at 8:00 PM.",
+       "eval_status": "FAILED"
+      }
+     ],
+     "restaurant": "green",
+     "time": "20:00",
+     "hungry": 2,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": false,
+       "why": "~$52/person against Tom's $25 budget"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": false,
+       "why": "14-min walk \u2014 past Amara's 10-min limit"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": [
+      "multi-turn: premature commit \u2014 called book_table on turn 1 before asking the group's constraints",
+      "Tom: ~$52/person against Tom's $25 budget",
+      "Amara: 14-min walk \u2014 past Amara's 10-min limit"
+     ]
+    }
+   ]
+  },
+  {
+   "passed": 4,
+   "failed": 0,
+   "hungry": 0,
+   "seats": 18,
+   "elicited_count": 4,
+   "judge": "multiturn_dinner",
+   "criteria": [
+    "multiturn_dinner"
+   ],
+   "instruction": "eliciting",
+   "parties": [
+    {
+     "party": "p1",
+     "status": "PASSED",
+     "score": 1.0,
+     "elicited": true,
+     "booked_turn_1": false,
+     "turn_count": 2,
+     "turns": [
+      {
+       "user": "Hey! Can you book a dinner table tonight for the 5 of us (p1 \u2014 Nadia, Tom, Amara, Lena, and Ben)?",
+       "tools": [],
+       "agent": "Hi! I can help with that. To make sure I pick the best place, could you tell me:\n\n*   **Dietary restrictions or allergies** (e.g., vegan, nut allergy, shellfish allergy)?\n*   **Preferred cuisine**?\n*   **Maximum budget per person**?\n*   **How far are you willing to walk** (in minutes)?\n*   **What time are you hoping to have dinner**?\n*   **Is there a specific time you need to be done by**?",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Okay, I can totally give you those details!\n\nNadia is strictly vegan. Tom has a hard $25 per person max budget. Amara is on crutches and can only walk for 10 minutes. Ben doesn't have any requirements. And Lena just texted that her train is late, so she can't get there before 7:45 PM, and the kitchen needs to still be taking orders when she arrives.",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_price": 25,
+          "max_walk_min": 10
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "noodle"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "party_size": 5,
+          "time": "19:45",
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "restaurant_id": "pho",
+          "time": "19:45",
+          "party_size": 5
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"Pho Saigon\", \"time\": \"19:45\", \"reason\": \"Pho Saigon has vegan options, is within budget and walking distance, and can seat your party of 5 at 7:45 PM with the kitchen still open.\"}",
+       "eval_status": "PASSED"
+      }
+     ],
+     "restaurant": "pho",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "nadia",
+       "name": "Nadia",
+       "label": "vegan",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": []
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "score": 1.0,
+     "elicited": true,
+     "booked_turn_1": false,
+     "turn_count": 3,
+     "turns": [
+      {
+       "user": "Hi! Looking to grab dinner tonight for 4 people (p2 \u2014 Sam, Lena, Tom, and Ben). Can you book us somewhere?",
+       "tools": [],
+       "agent": "I can help with that! To make sure I pick the perfect spot, could you tell me:\n\n*   What's your budget per person?\n*   How far are you willing to walk (in minutes)?\n*   Are there any dietary restrictions or allergies (e.g., vegan, nut allergy, shellfish allergy)?\n*   What time are you hoping to have dinner, and do you need to be done by a certain time?",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Okay, I can give you those details!\n\nHere are the restrictions for the group:\n1. Sam has a shellfish allergy, and that includes fish sauce.\n2. Tom has a strict budget of $25 per person.\n3. Lena can't get there before 7:45 PM.\n4. Ben doesn't have any specific requirements.",
+       "tools": [],
+       "agent": "Thanks, this is helpful! What's the maximum distance you're all willing to walk to the restaurant?",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Ben is fine with walking distance, so there are no restrictions there.",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_price": 25
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "curry"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "noodle"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "time": "19:45",
+          "party_size": 4,
+          "restaurant_id": "curry"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "time": "19:45",
+          "party_size": 4,
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "party_size": 4,
+          "restaurant_id": "curry",
+          "time": "19:45"
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"Curry House\", \"time\": \"19:45\", \"reason\": \"Curry House can accommodate your party of 4 at 7:45 PM, has options for all dietary needs, and fits within your budget.\"}",
+       "eval_status": "PASSED"
+      }
+     ],
+     "restaurant": "curry",
+     "time": "19:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "lena",
+       "name": "Lena",
+       "label": "can't arrive before 19:45",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": []
+    },
+    {
+     "party": "p10",
+     "status": "PASSED",
+     "score": 1.0,
+     "elicited": true,
+     "booked_turn_1": false,
+     "turn_count": 3,
+     "turns": [
+      {
+       "user": "Could you book an early-ish dinner tonight for 5 of us (p10 \u2014 Priya, Sam, Tom, Yuki, and Diego)?",
+       "tools": [],
+       "agent": "I'd love to help! To make sure I pick the perfect spot, could you tell me:\n\n*   What time are you hoping to have dinner?\n*   Are there any dietary restrictions (like vegan, nut allergies, or shellfish allergies)?\n*   What's your budget per person?\n*   How far are you willing to walk to the restaurant?",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Okay, so for timing, Yuki has daycare pickup and MUST leave by 7:15 PM, so we need to be seated by 6:30 PM at the latest for a 45-minute dinner.\n\nFor dietary stuff, Priya has a severe nut allergy (epipen \u2014 no peanuts, cashews, or pine nuts), and Sam has a shellfish allergy, including fish sauce. Diego can't do spicy food unless the spice or salsa is strictly on the side.\n\nTom has a strict $25 per person budget cap.\n\nI don't have any info about how far we're willing to walk.",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_price": 25
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "curry"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "noodle"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "time": "17:45",
+          "restaurant_id": "taqueria",
+          "party_size": 5
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "party_size": 5,
+          "restaurant_id": "taqueria",
+          "time": "17:45"
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:45\", \"reason\": \"Taqueria Luna can accommodate all dietary restrictions, is within budget, and allows you to be seated by 6:30 PM and finish by 7:15 PM.\"}",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "That sounds great! Can you confirm the booking for Taqueria Luna at 5:45 PM?",
+       "tools": [],
+       "agent": "I've already booked the table for you! Here are the details:\n\n```json\n{\n\"restaurant\": \"Taqueria Luna\",\n\"time\": \"17:45\",\n\"reason\": \"Taqueria Luna can accommodate all dietary restrictions, is within budget, and allows you to be seated by 6:30 PM and finish by 7:15 PM.\"\n}\n```",
+       "eval_status": "PASSED"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "17:45",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "sam",
+       "name": "Sam",
+       "label": "shellfish allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "yuki",
+       "name": "Yuki",
+       "label": "must leave by 19:15 (childcare)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "diego",
+       "name": "Diego",
+       "label": "can't do spicy",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": []
+    },
+    {
+     "party": "p16",
+     "status": "PASSED",
+     "score": 1.0,
+     "elicited": true,
+     "booked_turn_1": false,
+     "turn_count": 3,
+     "turns": [
+      {
+       "user": "Hey there \u2014 need a table for 4 tonight (p16 \u2014 Priya, Tom, Amara, and Ben). Where should we go?",
+       "tools": [],
+       "agent": "I can help with that! To recommend the best restaurant, I need a little more information. Could you please tell me:\n\n*   **Dietary restrictions or allergies** for anyone in the group (e.g., vegan, nut allergy, shellfish allergy)?\n*   Your **budget per person**?\n*   How far are you willing to **walk** (in minutes)?\n*   Your preferred **arrival time** and if there's a **latest departure time**?",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Okay, so here's the deal with everyone:\n\n1.  Priya has a severe nut allergy, so no peanuts, peanut oil, peanut sauce, cashews, or pine nuts.\n2.  Tom's got a strict $25 per person budget.\n3.  Amara's on crutches, so she can only walk for 10 minutes max.\n4.  Ben is totally free all evening, no restrictions at all.\n\nI don't have a preferred arrival or departure time, so whatever works best for the booking is fine!",
+       "tools": [
+        {
+         "name": "list_restaurants",
+         "args": {
+          "max_walk_min": 10,
+          "max_price": 25
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "pho"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "inspect_kitchen",
+         "args": {
+          "restaurant_id": "noodle"
+         }
+        },
+        {
+         "name": "check_seating",
+         "args": {
+          "party_size": 4,
+          "time": "17:00",
+          "restaurant_id": "taqueria"
+         }
+        },
+        {
+         "name": "book_table",
+         "args": {
+          "party_size": 4,
+          "restaurant_id": "taqueria",
+          "time": "17:00"
+         }
+        }
+       ],
+       "agent": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:00\", \"reason\": \"Taqueria Luna accommodates all dietary needs and restrictions, including Priya's nut allergy, Tom's budget, and Amara's mobility. The kitchen is open and can seat your party of 4 at 17:00.\"}",
+       "eval_status": "NOT_EVALUATED"
+      },
+      {
+       "user": "Sounds good! Can you book that for us?",
+       "tools": [],
+       "agent": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:00\", \"reason\": \"Taqueria Luna accommodates all dietary needs and restrictions, including Priya's nut allergy, Tom's budget, and Amara's mobility. The kitchen is open and can seat your party of 4 at 17:00.\"}",
+       "eval_status": "PASSED"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "17:00",
+     "hungry": 0,
+     "seats": [
+      {
+       "id": "priya",
+       "name": "Priya",
+       "label": "severe nut allergy",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "tom",
+       "name": "Tom",
+       "label": "budget $25/person",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "amara",
+       "name": "Amara",
+       "label": "10-min walk max (crutches this month)",
+       "ate": true,
+       "why": "ate"
+      },
+      {
+       "id": "ben",
+       "name": "Ben",
+       "label": "easy \u2014 anything works",
+       "ate": true,
+       "why": "ate"
+      }
+     ],
+     "whys": []
+    }
+   ]
   }
  ]
 }

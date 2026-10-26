@@ -17,11 +17,13 @@ function CopyBrief() {
 }
 
 export default function Workbench({ open, onClose, guide, course }: { open: boolean; onClose: () => void; guide: WbGuide; course: number }) {
-  const src = `${ORIGIN}/workbench/dev-ui/?app=host`;
+  const key = COURSES[course - 1]?.key;
+  const appName = key === "trajectory" || key === "multiturn" ? "concierge" : "host";
+  const src = `${ORIGIN}/workbench/dev-ui/?app=${appName}`;
   return (
     <div className={"drawer" + (open ? " open" : "")} aria-hidden={!open}>
       <div className="hd">
-        <span>🔬 THE WORKBENCH · adk web · same host, same sessions, same exam</span>
+        <span>🔬 THE WORKBENCH · adk web · {appName}, same sessions, same exam</span>
         <span style={{ display: "flex", gap: 8 }}>
           <a className="btn" href={src} target="_blank" rel="noreferrer">open in a tab ↗</a>
           <button className="btn" onClick={onClose}>✕</button>

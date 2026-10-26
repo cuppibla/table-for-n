@@ -152,7 +152,7 @@ def _replays() -> dict:
     try:
         return json.loads(REPLAYS.read_text())
     except (OSError, json.JSONDecodeError):
-        return {"exams": [], "loops": []}
+        return {"exams": [], "loops": [], "traj_exams": [], "mt_exams": []}
 
 
 @app.get("/api/replay")
@@ -162,11 +162,17 @@ async def get_replay() -> dict:
     crit = progress._criteria()
     judge_now = "rating" if state.STATE.get("judge") == "rating" else ("everyone_ate" if "everyone_ate" in crit else "text")
     kind = instruction.kind()
-    match = next((e for e in rep["exams"] if e["judge"] == judge_now and e["instruction"] == kind), None)
+    traj_judge_now = jobs._traj_judge(ROOT / "exam" / "eval_config_trajectory.json")
+    c_kind = instruction.concierge_kind()
+    match = next((e for e in rep.get("exams", []) if e["judge"] == judge_now and e["instruction"] == kind), None)
+    traj_match = next((e for e in rep.get("traj_exams", []) if e.get("judge") == traj_judge_now), None)
+    mt_match = next((e for e in rep.get("mt_exams", []) if e.get("instruction") == c_kind), None)
     return {"recorded": rep.get("recorded"), "model": rep.get("model"),
-            "exams": [{"judge": e["judge"], "instruction": e["instruction"], "passed": e["passed"], "hungry": e["hungry"]} for e in rep["exams"]],
+            "exams": [{"judge": e["judge"], "instruction": e["instruction"], "passed": e["passed"], "hungry": e["hungry"]} for e in rep.get("exams", [])],
             "now": {"judge": judge_now, "instruction": kind}, "available": match is not None,
-            "loop_available": bool(rep["loops"]) and progress._edge()}
+            "loop_available": bool(rep.get("loops")) and progress._edge(),
+            "traj_now": {"judge": traj_judge_now}, "traj_available": traj_match is not None,
+            "mt_now": {"instruction": c_kind}, "mt_available": mt_match is not None}
 
 
 @app.post("/api/replay")
@@ -181,7 +187,7 @@ async def post_replay(req: Request) -> dict:
         crit = progress._criteria()
         judge_now = "rating" if state.STATE.get("judge") == "rating" else ("everyone_ate" if "everyone_ate" in crit else "text")
         kind = instruction.kind()
-        match = next((e for e in rep["exams"] if e["judge"] == judge_now and e["instruction"] == kind), None)
+        match = next((e for e in rep.get("exams", []) if e["judge"] == judge_now and e["instruction"] == kind), None)
         if match is None:
             raise HTTPException(400, f"no recorded run for {judge_now} × {kind} — change the files to a state we recorded, or run it for real")
         row = state.push("exams", {**match, "replayed": True})
@@ -190,11 +196,27 @@ async def post_replay(req: Request) -> dict:
     if what == "loop":
         if not progress._edge():
             raise HTTPException(400, "the recorded loop run has the back edge in — write it first (course VII)")
-        if not rep["loops"]:
+        if not rep.get("loops"):
             raise HTTPException(400, "no recorded loop run")
         row = state.push("loops", {**rep["loops"][0], "replayed": True})
         return {"replayed": "loop", **{k: row[k] for k in ("rounds", "decision", "score")}}
-    raise HTTPException(400, "what must be exam or loop")
+    if what == "traj_exam":
+        traj_judge_now = jobs._traj_judge(ROOT / "exam" / "eval_config_trajectory.json")
+        match = next((e for e in rep.get("traj_exams", []) if e.get("judge") == traj_judge_now), None)
+        if match is None:
+            raise HTTPException(400, f"no recorded trajectory run for {traj_judge_now} — use EXACT or kitchen_ticket, or run it for real")
+        row = state.push("traj_exams", {**match, "replayed": True})
+        events.emit("traj_exam_scored", **{k: v for k, v in row.items() if k != "parties"})
+        return {"replayed": "traj_exam", "judge": traj_judge_now, "passed": row["passed"], "hungry": row.get("hungry")}
+    if what == "mt_exam":
+        c_kind = instruction.concierge_kind()
+        match = next((e for e in rep.get("mt_exams", []) if e.get("instruction") == c_kind), None)
+        if match is None:
+            raise HTTPException(400, f"no recorded multi-turn run for concierge instruction {c_kind!r} — use eager or eliciting, or run it for real")
+        row = state.push("mt_exams", {**match, "replayed": True})
+        events.emit("mt_exam_scored", **{k: v for k, v in row.items() if k != "parties"})
+        return {"replayed": "mt_exam", "instruction": c_kind, "passed": row["passed"], "hungry": row.get("hungry")}
+    raise HTTPException(400, "what must be exam, loop, traj_exam, or mt_exam")
 
 
 # ── the switch ───────────────────────────────────────────────────────────────
@@ -217,7 +239,7 @@ async def post_judge(req: Request) -> dict:
 
 
 # ── the source, read-only ────────────────────────────────────────────────────
-SOURCE_OK = ("host/", "exam/", "metrics/", "instructions/", "loop/", "kitchen/", "scripts/", "refuel/", "world.py", "README.md", "table.sh", "pyproject.toml")
+SOURCE_OK = ("host/", "concierge/", "exam/", "metrics/", "instructions/", "loop/", "kitchen/", "scripts/", "refuel/", "tests/", "world.py", "README.md", "table.sh", "pyproject.toml")
 
 
 @app.get("/api/source")
@@ -267,8 +289,13 @@ async def get_instruction() -> dict:
 @app.post("/api/install")
 async def post_install(req: Request) -> dict:
     body = await req.json()
+    which = body.get("which", "")
+    target = body.get("target", "host")
     try:
-        out = instruction.install(body.get("which", ""))
+        if target == "concierge" or which in ("eager", "eliciting"):
+            out = instruction.concierge_install(which)
+        else:
+            out = instruction.install(which)
     except KeyError as exc:
         raise HTTPException(400, f"unknown instruction {exc}") from exc
     except FileNotFoundError as exc:

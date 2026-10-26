@@ -51,6 +51,16 @@ function wbGuide(course: number, p: Progress | null): WbGuide {
     see: kind === "hacked" ? "Smoke & Barrel, a reason about ratings — not one person named. rating: 8 PASS. everyone_ate: 1 PASS. The same eight answers."
       : "install the hacked instruction on the page first." };
   if (key === "loop") return { steps: ["nothing to do here — the loop is its own graph (loop/flywheel.py) with its own host node; the host you chat with here is untouched"], see: "nothing new for this course." };
+  if (key === "trajectory") return {
+    steps: ["concierge is pre-selected in the agent dropdown — open Evals tab → 🕓 history to inspect the trajectory run (concierge/.adk/eval_history)",
+      "click any party: expand the invocation events to see list_restaurants, inspect_kitchen, and book_table calls alongside the golden trajectory"],
+    see: "every tool call in intermediate_data that EXACT rejected and kitchen_ticket verified." };
+  if (key === "multiturn") return {
+    steps: ["chat directly with concierge: say “Can you book a table for 5 tonight?” without sharing dietary or budget rules",
+      "or open Evals → 🕓 history → concierge_multiturn to read the full multi-turn conversation between concierge and ADK’s NOVICE simulator"],
+    see: (p?.code?.concierge_instruction || "eager") === "eager"
+      ? "under eager: concierge books blind on turn 1. Rewrite rule 3, then ask again."
+      : "under eliciting: concierge asks one concise question before touching book_table." };
   return { steps: ["Evals → 🕓 history: every exam you ran, in order, with the metric that graded each — the CLI’s, the page’s, and pytest’s"], see: "the whole evening, as ADK recorded it." };
 }
 
@@ -100,7 +110,7 @@ export default function TablePage() {
       const k = lastBig.installed as string;
       setNudge(`instruction changed (${k}) — compare in adk web`);
       setToast(`installed: ${k}`);
-    } else if (lastBig.type === "exam_scored") {
+    } else if (lastBig.type === "exam_scored" || lastBig.type === "traj_exam_scored" || lastBig.type === "mt_exam_scored") {
       setNudge(`exam done — it is in adk web’s history too`);
     } else if (lastBig.type === "file_saved" && String(lastBig.path).includes("eval_config")) {
       setNudge(`criteria changed — the next exam uses it`);

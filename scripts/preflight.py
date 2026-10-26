@@ -49,6 +49,7 @@ def why(mode: str) -> str:
 def menu(p: dict) -> list[str]:
     code, lit = p["code"], p["lit"]
     crit = ", ".join(code.get("criteria", [])) or "—"
+    tcrit = ", ".join(code.get("traj_criteria", [])) or "—"
     rows = [
         (1, "I", "the booking", "a reply is not a result", "read only · book one in the workbench"),
         (2, "II", "the comparator", f"the exam runs {crit}", "run it as shipped · read the verdicts"),
@@ -57,9 +58,11 @@ def menu(p: dict) -> list[str]:
         (5, "V", "the rewrite", f"instruction: {code.get('instruction', '?')}", "optimize · install · ship gate"),
         (6, "VI", "the other judge", "rating_score never reads the party", "install hacked · flip the switch"),
         (7, "VII", "the loop", "the back edge is in" if code.get("edge") else "no back edge yet", "delete one “# ” in loop/flywheel.py"),
-        (8, "VIII", "the check", "", "eight courses"),
+        (8, "VIII", "the ticket", f"trajectory exam runs {tcrit}", "edit one line in exam/eval_config_trajectory.json"),
+        (9, "IX", "the group chat", f"concierge: {code.get('concierge_instruction', '?')}", "edit rule 3 in concierge/instruction_current.txt"),
+        (10, "X", "the check", "", "ten courses"),
     ]
-    return [f"  {r:<4}{TICK if lit.get(str(n)) else BOX} {name:<16}{DIM}· {how:<40}{note}{OFF}"
+    return [f"  {r:<5}{TICK if lit.get(str(n)) else BOX} {name:<16}{DIM}· {how:<40}{note}{OFF}"
             for n, r, name, how, note in rows]
 
 

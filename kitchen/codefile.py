@@ -16,9 +16,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # path → what the course says about it
 FILES: dict[str, str] = {
-    "exam/eval_config.json": "course II — which metric is on the exam",
-    "loop/flywheel.py": "course V — the edge that makes a graph a loop",
+    "exam/eval_config.json": "course III — which metric is on the exam",
+    "loop/flywheel.py": "course VII — the edge that makes a graph a loop",
     "host/instruction_current.txt": "the instruction the host runs under (the loop rewrites it; you can read it)",
+    "exam/eval_config_trajectory.json": "course VIII — which trajectory metric grades the concierge's tool calls",
+    "concierge/instruction_current.txt": "course IX — the instruction the conversational concierge runs under",
+    "exam/eval_config_multiturn.json": "course IX — the multi-turn metric and user simulator config",
 }
 
 

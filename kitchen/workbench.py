@@ -55,18 +55,20 @@ def app() -> FastAPI:
     return _app
 
 
-async def forget(app_name: str = APP) -> None:
+async def forget(app_name: str | None = None) -> None:
     """After a save or an install: the workbench's next run imports the file as it is now."""
     srv = _server
     if srv is None:
         return
-    runner = getattr(srv, "runner_dict", {}).pop(app_name, None)
-    if runner is not None:
+    names = (app_name,) if app_name else ("host", "concierge")
+    for name in names:
+        runner = getattr(srv, "runner_dict", {}).pop(name, None)
+        if runner is not None:
+            with contextlib.suppress(Exception):
+                from google.adk.cli.utils import cleanup
+                await cleanup.close_runners([runner])
         with contextlib.suppress(Exception):
-            from google.adk.cli.utils import cleanup
-            await cleanup.close_runners([runner])
-    with contextlib.suppress(Exception):
-        srv.agent_loader.remove_agent_from_cache(app_name)
+            srv.agent_loader.remove_agent_from_cache(name)
 
 
 def sessions() -> SqliteSessionService:
