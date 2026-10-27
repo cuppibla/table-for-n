@@ -15,7 +15,7 @@ the number lie, and close the loop.
 | III · the judge | a checker function as a custom `adk eval` metric · the six checks inside it | swap one line in `exam/eval_config.json` · 📋 book | the exam fails with hungry seats, named |
 | IV · the flight | three metric families: comparator · checker · LLM-as-judge | ⚖ judge one answer three ways · press it again | a flight was judged |
 | V · the rewrite | `adk optimize` (GEPA) rewrites the instruction from the failures | ⚗ optimize, or install the prebaked winner · 🚪 ship gate | the gate opens on 8 parties the optimizer never saw |
-| VI · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
+| VI · the other judge | reward hacking: a proxy metric that cannot see harm | one button: install the hacked instruction and book under it | one dinner: ★ passed · people hungry (our exam: rating 8/8 · honest 1/8) |
 | VII · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
 | VIII · the check | what each thing replaced | nothing | — |
 | IX · the receipt *(beyond the menu)* | production is dinners nobody planned to grade | one line in `host/agent.py` — `plugins=analytics()` | 📋 book · 🧾 show the row · ⛏ harvest |

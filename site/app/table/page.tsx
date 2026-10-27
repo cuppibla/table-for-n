@@ -7,7 +7,7 @@ import FloorPlan from "@/components/FloorPlan";
 import Menu from "@/components/Menu";
 import Stage from "@/components/Stage";
 import Workbench from "@/components/Workbench";
-import { book, getProgress, setJudge, type Progress, ORIGIN } from "@/lib/api";
+import { book, getProgress, type Progress, ORIGIN } from "@/lib/api";
 import { CHECK, COURSES, LAST, SHORT_TAG, keyOf } from "@/lib/courses";
 import { isBig, useEvents, type Seat } from "@/lib/useEvents";
 
@@ -47,8 +47,8 @@ function wbGuide(course: number, p: Progress | null): WbGuide {
       : kind === "hacked" ? "the hacked instruction is installed (course VI) — ↺ back to the winner first."
       : `under the ${kind === "optimized" ? "optimized" : "winner"} instruction: a room every seat can eat at, and a reason that names Tom’s cap and Lena’s last orders.` };
   if (key === "other") return {
-    steps: chat.slice(0, 2).concat(["Evals → parties_val → Run evaluation with rating, then once more with everyone_ate (or open 🕓 history: the page’s two runs are there)"]),
-    see: kind === "hacked" ? "Smoke & Barrel, a reason about ratings — not one person named. rating: 8 PASS. everyone_ate: 1 PASS. The same eight answers."
+    steps: chat.slice(0, 2).concat(["optional: Evals → parties_val → Run evaluation with everyone_ate, then once more with rating — the same eight answers, two verdicts"]),
+    see: kind === "hacked" ? "Smoke & Barrel, a reason about ratings — not one person named. The honest judge greys the chairs; the critic gives it ★ PASSED."
       : "install the hacked instruction on the page first." };
   if (key === "loop") return { steps: ["nothing to do here — the loop is its own graph (loop/flywheel.py) with its own host node; the host you chat with here is untouched"], see: "nothing new for this course." };
   return { steps: ["Evals → 🕓 history: every exam you ran, in order, with the metric that graded each — the CLI’s, the page’s, and pytest’s"], see: "the whole evening, as ADK recorded it." };
@@ -112,7 +112,6 @@ export default function TablePage() {
 
   const go = (n: number) => { setCourse(n); try { localStorage.setItem(CH_KEY, String(n)); } catch { /* ignore */ } };
   const setParty = (s: string) => { setPartyState(s); try { localStorage.setItem("tfn.party", s); } catch { /* ignore */ } };
-  const onJudge = async (to: "everyone_ate" | "rating") => { try { await setJudge(to); refresh(); } catch (e) { setToast((e as Error).message); } };
   const onBook = async () => {
     setBooking(true);
     try { const r = await book(party); if (!r.ok) setToast(String(r.error || "the host did not book")); }
@@ -148,10 +147,10 @@ export default function TablePage() {
       <Menu current={course} lit={lit} onPick={go} />
 
       <div className="main">
-        <Stage course={c} p={p} f={f} view={view} party={party} setParty={setParty} onJudge={onJudge} onBook={onBook} booking={booking} fallback={fallback} />
+        <Stage course={c} p={p} f={f} view={view} party={party} setParty={setParty} onBook={onBook} booking={booking} fallback={fallback} />
         <div style={{ display: "grid", gap: 16 }}>
           <FloorPlan n={course} p={p} f={f} />
-          <Course n={course} p={p} f={f} party={party} onGo={go} onChanged={refresh} onCheck={() => setCheck(true)} />
+          <Course n={course} p={p} f={f} party={party} onGo={go} onChanged={refresh} onCheck={() => setCheck(true)} onBook={onBook} booking={booking} />
         </div>
       </div>
 

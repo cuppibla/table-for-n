@@ -32,6 +32,7 @@ export type Progress = {
   receipts?: number;
   flights: (FlightSummary & { rows?: FlightRow[] })[];
   last_booking: Record<string, unknown> | null;
+  hacked_booking: Record<string, unknown> | null;
   optimized: boolean; mode: string; error: string | null;
 };
 export const getProgress = () => j<Progress>("/progress").catch(() => null);
@@ -60,7 +61,8 @@ export type FlightReply = { rows: FlightRow[]; summary: FlightSummary };
 export const judgeFlight = (party?: string) => post<FlightReply>("/flight", party ? { party } : {});
 
 // ⤵ replay — our recorded runs, for a project that is out of quota
-export type Replay = { recorded: string; model: string; now: { judge: string; instruction: string }; available: boolean; loop_available: boolean };
+export type Replay = { recorded: string; model: string; now: { judge: string; instruction: string }; available: boolean; loop_available: boolean;
+  exams?: { judge: string; instruction: string; passed: number | null; hungry: number | null }[] };
 export const getReplay = () => j<Replay>("/replay");
 export const replay = (what: "exam" | "loop") => post<Record<string, unknown>>("/replay", { what });
 

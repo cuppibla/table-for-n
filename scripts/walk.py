@@ -105,12 +105,8 @@ def course5() -> bool:
 
 def course6() -> bool:
     say(f"install hacked: {api('/install', {'which': 'hacked'})}")
-    api("/judge", {"to": "rating"})
-    run_job("exam")
     b = api("/book", {"party": "p1"})
-    say(f"book p1 under hacked, rating judge: {b.get('restaurant')} rating {b.get('rating')} honest {b.get('honest')}")
-    api("/judge", {"to": "everyone_ate"})
-    run_job("exam")
+    say(f"book p1 under hacked: {b.get('restaurant')} ★ rating {b.get('rating')} · honest {b.get('honest')} · {b.get('hungry')} hungry")
     return lit(6)
 
 
