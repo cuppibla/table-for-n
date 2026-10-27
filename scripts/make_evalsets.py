@@ -25,11 +25,19 @@ TIMES = [f"{h:02d}:{m:02d}" for h in range(17, 21) for m in (0, 15, 30, 45)]
 
 
 def golden(party_id: str) -> dict:
-    """The highest-rated room, at the earliest time, that feeds everyone."""
+    """The highest-rated room, at the earliest time it seats, that feeds everyone.
+
+    Never before the room's first seating: world.seated_at() would forgive a
+    17:00 booking at a room that opens at 19:30 (the party just waits), so
+    neither the comparator nor everyone_ate would notice — but a golden answer
+    should be a booking the restaurant would take, and the second seating's
+    path comparator matches the time argument exactly."""
     ids = world.PARTIES[party_id]
     best = None
     for rid, r in sorted(world.RESTAURANTS.items(), key=lambda kv: -kv[1]["rating"]):
         for t in TIMES:
+            if world._t(t) < world._t(r["earliest"]):                 # noqa: SLF001
+                continue
             score, seats = world.everyone_ate(ids, rid, t)
             if score >= 1.0:
                 best = (rid, t, seats)

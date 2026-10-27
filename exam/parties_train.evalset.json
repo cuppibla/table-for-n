@@ -18,7 +18,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"The Green Fork\", \"time\": \"17:00\", \"reason\": \"The Green Fork at 17:00 works for every seat \\u2014 Marcus, Nadia, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"The Green Fork\", \"time\": \"18:00\", \"reason\": \"The Green Fork at 18:00 works for every seat \\u2014 Marcus, Nadia, Ben all eat.\"}"
               }
             ],
             "role": "model"
@@ -108,7 +108,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"17:00\", \"reason\": \"Olive & Thyme at 17:00 works for every seat \\u2014 Priya, Nadia, Amara, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme at 18:00 works for every seat \\u2014 Priya, Nadia, Amara, Ben all eat.\"}"
               }
             ],
             "role": "model"
@@ -138,7 +138,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"17:00\", \"reason\": \"Pho Saigon at 17:00 works for every seat \\u2014 Yuki, Tom, Diego, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"17:30\", \"reason\": \"Pho Saigon at 17:30 works for every seat \\u2014 Yuki, Tom, Diego, Ben all eat.\"}"
               }
             ],
             "role": "model"

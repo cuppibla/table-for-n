@@ -78,7 +78,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"17:00\", \"reason\": \"Olive & Thyme at 17:00 works for every seat \\u2014 Marcus, Priya, Yuki, Diego, Amara, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme at 18:00 works for every seat \\u2014 Marcus, Priya, Yuki, Diego, Amara, Ben all eat.\"}"
               }
             ],
             "role": "model"
@@ -138,7 +138,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"17:00\", \"reason\": \"Pho Saigon at 17:00 works for every seat \\u2014 Marcus, Tom, Diego, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"17:30\", \"reason\": \"Pho Saigon at 17:30 works for every seat \\u2014 Marcus, Tom, Diego, Ben all eat.\"}"
               }
             ],
             "role": "model"
@@ -168,7 +168,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"17:00\", \"reason\": \"Olive & Thyme at 17:00 works for every seat \\u2014 Nadia, Yuki, Amara, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme at 18:00 works for every seat \\u2014 Nadia, Yuki, Amara, Ben all eat.\"}"
               }
             ],
             "role": "model"
@@ -198,7 +198,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"17:00\", \"reason\": \"Smoke & Barrel at 17:00 works for every seat \\u2014 Sam, Diego, Lena, Ben all eat.\"}"
+                "text": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Smoke & Barrel at 19:30 works for every seat \\u2014 Sam, Diego, Lena, Ben all eat.\"}"
               }
             ],
             "role": "model"
