@@ -22,13 +22,14 @@ export type FlightSummary = { ts?: number; n: number; comparator_passed: number;
   same_as_last: { comparator: boolean; checker: boolean; llm: boolean } | null };
 export type Progress = {
   code: { criteria: string[]; honest_on_exam: boolean; instruction: string; instruction_chars: number; edge: boolean; engine: string;
-    library: Record<string, boolean> };
+    library: Record<string, boolean>; analytics?: boolean; dataset?: string; project?: string };
   lit: Record<string, boolean>;
   judge: "everyone_ate" | "rating";
   workbench_calls: number;
   last_exam: Exam | null; exams: Exam[];
   loops: { ts?: number; replayed?: boolean; rounds: number; decision: string | null; score: number | null; closed: boolean; edge: boolean }[];
-  harvest: { minted: number; skipped: number; ts: number | null };
+  harvest: { minted: number; skipped: number; graded?: number; ts: number | null; source?: string | null };
+  receipts?: number;
   flights: (FlightSummary & { rows?: FlightRow[] })[];
   last_booking: Record<string, unknown> | null;
   optimized: boolean; mode: string; error: string | null;
@@ -63,9 +64,19 @@ export type Replay = { recorded: string; model: string; now: { judge: string; in
 export const getReplay = () => j<Replay>("/replay");
 export const replay = (what: "exam" | "loop") => post<Record<string, unknown>>("/replay", { what });
 
-export type Env = { HOST_ENGINE: string; project: string; mode: string };
+export type Env = { HOST_ENGINE: string; project: string; mode: string; BQ_ANALYTICS_DATASET?: string; BQ_ANALYTICS_TABLE?: string; BQ_ANALYTICS_LOCATION?: string };
 export const getEnv = () => j<Env>("/env");
 export const setEnv = (engine: string) => post<Env>("/env", { HOST_ENGINE: engine });
+export const setDataset = (dataset: string) => post<Env>("/env", { BQ_ANALYTICS_DATASET: dataset });
+
+// course IX · 🧾 the receipt — one booking, read back out of BigQuery's v_eval_turn
+export type ReceiptTurn = { session_id: string; invocation_id: string; user_id: string; turn_start: string | null; eval_ready: boolean;
+  has_error: boolean; tool_error_count: number; llm_error_count: number; agent_error_count: number; has_tool_loop: boolean; has_truncated_content: boolean;
+  distinct_tools_used: number; total_prompt_tokens: number; total_completion_tokens: number; total_tokens: number; turn_latency_ms: number; trace_bytes: number;
+  trace: { agents: Record<string, { instruction: string; tools: number }>; events: { author: string; kind: string; text: string; at?: string }[] } };
+export type Receipt = { ok: boolean; session: string; turns: ReceiptTurn[]; rows: number; waited: number; error: string | null; view: string; table: string;
+  project: string; dataset: string };
+export const getReceipt = (session?: string, wait = 20) => j<Receipt>(`/receipt?wait=${wait}${session ? `&session=${encodeURIComponent(session)}` : ""}`);
 
 export type Ev = Record<string, unknown> & { i: number; ep: number; t: number; type: string };
 export const eventsUrl = () => `${ORIGIN}${API}/events`;

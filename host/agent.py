@@ -15,9 +15,11 @@ lever.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 
 from google.adk.agents import Agent
+from google.adk.apps import App
 from google.genai import types
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -41,4 +43,46 @@ root_agent = Agent(
         thinking_config=types.ThinkingConfig(thinking_budget=THINKING),
         temperature=0.0,
     ),
+)
+
+
+def analytics() -> list:
+    """Course IX — the receipt. One row per event, into BigQuery, from
+    whichever process runs this host: the page's 📋 button, `adk eval`,
+    the loop, or the Agent Engine the deploy job ships it to.
+
+    Off unless `.env` names a dataset (`BQ_ANALYTICS_DATASET`), so courses
+    I–VIII run exactly as before on a laptop with only an API key. The
+    plugin records; it never judges. `create_eval_views=True` makes
+    BigQuery fold the rows into one turn per booking (`v_eval_turn`), with
+    the instruction the host ran under inside the trace.
+    """
+    dataset = os.environ.get("BQ_ANALYTICS_DATASET", "").strip()
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT", "").strip()
+    if not dataset or not project:
+        return []
+    from google.adk.plugins.bigquery_agent_analytics_plugin import BigQueryAgentAnalyticsPlugin, BigQueryLoggerConfig
+
+    return [BigQueryAgentAnalyticsPlugin(
+        project_id=project,
+        dataset_id=dataset,
+        location=os.environ.get("BQ_ANALYTICS_LOCATION", "US"),
+        config=BigQueryLoggerConfig(
+            table_id=os.environ.get("BQ_ANALYTICS_TABLE", "agent_events"),
+            create_eval_views=True,                                    # v_eval_turn · v_eval_session
+            # The page wants the row there by the time you press 🧾, so it
+            # flushes at the end of each run. A deployed host sets BQ_FLUSH=0
+            # and lets the background writer take it off the response path.
+            flush_on_run_end=os.environ.get("BQ_FLUSH", "1") != "0",
+            enable_otel_correlation=True,                              # joins pipe ① (Cloud Trace) to pipe ②
+            custom_tags={"lab": "table-for-n",
+                         "instruction_sha": hashlib.sha1(INSTRUCTION.encode()).hexdigest()[:10]},
+        ),
+    )]
+
+
+app = App(
+    name="host",
+    root_agent=root_agent,
+    plugins=[],                      # ← course IX: plugins=analytics()
 )

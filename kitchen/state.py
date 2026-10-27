@@ -24,8 +24,9 @@ STATE: dict = {
     "bookings": [],                   # {ts, party, judge, restaurant, time, honest, rating, hungry, instruction}
     "flights": [],                    # course IV  · {ts, n, comparator_passed, checker_passed, llm_passed, …, rows}
     "optimized": False,               # runs/optimize/winner.txt exists
-    "harvest": {"minted": 0, "skipped": 0, "ts": None},
+    "harvest": {"minted": 0, "skipped": 0, "ts": None, "source": None},
     "engine": "",                     # HOST_ENGINE as last seen
+    "receipts": 0,                    # course IX · rows read back out of v_eval_turn for a booking made here
 }
 
 

@@ -3,10 +3,10 @@
     exam      adk eval host exam/parties_val.evalset.json --config_file_path …  (via scripts/exam.py, one party at a time)
     optimize  adk optimize host …                       (course III, ~8 min)
     loop      python loop/flywheel.py                   (course V)
-    deploy    adk deploy agent_engine host …            (course VI)
-    traffic   python refuel/send_traffic.py             (course VI)
-    pipe      python refuel/replay_to_bq.py             (course VI)
-    harvest   python refuel/harvest.py                  (course VI)
+    deploy    adk deploy agent_engine host …            (course IX, optional)
+    traffic   python refuel/send_traffic.py             (course IX, optional)
+    harvest   python refuel/harvest.py --source …       (course IX: grade v_eval_turn, mint the failures)
+    pipe      (gone: the host writes its own rows now — kept so old links answer)
 
 One job of each kind at a time. A line a subprocess prints as `@@event {…}`
 is appended to the table's event log (the loop talks to the table that way);
@@ -262,8 +262,11 @@ def _deploy(**_) -> Job:
     project = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
     region = os.environ.get("DEPLOY_REGION", "us-central1")
     # ADK reads the agent package's own .env at deploy — keep host/.env a copy.
+    # The deployed host keeps the BigQuery writer off the response path.
     if (ROOT / ".env").exists():
         shutil.copy(ROOT / ".env", ROOT / "host" / ".env")
+        with open(ROOT / "host" / ".env", "a") as f:
+            f.write("\nBQ_FLUSH=0\n")
     job = Job("deploy", [ADK, "deploy", "agent_engine", "--project", project, "--region", region,
                          "--display_name", "table-for-n host", "--otel_to_cloud", "host"],
               meta={"project": project, "region": region, "instruction": instruction_kind()})
@@ -291,14 +294,23 @@ def _traffic(**_) -> Job:
 
 
 def _pipe(**_) -> Job:
-    job = Job("pipe", [PY, "refuel/replay_to_bq.py"])
+    """Kept for old links. There is no pipe to run any more: since course IX
+    the host writes its own rows while it books (host/agent.py, analytics()),
+    here and on Agent Engine alike."""
+    job = Job("pipe", [PY, "-c", "print('nothing to replay — the host writes its own rows now (course IX). "
+                                "Book a table, press 🧾, or run the harvest.')"])
     job.episode = events.start_episode("pipe")
     return job
 
 
-def _harvest(**_) -> Job:
-    job = Job("harvest", [PY, "refuel/harvest.py"], extra_env={"TABLE_EMIT": "json"})
-    job.episode = events.start_episode("harvest")
+def _harvest(source: str | None = None, **_) -> Job:
+    """`page` grades the bookings made from this page (user_id = table);
+    `engine` the ones refuel/send_traffic.py sent to the deployed host;
+    `all` everything in the view."""
+    source = source if source in ("page", "engine", "all") else "page"
+    job = Job("harvest", [PY, "refuel/harvest.py", "--source", source], extra_env={"TABLE_EMIT": "json"},
+              meta={"source": source})
+    job.episode = events.start_episode("harvest", source=source)
     return job
 
 
@@ -306,6 +318,7 @@ def _finish_harvest(job: Job) -> None:
     text = "\n".join(job.log)
     minted = len(re.findall(r"\[mint\]", text))
     skipped = len(re.findall(r"\[skip\]", text))
+    graded = len(re.findall(r"\[(?:mint|fed) \]|\[mint\]|\[fed\]", text))
     out = ROOT / "exam" / "harvested.evalset.json"
     cases = 0
     if out.exists():
@@ -313,8 +326,10 @@ def _finish_harvest(job: Job) -> None:
             cases = len(json.loads(out.read_text()).get("eval_cases", []))
         except json.JSONDecodeError:
             pass
-    job.summary = {"minted": minted, "skipped": skipped, "cases": cases}
-    state.set_("harvest", {"minted": max(minted, cases), "skipped": skipped, "ts": time.time()})
+    job.summary = {"minted": minted, "skipped": skipped, "graded": graded, "cases": cases}
+    if job.rc == 0:
+        state.set_("harvest", {"minted": max(minted, cases), "skipped": skipped, "graded": graded,
+                               "ts": time.time(), "source": job.meta.get("source")})
 
 
 def _noop(job: Job) -> None:

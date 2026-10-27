@@ -10,6 +10,8 @@ Every course pairs a fact read off the disk with a receipt the kitchen kept:
     VI    the hacked instruction ran both exams: rating 8/8, honest ≤ 2/8
     VII   the back edge is in flywheel.py + a loop run reached round 2 and shipped
     VIII  all of the above
+    IX    beyond the menu: the plugin is on the host + a row came back for a
+          booking made here + a harvest ran over the view     (not part of VIII)
 
 Never a checklist. Never raises — a broken file keeps the last good answer
 and reports the error beside it.
@@ -41,6 +43,13 @@ def _edge() -> bool:
     return bool(re.search(r"\(\s*proposer\s*,\s*publish\s*,\s*host\s*\)", src))
 
 
+def _analytics_on() -> bool:
+    """Course IX's edit: `plugins=analytics()` in host/agent.py's App — read
+    from code, never from the comment that quotes it."""
+    src = codefile.strip_comments((ROOT / "host" / "agent.py").read_text())
+    return bool(re.search(r"plugins\s*=\s*analytics\(\)", src))
+
+
 def _exams(**where) -> list[dict]:
     rows = state.STATE.get("exams", [])
     return [r for r in rows if all(r.get(k) == v for k, v in where.items())]
@@ -58,6 +67,9 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
         loops = state.STATE.get("loops", [])
         harvest = state.STATE.get("harvest", {})
         bookings = state.STATE.get("bookings", [])
+        receipts = int(state.STATE.get("receipts", 0) or 0)
+        analytics_on = _analytics_on()
+        analytics = env.analytics()
 
         flights = state.STATE.get("flights", [])
 
@@ -71,7 +83,8 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
 
         code = {"criteria": crit, "honest_on_exam": "everyone_ate" in crit, "instruction": kind,
                 "instruction_chars": len(cur), "edge": edge, "engine": engine,
-                "library": instruction.available()}
+                "library": instruction.available(),
+                "analytics": analytics_on, "dataset": analytics["dataset"], "project": analytics["project"]}
         # A plate, once earned, stays earned: every receipt below records the
         # file facts that held when it ran (the criteria, the instruction, the
         # edge), so the pairing is inside the receipt — not with today's file.
@@ -85,6 +98,8 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
             7: bool(shipped),
         }
         lit[8] = all(lit[i] for i in range(1, 8))
+        # IX is beyond the menu: it needs a project, so it never gates the check.
+        lit[9] = analytics_on and receipts > 0 and harvest.get("ts") is not None
         last_exam = exams[-1] if exams else None
         out = {"code": code, "lit": {str(k): v for k, v in lit.items()},
                "judge": state.STATE.get("judge", "everyone_ate"),
@@ -92,6 +107,7 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
                "last_exam": last_exam, "exams": exams[-12:], "loops": loops[-6:], "harvest": harvest,
                "flights": flights[-2:],
                "last_booking": bookings[-1] if bookings else None,
+               "receipts": receipts,
                "optimized": state.STATE.get("optimized", False), "mode": env.MODE, "error": None}
         _last_good = out
         return out

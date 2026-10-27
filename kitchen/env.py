@@ -74,6 +74,16 @@ def settle() -> str:
 MODE = settle()
 
 
+def analytics() -> dict:
+    """Course IX — where the host's rows go, if anywhere. Read from .env
+    (the file, like `read_env_line`) so the page tells the truth about the
+    file, and from the process for the project gcloud settled."""
+    dataset = read_env_line("BQ_ANALYTICS_DATASET") or os.environ.get("BQ_ANALYTICS_DATASET", "")
+    return {"project": os.environ.get("GOOGLE_CLOUD_PROJECT", ""), "dataset": dataset,
+            "table": read_env_line("BQ_ANALYTICS_TABLE") or os.environ.get("BQ_ANALYTICS_TABLE", "agent_events"),
+            "location": read_env_line("BQ_ANALYTICS_LOCATION") or os.environ.get("BQ_ANALYTICS_LOCATION", "US")}
+
+
 def read_env_line(key: str) -> str:
     """One `KEY=value` line of .env, or ''. Read from the file, not the process."""
     if not ENV_FILE.exists():

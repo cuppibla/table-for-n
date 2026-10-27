@@ -54,9 +54,14 @@ async def book(party_id: str, judge: str) -> dict:
         env.settle()
         agent_mod = fresh_host()
         kind = instruction_kind()
-        runner = Runner(agent=agent_mod.root_agent, app_name=APP, session_service=sessions())
+        # `host.app` carries the host AND its plugins — course IX's BigQuery
+        # recorder among them, when the edit is in and .env names a dataset.
+        # Same object `adk deploy agent_engine host` ships, so a booking made
+        # here and one made on Agent Engine write the same rows.
+        runner = Runner(app=agent_mod.app, session_service=sessions())
+        recorded = any(type(pl).__name__ == "BigQueryAgentAnalyticsPlugin" for pl in agent_mod.app.plugins)
         session = await sessions().create_session(app_name=APP, user_id=USER)
-        ep = events.start_episode("booking", party=party_id, judge=judge, instruction=kind)
+        ep = events.start_episode("booking", party=party_id, judge=judge, instruction=kind, recorded=recorded)
         events.emit("party_seated", party_id=party_id, people=support.people(party_id))
         text = ""
         try:
@@ -97,5 +102,6 @@ async def book(party_id: str, judge: str) -> dict:
         events.emit("episode_done")
         row = state.push("bookings", {"party": party_id, "judge": judge, "restaurant": rid, "time": time_str,
                                       "honest": round(sc["honest"], 2), "rating": round(sc["rating"], 2),
-                                      "hungry": sc["hungry"], "instruction": kind, "session": session.id})
+                                      "hungry": sc["hungry"], "instruction": kind, "session": session.id,
+                                      "recorded": recorded})
         return {"ok": True, "episode": ep, **row}

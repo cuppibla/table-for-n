@@ -1,6 +1,6 @@
 "use client";
 import type { Progress } from "@/lib/api";
-import { CLOSING, COURSES, LAST } from "@/lib/courses";
+import { CHECK, CLOSING, COURSES } from "@/lib/courses";
 
 /** The check: eight lines, your own numbers, and what tonight cost. */
 export default function Check({ p, name, onClose }: { p: Progress | null; name: string; onClose: () => void }) {
@@ -22,7 +22,7 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
     ["the rewrite · " + (win?.instruction === "optimized" ? "your winner" : "the winner"), win ? `${win.passed}/8 · ${win.hungry} hungry` : "—"],
     ["the other judge · rating", hr || hh ? `★ ${hr ? hr.passed : "–"}/8 · honest ${hh ? hh.passed : "–"}/8` : "—"],
     ["the loop · (proposer, publish, host)", lp ? `R${lp.rounds} · ${lp.decision || "stalled"}` : "—"],
-    ["the check", p?.lit?.[String(LAST)] ? "paid" : "open"],
+    ["the check", p?.lit?.[String(CHECK)] ? "paid" : "open"],
   ];
   return (
     <div className="sheet" onClick={onClose}>

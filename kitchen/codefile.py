@@ -19,6 +19,7 @@ FILES: dict[str, str] = {
     "exam/eval_config.json": "course II — which metric is on the exam",
     "loop/flywheel.py": "course V — the edge that makes a graph a loop",
     "host/instruction_current.txt": "the instruction the host runs under (the loop rewrites it; you can read it)",
+    "host/agent.py": "course IX — the one plugin that makes the host write its own receipt",
 }
 
 
