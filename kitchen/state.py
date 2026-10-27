@@ -2,8 +2,9 @@
 
 Nothing here is a checklist the page ticks. These are the receipts of things
 that actually ran: exams (with their counts and hungry seats), loop runs,
-the harvest. `progress.read()` turns them, together with a look at your
-files, into which course is lit. Kept in runs/state.json.
+the harvest, and the second seating's path and conversation exams.
+`progress.read()` turns them, together with a look at your files, into
+which course is lit. Kept in runs/state.json.
 """
 from __future__ import annotations
 
@@ -21,8 +22,11 @@ STATE: dict = {
     "judge": "everyone_ate",          # the switch
     "exams": [],                      # newest last: {ts, judge, instruction, passed, failed, hungry, parties}
     "loops": [],                      # {ts, rounds, decision, closed, edge}
-    "bookings": [],                   # {ts, party, judge, restaurant, time, honest, rating, hungry, instruction}
+    "bookings": [],                   # {ts, party, judge, restaurant, time, honest, rating, hungry, instruction, agent}
     "flights": [],                    # course IV  · {ts, n, comparator_passed, checker_passed, llm_passed, …, rows}
+    # the second seating — the maître d's two exams (kitchen/jobs.py, _finish_seating)
+    "paths": [],                      # course X   · {ts, criteria, instruction, passed, failed, by_metric, ladder, lucky, parties}
+    "talks": [],                      # course XI  · {ts, persona, instruction, passed, failed, by_metric, rushed, parties}
     "optimized": False,               # runs/optimize/winner.txt exists
     "harvest": {"minted": 0, "skipped": 0, "ts": None},
     "engine": "",                     # HOST_ENGINE as last seen

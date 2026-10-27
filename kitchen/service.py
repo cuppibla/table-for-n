@@ -3,15 +3,21 @@
     /                 the page (site/out, built once by table.sh)
     /api/progress     which course is lit — read from your files + what ran
     /api/events       SSE: the table's event log (recent history, then live)
-    /api/book         POST {party}: one real booking, judged on the spot
+    /api/book         POST {party, agent?}: one real booking, judged on the spot
     /api/flight       POST: the last exam's answers, judged three ways (course IV)
+    /api/paths        GET ?judge=1: eight paths to one dinner, every judge on each (course X)
     /api/judge        GET / POST {to}: the switch — which judge the exam runs with
     /api/code         GET / POST: the in-page editor (one file, syntax-checked)
     /api/job          POST {kind} / GET ?kind=: exam · optimize · loop · deploy · traffic · pipe · harvest
-    /api/install      POST {which}: draft · winner · hacked · optimized → host/instruction_current.txt
+                      · path_exam · talk_exam (the second seating)
+    /api/install      POST {which, agent?}: draft · winner · hacked · optimized → host/instruction_current.txt,
+                      or draft · asks → maitre_d/instruction_current.txt
     /api/source       GET ?path=: one file of the lab, as plain text (the ↗ links)
     /api/env          GET / POST {HOST_ENGINE}: the Agent Engine line in .env (refuel/, beyond the lab)
-    /workbench        adk web, mounted here: same host/ folder, same table.db
+    /workbench        adk web, mounted here: same host/ and maitre_d/ folders, same table.db
+
+`agent` is "host" (the first seating, and the default everywhere) or
+"maitre_d" (the second).
 
     uvicorn kitchen.service:app --port 3470
 """
@@ -32,7 +38,7 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from kitchen import book, codefile, events, flight, instruction, jobs, metrics_registry, progress, state, workbench  # noqa: E402
+from kitchen import book, codefile, events, flight, instruction, jobs, metrics_registry, paths, progress, state, workbench  # noqa: E402
 import world  # noqa: E402
 
 JUDGES_IN_WORKBENCH = metrics_registry.register()   # everyone_ate · rating, in the dev UI's dialog too
@@ -69,7 +75,7 @@ async def health() -> dict:
 
 @app.get("/api/progress")
 async def get_progress() -> dict:
-    return progress.read(workbench_calls=await workbench.calls())
+    return progress.read(workbench_calls=await workbench.calls(), maitre_calls=await workbench.calls(app="maitre_d"))
 
 
 @app.get("/api/world")
@@ -78,11 +84,22 @@ async def get_world() -> dict:
             "holdout": world.HOLDOUT, "train": world.TRAIN, "threshold": world.THRESHOLD, "rating_bar": world.RATING_BAR}
 
 
+AGENTS = ("host", "maitre_d")
+
+
+def _agent(name: str | None) -> str:
+    if (name or "host") not in AGENTS:
+        raise HTTPException(400, f"agent must be one of {', '.join(AGENTS)}")
+    return name or "host"
+
+
 @app.get("/api/brief")
-async def get_brief(party: str = "p1") -> dict:
+async def get_brief(party: str = "p1", agent: str = "host") -> dict:
     if party not in world.PARTIES:
         raise HTTPException(404, f"no party {party}")
-    return {"party": party, "brief": world.brief(party)}
+    # the maître d' gets the group chat alone — the rooms are its tools' to find
+    text = world.chat_brief(party) if _agent(agent) == "maitre_d" else world.brief(party)
+    return {"party": party, "agent": agent, "brief": text}
 
 
 # ── the log ──────────────────────────────────────────────────────────────────
@@ -103,10 +120,11 @@ async def post_book(req: Request) -> dict:
     body = await req.json()
     party = body.get("party", "p1")
     judge = body.get("judge") or state.STATE.get("judge", "everyone_ate")
+    agent = _agent(body.get("agent"))
     if book._busy.locked():
         raise HTTPException(409, "a booking is already in progress")
     try:
-        return await book.book(party, judge)
+        return await book.book(party, judge, agent)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -144,15 +162,44 @@ async def get_flight() -> dict:
     return {"last": rows[-1] if rows else None, "count": len(rows)}
 
 
+# ── ⚖ eight paths — course X ─────────────────────────────────────────────────
+@app.get("/api/paths")
+async def get_paths(judge: int = 0) -> dict:
+    """Eight ways to one booking, each graded by the comparator four ways, the
+    path checker and everyone_ate — no model call. `judge=1` adds ADK's
+    rubric_based_tool_use_quality_v1, one model call per path."""
+    import asyncio
+    return await asyncio.to_thread(paths.table_rows, bool(judge))
+
+
 # ── ⤵ replay — the escape hatch when the project is out of quota ──────────────
 REPLAYS = ROOT / "fixtures" / "replays.json"
 
 
 def _replays() -> dict:
     try:
-        return json.loads(REPLAYS.read_text())
+        rep = json.loads(REPLAYS.read_text())
     except (OSError, json.JSONDecodeError):
-        return {"exams": [], "loops": []}
+        rep = {}
+    for k in ("exams", "loops", "paths", "talks"):
+        rep.setdefault(k, [])
+    return rep
+
+
+def _seating_now() -> dict:
+    """The second seating's files as they are: which judges the path exam
+    has on, who the simulated organizer is, what the maître d' runs under."""
+    return {"path_criteria": progress._criteria("eval_config_path.json"), "persona": jobs.persona(),
+            "instruction": instruction.kind("maitre_d")}
+
+
+def _seating_match(rep: dict, what: str) -> dict | None:
+    now = _seating_now()
+    if what == "path":
+        return next((r for r in rep["paths"] if sorted(r.get("criteria") or []) == sorted(now["path_criteria"])
+                     and r.get("instruction") == now["instruction"]), None)
+    return next((r for r in rep["talks"] if r.get("persona") == now["persona"]
+                 and r.get("instruction") == now["instruction"]), None)
 
 
 @app.get("/api/replay")
@@ -166,7 +213,12 @@ async def get_replay() -> dict:
     return {"recorded": rep.get("recorded"), "model": rep.get("model"),
             "exams": [{"judge": e["judge"], "instruction": e["instruction"], "passed": e["passed"], "hungry": e["hungry"]} for e in rep["exams"]],
             "now": {"judge": judge_now, "instruction": kind}, "available": match is not None,
-            "loop_available": bool(rep["loops"]) and progress._edge()}
+            "loop_available": bool(rep["loops"]) and progress._edge(),
+            # the second seating
+            "recorded_second": rep.get("recorded_second"),
+            "seating_now": _seating_now(),
+            "path_available": _seating_match(rep, "path") is not None,
+            "talk_available": _seating_match(rep, "talk") is not None}
 
 
 @app.post("/api/replay")
@@ -194,7 +246,18 @@ async def post_replay(req: Request) -> dict:
             raise HTTPException(400, "no recorded loop run")
         row = state.push("loops", {**rep["loops"][0], "replayed": True})
         return {"replayed": "loop", **{k: row[k] for k in ("rounds", "decision", "score")}}
-    raise HTTPException(400, "what must be exam or loop")
+    if what in ("path", "talk"):
+        match = _seating_match(rep, what)
+        if match is None:
+            now = _seating_now()
+            said = (f"{' + '.join(now['path_criteria'])}" if what == "path" else f"{now['persona']}") + f" × {now['instruction']}"
+            raise HTTPException(400, f"no recorded {what} exam for {said} — change the files to a state we recorded, or run it for real")
+        suite = "paths" if what == "path" else "talks"
+        row = state.push(suite, {**match, "replayed": True})
+        events.emit("exam_scored", **{k: v for k, v in row.items() if k != "parties"})
+        return {"replayed": what, "instruction": row.get("instruction"), "passed": row.get("passed"),
+                "failed": row.get("failed"), "persona": row.get("persona"), "criteria": row.get("criteria")}
+    raise HTTPException(400, "what must be exam, loop, path or talk")
 
 
 # ── the switch ───────────────────────────────────────────────────────────────
@@ -217,7 +280,8 @@ async def post_judge(req: Request) -> dict:
 
 
 # ── the source, read-only ────────────────────────────────────────────────────
-SOURCE_OK = ("host/", "exam/", "metrics/", "instructions/", "loop/", "kitchen/", "scripts/", "refuel/", "world.py", "README.md", "table.sh", "pyproject.toml")
+SOURCE_OK = ("host/", "maitre_d/", "exam/", "metrics/", "instructions/", "loop/", "kitchen/", "scripts/", "refuel/", "world.py", "README.md",
+             "table.sh", "pyproject.toml")
 
 
 @app.get("/api/source")
@@ -252,28 +316,30 @@ async def write_code(req: Request) -> dict:
     except KeyError as exc:
         raise HTTPException(404, str(exc)) from exc
     if out.get("validation", {}).get("valid"):
-        await workbench.forget()
+        await workbench.forget("maitre_d" if body["path"].startswith("maitre_d/") else workbench.APP)
         events.emit("file_saved", path=body["path"])
     return out
 
 
 # ── instructions ─────────────────────────────────────────────────────────────
 @app.get("/api/instruction")
-async def get_instruction() -> dict:
-    return {"kind": instruction.kind(), "chars": len(instruction.current()), "available": instruction.available(),
-            "text": instruction.current()}
+async def get_instruction(agent: str = "host") -> dict:
+    a = _agent(agent)
+    return {"agent": a, "kind": instruction.kind(a), "chars": len(instruction.current(a)),
+            "available": instruction.available(a), "text": instruction.current(a)}
 
 
 @app.post("/api/install")
 async def post_install(req: Request) -> dict:
     body = await req.json()
+    agent = _agent(body.get("agent"))
     try:
-        out = instruction.install(body.get("which", ""))
+        out = instruction.install(body.get("which", ""), agent)
     except KeyError as exc:
         raise HTTPException(400, f"unknown instruction {exc}") from exc
     except FileNotFoundError as exc:
         raise HTTPException(404, str(exc)) from exc
-    await workbench.forget()
+    await workbench.forget(agent)
     events.emit("instruction_installed", **out)
     return out
 

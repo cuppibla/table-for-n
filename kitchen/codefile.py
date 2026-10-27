@@ -19,6 +19,10 @@ FILES: dict[str, str] = {
     "exam/eval_config.json": "course II — which metric is on the exam",
     "loop/flywheel.py": "course V — the edge that makes a graph a loop",
     "host/instruction_current.txt": "the instruction the host runs under (the loop rewrites it; you can read it)",
+    # the second seating
+    "maitre_d/instruction_current.txt": "the instruction the maître d' runs under (course XI installs one more line)",
+    "exam/eval_config_path.json": "course X — what grades the path: the comparator, or the path checker",
+    "exam/conversations_val.evalset.json": "course XI — who the simulated organizer is (the persona)",
 }
 
 

@@ -8,10 +8,14 @@
     pipe      python refuel/replay_to_bq.py             (course VI)
     harvest   python refuel/harvest.py                  (course VI)
 
+  the second seating — the maître d', same scripts/exam.py:
+    path_exam adk eval maitre_d exam/paths_val.evalset.json …          (course X)
+    talk_exam adk eval maitre_d exam/conversations_val.evalset.json …  (course XI, a simulated organizer)
+
 One job of each kind at a time. A line a subprocess prints as `@@event {…}`
 is appended to the table's event log (the loop talks to the table that way);
 every other line is its log. When a job ends, its summary is written to
-state (exams, loops, harvest) — that is what lights a course.
+state (exams, loops, harvest, paths, talks) — that is what lights a course.
 """
 from __future__ import annotations
 
@@ -321,10 +325,185 @@ def _noop(job: Job) -> None:
     job.summary = {"rc": job.rc}
 
 
+# ── the second seating: the maître d's two exams ─────────────────────────────
+PATH_CONFIG = "exam/eval_config_path.json"
+TALK_CONFIG = "exam/eval_config_conversation.json"
+TALK_SET = "exam/conversations_val.evalset.json"
+STATUS = {1: "PASSED", 2: "FAILED", 3: "NOT_EVALUATED"}
+TALK_JUDGE = "rubric_based_multi_turn_trajectory_quality_v1"
+STAND_IN = "per_turn_user_simulator_quality_v1"     # grades the simulated organizer, not the agent
+
+
+def persona(path: Path | None = None) -> str | None:
+    """Who the simulated organizer is: EXPERT as shipped, NOVICE once course
+    XI's edit is in — read from the eval set, like everything else here."""
+    try:
+        cases = json.loads((path or ROOT / TALK_SET).read_text()).get("eval_cases", [])
+    except (OSError, json.JSONDecodeError):
+        return None
+    seen = set()
+    for c in cases:
+        p = (c.get("conversation_scenario") or {}).get("user_persona")
+        seen.add(p.get("id") if isinstance(p, dict) else p)    # a persona is a name or a whole object
+    seen.discard(None)
+    return seen.pop() if len(seen) == 1 else ("mixed" if seen else None)
+
+
+def _seating(kind: str, suite: str, evalset: str, cfg: str, **extra) -> Job:
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    receipts = RUNS / suite / f"{stamp}.jsonl"
+    receipts.parent.mkdir(parents=True, exist_ok=True)
+    criteria = _criteria(ROOT / cfg)
+    meta = {"suite": suite, "config": cfg, "evalset": evalset, "criteria": criteria,
+            "instruction": instruction_kind("maitre_d"), "receipts": str(receipts.relative_to(ROOT)), **extra}
+    # the same scripts/exam.py as course II — `adk eval`, one case at a time
+    job = Job(kind, [PY, "scripts/exam.py", "maitre_d", evalset, "--config_file_path", cfg],
+              extra_env={"TABLE_RECEIPTS": str(receipts)}, meta=meta)
+    job.episode = events.start_episode(kind, agent="maitre_d", criteria=criteria, instruction=meta["instruction"], **extra)
+    return job
+
+
+def _path_exam(**_) -> Job:
+    return _seating("path_exam", "paths", "exam/paths_val.evalset.json", PATH_CONFIG)
+
+
+def _talk_exam(**_) -> Job:
+    return _seating("talk_exam", "talks", TALK_SET, TALK_CONFIG, persona=persona())
+
+
+def _read_receipts(path: Path) -> list[dict]:
+    rows = []
+    if path.exists():
+        for line in path.read_text().splitlines():
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+    return rows
+
+
+def _calls_of(inv: dict) -> list[dict]:
+    """The tool calls in one recorded turn, in order (live runs record events;
+    an eval set's golden turn records tool_uses)."""
+    data = inv.get("intermediate_data") or {}
+    out = [{"name": p["function_call"].get("name"), "args": p["function_call"].get("args") or {}}
+           for ev in data.get("invocation_events") or []
+           for p in ((ev.get("content") or {}).get("parts") or []) if p.get("function_call")]
+    return out or [{"name": t.get("name"), "args": t.get("args") or {}} for t in data.get("tool_uses") or []]
+
+
+def _call_label(c: dict) -> str:
+    a = c.get("args") or {}
+    if c.get("name") == "book":
+        return f"book {a.get('room')} {a.get('time')} ×{a.get('party_size')}"
+    return f"get_room {a.get('room')}" if c.get("name") == "get_room" else str(c.get("name"))
+
+
+def _judges_on(per: list[dict], pid: str) -> tuple[dict, list[dict]]:
+    """Every judge in the room on one recorded case: the trajectory comparator
+    four ways (when the case holds a golden path), the path checker and
+    everyone_ate — whichever of them the exam had on its criteria. Nothing
+    is re-run; it is the same calls, read again. The case's verdict stays ADK's."""
+    import world
+    from google.adk.evaluation.eval_case import Invocation
+    from kitchen import paths as eight
+    from metrics import path as path_checker
+    from metrics import table
+    act = [Invocation.model_validate(p["actual_invocation"]) for p in per if p.get("actual_invocation")]
+    exp = [Invocation.model_validate(p["expected_invocation"]) for p in per if p.get("expected_invocation")]
+    if not act:
+        return {}, []
+    out: dict[str, bool] = {}
+    if len(exp) == len(act) == 1:
+        for name, match, ignore in eight.MATCHES:
+            out[name] = eight._comparator(act[0], exp[0], match, ignore) == 1.0  # noqa: SLF001
+    ids = world.PARTIES.get(pid) or []
+    rules = path_checker.path_checks(path_checker.tool_calls(act), ids, table.reply_of(act))
+    out["path"] = all(r["ok"] for r in rules)
+    rid, at, _ = table.booking_of(act)
+    out["everyone_ate"] = bool(rid) and world.everyone_ate(ids, rid, at)[0] >= world.THRESHOLD
+    return out, rules
+
+
+def _finish_seating(job: Job) -> None:
+    """One row per party: ADK's verdict and every metric's, our receipts (who
+    went hungry, which rule broke, whose need was heard), and — for the path
+    exam — what each judge would have said about the very same calls."""
+    import world
+    from kitchen import paths as eight
+    text = "\n".join(job.log)
+    suite = job.meta["suite"]
+    mine = {(r["party"], r["metric"]): r for r in _read_receipts(ROOT / job.meta["receipts"])
+            if r.get("party") and r.get("metric")}
+    m = re.search(r"Writing eval result to file:\s*(\S+?\.json)", text)
+    cases = []
+    if m and Path(m.group(1)).exists():
+        cases = json.loads(Path(m.group(1)).read_text()).get("eval_case_results", [])
+    parties = []
+    for c in cases:
+        pid = c.get("eval_id")
+        per = c.get("eval_metric_result_per_invocation") or []
+        metrics = {r.get("metric_name"): {"status": STATUS.get(r.get("eval_status"), "NOT_EVALUATED"),
+                                          "score": None if r.get("score") is None else round(r["score"], 3)}
+                   for r in c.get("overall_eval_metric_results") or []}
+        ea, pr, ab = (mine.get((pid, k), {}) for k in ("everyone_ate", "path", "asked_before_booking"))
+        seats_ = ea.get("seats") or []
+        judges, rules = _judges_on(per, pid)
+        row = {"party": pid, "status": STATUS.get(c.get("final_eval_status"), "NOT_EVALUATED"),
+               "metrics": metrics, "turns": len(per), "judges": judges, "rules": pr.get("rules") or rules,
+               "restaurant": ea.get("restaurant"), "time": ea.get("time"),
+               "hungry": sum(1 for s in seats_ if not s.get("ate")) if seats_ else None,
+               "whys": [f"{s.get('name')}: {s.get('why')}" for s in seats_ if not s.get("ate")],
+               "calls": [_call_label(x) for p in per for x in _calls_of(p.get("actual_invocation") or {})]}
+        if suite == "talks":
+            last = next((r for r in ((per[-1].get("eval_metric_results") or []) if per else [])
+                         if r.get("metric_name") == TALK_JUDGE), {})
+            row |= {"heard": ab.get("heard"), "missed": ab.get("missed"), "booked_on_turn": ab.get("booked_on_turn"),
+                    # the rubric judge's three verdicts, each with the sentence it wrote
+                    "rubrics": [{"id": s.get("rubric_id"), "score": s.get("score"), "why": (s.get("rationale") or "")[:400]}
+                                for s in ((last.get("details") or {}).get("rubric_scores") or [])],
+                    "transcript": [{"user": _text_of((p.get("actual_invocation") or {}).get("user_content"))[:400],
+                                    "calls": [_call_label(x) for x in _calls_of(p.get("actual_invocation") or {})],
+                                    "reply": _text_of((p.get("actual_invocation") or {}).get("final_response"))[:400]}
+                                   for p in per]}
+        parties.append(row)
+    order = {p: i for i, p in enumerate(world.HOLDOUT)}
+    parties.sort(key=lambda r: order.get(r["party"], 99))
+
+    passed = re.search(r"Tests passed:\s*(\d+)", text)
+    failed = re.search(r"Tests failed:\s*(\d+)", text)
+    fed = [r for r in parties if r["hungry"] is not None]
+    summary = {"suite": suite, "agent": "maitre_d", "criteria": job.meta["criteria"], "instruction": job.meta["instruction"],
+               "passed": int(passed.group(1)) if passed else sum(r["status"] == "PASSED" for r in parties),
+               "failed": int(failed.group(1)) if failed else sum(r["status"] == "FAILED" for r in parties),
+               "n": len(parties),
+               "by_metric": {k: {"passed": sum(r["metrics"].get(k, {}).get("status") == "PASSED" for r in parties),
+                                 "failed": sum(r["metrics"].get(k, {}).get("status") == "FAILED" for r in parties)}
+                             for k in job.meta["criteria"]},
+               "hungry": sum(r["hungry"] for r in fed) if fed else None,
+               "seats": sum(len(world.PARTIES.get(r["party"], [])) for r in fed) or None,
+               # everyone ate, but the path broke a rule: a pass a path judge would take back
+               "lucky": sum(1 for r in parties if r["judges"].get("everyone_ate") and r["judges"].get("path") is False)}
+    if suite == "paths":
+        names = [x[0] for x in eight.MATCHES] + ["path", "everyone_ate"]
+        summary["ladder"] = {k: sum(1 for r in parties if r["judges"].get(k)) for k in names}
+    else:
+        summary |= {"persona": job.meta.get("persona"),
+                    "rushed": sum(1 for r in parties if (r["metrics"].get("asked_before_booking", {}).get("score") or 0) < 1),
+                    "stand_in_slipped": sum(1 for r in parties if r["metrics"].get(STAND_IN, {}).get("status") == "FAILED"),
+                    "turns": sum(r["turns"] for r in parties)}
+    job.summary = summary | {"parties": parties}
+    if job.rc == 0 and parties:
+        state.push(suite, summary | {"parties": parties})
+    events.emit("exam_scored", **summary)
+
+
 BUILDERS = {"exam": _exam, "optimize": _optimize, "loop": _loop, "deploy": _deploy,
-            "traffic": _traffic, "pipe": _pipe, "harvest": _harvest}
+            "traffic": _traffic, "pipe": _pipe, "harvest": _harvest,
+            "path_exam": _path_exam, "talk_exam": _talk_exam}
 FINISHERS = {"exam": _finish_exam, "optimize": _finish_optimize, "loop": _finish_loop, "deploy": _finish_deploy,
-             "traffic": _noop, "pipe": _noop, "harvest": _finish_harvest}
+             "traffic": _noop, "pipe": _noop, "harvest": _finish_harvest,
+             "path_exam": _finish_seating, "talk_exam": _finish_seating}
 
 
 def views() -> dict:
