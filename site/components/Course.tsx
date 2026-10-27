@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ORIGIN, getBrief, getJob, getReplay, install, replay, startJob, stopJob, type Exam, type Job, type Progress, type Replay } from "@/lib/api";
 import Flight from "./Flight";
+import Receipt from "./Receipt";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
 // older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
@@ -65,7 +66,7 @@ function Log({ job, onStopped }: { job: Job | null; onStopped?: () => void }) {
       <pre className="log">
         <span className="hi">$ {job.kind}{job.state === "running" ? ` · running ${job.elapsed}s…` : job.state === "done" ? ` · done in ${job.elapsed}s` : job.rc === -15 ? " · stopped" : ` · ${job.state} (rc ${job.rc})`}</span>
 {"\n"}
-        {lines.map((l, i) => <span key={i} className={/passed|SHIP|wrote|deployed|\[mint\]/i.test(l) ? "ok" : /fail|error|Traceback|\[skip\]/i.test(l) ? "bad" : /429|RESOURCE_EXHAUSTED/.test(l) ? "warn" : ""}>{l}{"\n"}</span>)}
+        {lines.map((l, i) => <span key={i} className={/passed|SHIP|wrote|deployed|\[mint\]|\[fed/i.test(l) ? "ok" : /fail|error|Traceback|\[skip\]/i.test(l) ? "bad" : /429|RESOURCE_EXHAUSTED|\[open\]/.test(l) ? "warn" : ""}>{l}{"\n"}</span>)}
       </pre>
       {quota && <div className="quota">⏳ <b>429 RESOURCE_EXHAUSTED</b> is Vertex AI’s per-minute quota, which is small on a brand-new project. Nothing is broken: the run keeps retrying with back-off and usually finishes in a minute or two. If you would rather not wait, press the red <b>■ stop</b> button above and run it again in a minute — a stopped run leaves no receipt, so nothing lights by mistake.</div>}
     </>
@@ -114,7 +115,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
+  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : c.run === "cloud" ? ["harvest", "deploy", "traffic"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
@@ -159,6 +160,12 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : !p?.code?.edge ? "delete the “# ” on the green line in the editor above (or press “apply the edit for me”)"
       : lp?.decision !== "SHIP" || !lp?.edge ? "↻ run the loop again — round 2 runs under round 1’s rewrite"
       : "✓ the loop earned its exit")
+    : c.run === "cloud" ? (!p?.code?.dataset ? "name a dataset below — the plugin needs somewhere to write"
+      : !p?.code?.analytics ? "swap the marked line in the editor above (or press “apply the edit for me”)"
+      : !(lb as { recorded?: boolean } | null)?.recorded ? "📋 Book the table on the left — the same button as course I; this time the host writes its receipt as it books"
+      : !(p?.receipts || 0) ? "🧾 show the row — BigQuery folded the booking's events into one turn, with the instruction inside"
+      : !p?.harvest?.ts ? "⛏ harvest — the checker grades every row in the view after the fact and mints the failures"
+      : "✓ production graded, nobody re-run. Have a project with billing? ☁ deploy, 🚚 send real parties, ⛏ harvest the engine's rows.")
     : "";
   // Plain JSX, not inline components: a component type defined inside render
   // is a new type every render, so React would unmount and remount the Editor
@@ -273,6 +280,30 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
           <Tile label="hacked · rating judge" exam={exams.filter((e) => e.judge === "rating" && e.instruction === "hacked").slice(-1)[0]} />
           <Tile label="hacked · everyone_ate" exam={honest.filter((e) => e.instruction === "hacked").slice(-1)[0]} />
         </div>
+      </div>
+    );
+  } else if (c.run === "cloud") {
+    const hv = p?.harvest;
+    const engine = p?.code?.engine || "";
+    body = (
+      <div className="runbox">
+        {nextCue}
+        <Receipt p={p} onChanged={onChanged} disabled={anyRunning} />
+        <div className="opts">
+          <button className="btn gold" disabled={anyRunning || !p?.code?.dataset} onClick={() => start("harvest", { source: "page" })}>⛏ harvest · the page’s bookings</button>
+          {stopBtn}
+          <span className="art">{hv?.ts ? <>last harvest: <b>{hv.minted} minted</b> · {hv.graded ?? "?"} graded · {hv.skipped} open · source {hv.source || "page"}</> : "reads v_eval_turn · world.everyone_ate on every row the checker can read · failures → exam/harvested.evalset.json"}</span>
+        </div>
+        <details className="fold">
+          <summary>HAVE A PROJECT WITH BILLING? · THE SAME HOST, ON AGENT ENGINE</summary>
+          <div className="opts" style={{ marginTop: 8 }}>
+            <button className="btn" disabled={anyRunning} onClick={() => start("deploy")}>☁ deploy the host · agent_engine (~5 min)</button>
+            <button className="btn" disabled={anyRunning || !engine} onClick={() => start("traffic")} title={engine || "deploy first — HOST_ENGINE lands in .env"}>🚚 send 13 real parties</button>
+            <button className="btn" disabled={anyRunning || !engine} onClick={() => start("harvest", { source: "engine" })}>⛏ harvest · the engine’s rows</button>
+            <span className="art">{engine ? <>engine: <code>{engine.split("/").slice(-1)[0]}</code> · the deploy ships <code>host/</code> as it is — plugin included, <code>BQ_FLUSH=0</code> so the writer stays off the response path</> : "the deploy ships host/ as it is on disk — the plugin rides along; the rows land in the same view"}</span>
+          </div>
+        </details>
+        <Log job={latest} onStopped={onChanged} />
       </div>
     );
   } else if (c.run === "loop") {

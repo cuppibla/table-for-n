@@ -19,3 +19,6 @@ gepa_run/
 !instructions/gepa_run_log*.txt
 .DS_Store
 *.egg-info/
+
+# course IX: minted from YOUR production rows — never shipped
+exam/harvested.evalset.json

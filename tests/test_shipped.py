@@ -37,3 +37,17 @@ def test_flywheel_has_no_back_edge():
     src = (ROOT / "loop" / "flywheel.py").read_text()
     assert re.search(r"^\s*# \(proposer, publish, host\),", src, re.M), \
         "loop/flywheel.py must ship with the back edge commented out — the student writes it in course VII"
+
+
+def test_host_ships_without_the_recorder():
+    """Course IX's edit is the student's. As shipped, host/agent.py's App has
+    no plugins — and even with the edit in, no dataset in .env means no
+    plugin, so courses I–VIII never touch BigQuery."""
+    src = (ROOT / "host" / "agent.py").read_text()
+    assert re.search(r"^\s*plugins=\[\],", src, re.M), \
+        "host/agent.py must ship with plugins=[] in App(...) — the student writes plugins=analytics() in course IX"
+    import os
+    os.environ.pop("BQ_ANALYTICS_DATASET", None)
+    from host import agent
+    assert agent.analytics() == []
+    assert agent.app.plugins == []

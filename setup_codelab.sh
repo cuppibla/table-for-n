@@ -83,6 +83,20 @@ if ! ENABLE_ERR="$(gcloud services enable aiplatform.googleapis.com --project="$
 fi
 tick "aiplatform.googleapis.com enabled"
 
+# ── 1b · course IX · the receipt (BigQuery) ───────────────────────────────────
+# The host writes one row per event to a BigQuery dataset once course IX's
+# edit is in. The plugin makes the table and the views itself; the APIs and
+# the dataset are made here, once. Never fatal: courses I–VIII do not need it.
+say "1b · course IX · BigQuery"
+BQ_DATASET="${BQ_ANALYTICS_DATASET:-table_for_n}"
+BQ_LOCATION="${BQ_ANALYTICS_LOCATION:-US}"
+if gcloud services enable bigquery.googleapis.com bigquerystorage.googleapis.com --project="$PROJECT" -q >/dev/null 2>&1; then
+    tick "bigquery.googleapis.com + bigquerystorage.googleapis.com enabled"
+else
+    info "could not enable the BigQuery APIs — course IX will say so; I–VIII are unaffected"
+fi
+# (the dataset itself is made in 2c, with the BigQuery client uv installs next)
+
 # ── 2 · python env + deps (uv owns both) ──────────────────────────────────────
 say "2 · Python environment"
 if ! command -v uv >/dev/null 2>&1 && [ -x "$HOME/.local/bin/uv" ]; then
@@ -96,6 +110,31 @@ fi
 if [ -d .venv ]; then info "reusing the existing .venv"; else uv venv; fi
 uv sync
 tick "uv env + google-adk / google-genai / fastapi + uvicorn (locked by uv.lock)"
+
+# ── 2c · course IX · the dataset ──────────────────────────────────────────────
+# One dataset, made with the same client the host writes with — no `bq` needed.
+# The plugin creates agent_events and the v_* views on the first row it writes.
+say "2c · course IX · the dataset"
+if DS_OUT="$(uv run --no-sync python - "$PROJECT" "$BQ_DATASET" "$BQ_LOCATION" <<'PY' 2>&1
+import sys
+from google.cloud import bigquery
+from google.cloud.exceptions import NotFound
+project, dataset, location = sys.argv[1:4]
+c = bigquery.Client(project=project)
+try:
+    d = c.get_dataset(f"{project}.{dataset}")
+    print(f"exists ({d.location})")
+except NotFound:
+    ds = bigquery.Dataset(f"{project}.{dataset}")
+    ds.location = location
+    c.create_dataset(ds)
+    print(f"created ({location})")
+PY
+)"; then
+    tick "dataset $PROJECT.$BQ_DATASET — ${DS_OUT##*$'\n'}"
+else
+    info "dataset not made — course IX's card shows the one-line command. BigQuery said: ${DS_OUT##*$'\n'}"
+fi
 
 # ── 2b · the page ──────────────────────────────────────────────────────────────
 # The page (site/) is a Next.js app, exported to static files once and served
@@ -121,6 +160,17 @@ if [ -f .env ]; then
 else
     cp .env.example .env
     tick ".env written from .env.example (Vertex AI on $PROJECT)"
+fi
+# course IX: name the dataset in .env (the plugin stays off until this line exists)
+if grep -q "^BQ_ANALYTICS_DATASET=" .env; then
+    info "BQ_ANALYTICS_DATASET already set in .env"
+else
+    if grep -q "^# BQ_ANALYTICS_DATASET=" .env; then
+        sed -i.bak "s|^# BQ_ANALYTICS_DATASET=.*|BQ_ANALYTICS_DATASET=$BQ_DATASET|" .env && rm -f .env.bak
+    else
+        printf '\nBQ_ANALYTICS_DATASET=%s\n' "$BQ_DATASET" >> .env
+    fi
+    tick "BQ_ANALYTICS_DATASET=$BQ_DATASET in .env — course IX's edit turns the plugin on"
 fi
 
 # ── 4 · preflight — does the model answer? ───────────────────────────────────────

@@ -18,11 +18,17 @@ the number lie, and close the loop.
 | VI · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
 | VII · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
 | VIII · the check | what each thing replaced | nothing | — |
+| IX · the receipt *(beyond the menu)* | production is dinners nobody planned to grade | one line in `host/agent.py` — `plugins=analytics()` | 📋 book · 🧾 show the row · ⛏ harvest |
 
-Beyond the lab, `refuel/` holds the production pipe — deploy the shipped host to Agent
-Engine, send traffic, replay it through the BigQuery agent-analytics plugin, and `harvest.py`
-re-grades real dinners with `everyone_ate` and mints the failures as eval cases. It needs a
-Google Cloud project with billing; the codelab's last chapter says where it fits.
+Course IX puts the **BigQuery Agent Analytics plugin** on the host's `App`. The host then
+writes one row per event *while* it books — from the page, from `adk eval`, and from the
+Agent Engine the deploy job ships it to, the same object — and `create_eval_views=True` makes
+BigQuery fold them into one turn per booking (`v_eval_turn`: user text, answer, tool calls,
+the instruction the host ran under, plus `eval_ready` / `has_error` / `has_tool_loop` / latency
+/ tokens, computed without a model). 🧾 reads that row back; `refuel/harvest.py` grades every
+row with `everyone_ate` after the fact and mints the failures as eval cases. The plugin
+records; it never judges. It needs a Google Cloud project (a dataset: `bq mk -d table_for_n`),
+which is why it sits beyond the menu and never gates the check.
 
 *The loop pushes up whatever number you hand it.*
 
@@ -80,7 +86,7 @@ real `adk eval` / `adk optimize` / the loop, and the workbench (`adk web`) is a
 drawer on the same page — same `host/` folder, same `table.db`.
 
 Nothing restarts. An edit lands on your **next 📋 booking or 📝 exam**; the chip
-under the editor says so. The `refuel/` pipe (deploy to Agent Engine) needs the project path.
+under the editor says so. Course IX (the BigQuery receipt, and the optional deploy to Agent Engine) needs the project path.
 
 ## What is where
 
@@ -91,8 +97,8 @@ exam/                    evalsets (8 train, 8 holdout, golden answers in), eval_
 metrics/table.py         everyone_ate_metric and rating_metric, wired into adk eval through customMetrics
 instructions/            draft.txt · winner.txt (a real GEPA run, log included) · hacked.txt (a real run against the rating judge)
 loop/flywheel.py         the self-evolving loop as an ADK 2 Workflow; the course-VII edit is in build()
-refuel/                  send_traffic.py · replay_to_bq.py · harvest.py — the production pipe (beyond the lab)
-kitchen/                 the service: booking, jobs (exam/optimize/loop/deploy…), progress, the editor, the workbench mount
+refuel/                  harvest.py (grade v_eval_turn after the fact, mint failures) · send_traffic.py (real parties to a deployed host)
+kitchen/                 the service: booking, jobs (exam/optimize/loop/deploy/harvest…), progress, the editor, receipt.py (course IX), the workbench mount
 site/                    the page (Next.js, exported to static files once by table.sh)
 tests/test_host.py       the third way to run the exam: pytest + AgentEvaluator, same config, same eval store (course II's 🧪)
 tests/test_shipped.py    the three edited files are as a fresh clone must find them — run before you commit

@@ -7,10 +7,11 @@
     /api/flight       POST: the last exam's answers, judged three ways (course IV)
     /api/judge        GET / POST {to}: the switch — which judge the exam runs with
     /api/code         GET / POST: the in-page editor (one file, syntax-checked)
-    /api/job          POST {kind} / GET ?kind=: exam · optimize · loop · deploy · traffic · pipe · harvest
+    /api/job          POST {kind} / GET ?kind=: exam · optimize · loop · deploy · traffic · harvest
+    /api/receipt      GET ?session=: one booking read back out of BigQuery's v_eval_turn (course IX)
     /api/install      POST {which}: draft · winner · hacked · optimized → host/instruction_current.txt
     /api/source       GET ?path=: one file of the lab, as plain text (the ↗ links)
-    /api/env          GET / POST {HOST_ENGINE}: the Agent Engine line in .env (refuel/, beyond the lab)
+    /api/env          GET / POST {HOST_ENGINE | BQ_ANALYTICS_DATASET}: the beyond-the-menu lines in .env
     /workbench        adk web, mounted here: same host/ folder, same table.db
 
     uvicorn kitchen.service:app --port 3470
@@ -32,7 +33,7 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from kitchen import book, codefile, events, flight, instruction, jobs, metrics_registry, progress, state, workbench  # noqa: E402
+from kitchen import book, codefile, events, flight, instruction, jobs, metrics_registry, progress, receipt, state, workbench  # noqa: E402
 import world  # noqa: E402
 
 JUDGES_IN_WORKBENCH = metrics_registry.register()   # everyone_ate · rating, in the dev UI's dialog too
@@ -306,21 +307,42 @@ async def stop_job(kind: str) -> dict:
     return {"stopped": await jobs.stop(kind)}
 
 
-# ── .env (course VI) ─────────────────────────────────────────────────────────
+# ── .env (course IX · beyond the menu) ───────────────────────────────────────
 @app.get("/api/env")
 async def get_env() -> dict:
-    return {"HOST_ENGINE": env.read_env_line("HOST_ENGINE"), "project": env.read_env_line("GOOGLE_CLOUD_PROJECT"), "mode": env.MODE}
+    return {"HOST_ENGINE": env.read_env_line("HOST_ENGINE"), "project": env.read_env_line("GOOGLE_CLOUD_PROJECT"),
+            "mode": env.MODE, **{f"BQ_ANALYTICS_{k.upper()}": v for k, v in env.analytics().items() if k != "project"}}
 
 
 @app.post("/api/env")
 async def post_env(req: Request) -> dict:
     body = await req.json()
-    engine = (body.get("HOST_ENGINE") or "").strip()
-    if engine and not re.match(r"^projects/[\w.-]+/locations/[\w-]+/reasoningEngines/\d+$", engine):
-        raise HTTPException(400, "that is not a reasoningEngines resource name")
-    env.write_env_line("HOST_ENGINE", engine)
-    state.set_("engine", engine)
+    if "HOST_ENGINE" in body:
+        engine = (body.get("HOST_ENGINE") or "").strip()
+        if engine and not re.match(r"^projects/[\w.-]+/locations/[\w-]+/reasoningEngines/\d+$", engine):
+            raise HTTPException(400, "that is not a reasoningEngines resource name")
+        env.write_env_line("HOST_ENGINE", engine)
+        state.set_("engine", engine)
+    if "BQ_ANALYTICS_DATASET" in body:
+        dataset = (body.get("BQ_ANALYTICS_DATASET") or "").strip()
+        if dataset and not re.match(r"^[A-Za-z0-9_]{1,1024}$", dataset):
+            raise HTTPException(400, "a BigQuery dataset id is letters, digits and underscores")
+        env.write_env_line("BQ_ANALYTICS_DATASET", dataset)
     return await get_env()
+
+
+# ── 🧾 the receipt — course IX ───────────────────────────────────────────────
+@app.get("/api/receipt")
+async def get_receipt(session: str = "", wait: float = 20.0) -> dict:
+    """The row(s) v_eval_turn holds for one booking's session — by default
+    the last booking made from this page. Polls up to `wait` seconds for
+    the turn to be whole (`eval_ready`)."""
+    if not session:
+        bookings = state.STATE.get("bookings", [])
+        session = (bookings[-1].get("session") if bookings else "") or ""
+    if not session:
+        raise HTTPException(404, "no booking yet — press 📋 first")
+    return await receipt.fetch(session, wait=min(max(wait, 0.0), 60.0))
 
 
 # ── the workbench ────────────────────────────────────────────────────────────

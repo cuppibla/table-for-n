@@ -8,7 +8,7 @@ import Menu from "@/components/Menu";
 import Stage from "@/components/Stage";
 import Workbench from "@/components/Workbench";
 import { book, getProgress, setJudge, type Progress, ORIGIN } from "@/lib/api";
-import { COURSES, LAST, SHORT_TAG, keyOf } from "@/lib/courses";
+import { CHECK, COURSES, LAST, SHORT_TAG, keyOf } from "@/lib/courses";
 import { isBig, useEvents, type Seat } from "@/lib/useEvents";
 
 /** Table for N — one page, fixed shape.
@@ -124,7 +124,7 @@ export default function TablePage() {
   const fallback: Seat[] = (world?.parties?.[party] || []).map((id) => ({ id, name: world!.people[id]?.name || id, label: SHORT_TAG[id] || world!.people[id]?.label || "" }));
   const c = COURSES[course - 1];
   const lit = p?.lit || {};
-  const litCount = Object.keys(lit).filter((k) => k !== String(LAST) && lit[k]).length;
+  const litCount = Object.keys(lit).filter((k) => parseInt(k, 10) < CHECK && lit[k]).length;
   const status = !f.connected ? ["off", "the kitchen is away"] : f.running ? ["busy", f.kind === "exam" ? "the exam is running" : f.kind === "loop" ? "the loop is running" : `${f.kind}…`] : ["", "the host is in"];
 
   return (
@@ -136,7 +136,7 @@ export default function TablePage() {
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
           <span className="status"><i className={status[0]} />{status[1]}</span>
-          <span className="resv"><img src="/art/concierge.jpg" alt="" /><span><b>{name || "a guest"}</b> · party {party} · {litCount} / {LAST - 1} served</span></span>
+          <span className="resv"><img src="/art/concierge.jpg" alt="" /><span><b>{name || "a guest"}</b> · party {party} · {litCount} / {CHECK - 1} served</span></span>
           <button className={"btn" + (view === "console" ? " on" : "")} onClick={() => setView(view === "show" ? "console" : "show")}>🧾 console</button>
           <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>
             {nudge && !drawer && <span className="wbnudge" onClick={() => openDrawer(true)}>{nudge}</span>}

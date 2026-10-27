@@ -14,7 +14,7 @@ const Plate = ({ state }: { state: "" | "now" | "done" }) => (
 export default function Menu({ current, lit, onPick }: { current: number; lit: Record<string, boolean>; onPick: (n: number) => void }) {
   return (
     <div className="card menu">
-      <div className="lbl">Tonight’s<br />menu<small>EIGHT COURSES</small></div>
+      <div className="lbl">Tonight’s<br />menu<small>EIGHT COURSES · AND THE RECEIPT</small></div>
       <div className="courses">
         {COURSES.map((c) => {
           const done = Boolean(lit[String(c.n)]);

@@ -378,3 +378,13 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .btn.replay { color: var(--mustard-deep); border-color: rgba(168,119,28,.5); background: #FBF3DF; }
 .btn.replay:hover { color: #4a3208; border-color: var(--mustard-deep); }
 .replayed { font-style: normal; font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mustard-deep); background: #FBF3DF; padding: 1px 6px; border-radius: 4px; }
+
+/* course IX · 🧾 the receipt — the row the plugin wrote, read back */
+.turn .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.turn .chip { font-family: var(--font-mono), monospace; font-size: 10.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line-2); background: #fff; color: var(--faint); }
+.turn .chip.ok { color: #fff; background: var(--sage-ink); border-color: var(--sage-ink); }
+.turn .chip.bad { color: #fff; background: var(--tomato); border-color: var(--tomato); }
+.turn .chip.dim { color: var(--sub); }
+.turn .art b { display: inline; font-size: inherit; font-family: var(--font-mono), monospace; color: var(--ink); }
+.ways .inp { border: 1px solid var(--line-2); border-radius: 6px; background: #fff; color: var(--ink); font-size: 12px; }
+.fold { margin-top: 8px; } .fold summary { cursor: pointer; font-family: var(--font-mono), monospace; font-size: 10px; letter-spacing: .18em; color: var(--olive); }

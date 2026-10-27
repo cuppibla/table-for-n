@@ -8,7 +8,7 @@ import type { Progress } from "./api";
  *  Logic keys off `key`, never off the number, so courses can be added or
  *  reordered without hunting for magic numbers. */
 
-export type CourseKey = "booking" | "comparator" | "judge" | "flight" | "rewrite" | "other" | "loop" | "check";
+export type CourseKey = "booking" | "comparator" | "judge" | "flight" | "rewrite" | "other" | "loop" | "check" | "receipt";
 
 export type Course = {
   n: number; r: string; key: CourseKey; t: string; pill: [string, string];
@@ -32,6 +32,8 @@ const swapCriteria = (src: string) =>
   src.replace(/"response_match_score"\s*:\s*[0-9.]+/, "\"everyone_ate\": 0.9");
 const uncommentEdge = (src: string) =>
   src.replace(/^(\s*)# (\(proposer, publish, host\),)/m, "$1$2");
+const turnOnAnalytics = (src: string) =>
+  src.replace(/plugins=\[\],(\s*)(#.*)?$/m, "plugins=analytics(),$1$2");
 
 export const COURSES: Course[] = [
   { n: 1, r: "I", key: "booking", t: "the booking", pill: ["read", "READ ONLY"],
@@ -115,7 +117,23 @@ export const COURSES: Course[] = [
       ["a number that goes up", "a judge that explains itself"], ["one run", "a round, with a way back"], ["the metric you were handed", "the number you chose"]],
     sources: [["kitchen/progress.py · what lights a plate", "kitchen/progress.py"], ["scripts/walk.py · the headless learner", "scripts/walk.py"]],
     check: "eight courses · the check" },
+
+  { n: 9, r: "IX", key: "receipt", t: "the receipt", pill: ["gold", "BEYOND THE MENU"], judge: "everyone_ate",
+    you: "Name a dataset below (it needs your project). Swap the marked line in <code>host/agent.py</code>. Then 📋 <b>book the table</b> — the same button as course I — and press 🧾 <b>show the row</b>. Last, ⛏ <b>harvest</b>.",
+    table: "Every dinner so far was graded because you asked: an exam you wrote, a party you picked. Production is dinners nobody planned to grade. Today the host answers and the answer is gone.",
+    tableAfter: "The host writes one row per event <i>while</i> it books — here, in <code>adk eval</code>, and on Agent Engine, the same object — and BigQuery folds them into one turn per booking with the instruction inside it. The checker grades that row after the fact; the failures become next round’s exam. The plugin records; it never judges.",
+    after: (p) => Boolean(p.code?.analytics),
+    editor: { path: "host/agent.py", symbol: "app", marker: "plugins=[],", afterMarker: "plugins=analytics(),", fix: turnOnAnalytics,
+      afterHint: "It lands on your next 📋 booking — the plugin makes the table and the views on the first row it writes.",
+      change: ["one line", "plugins=[],", "plugins=analytics(),"],
+      foot: "👉 one plugin on the <b>App</b>, nothing on the agent: same model, same instruction, same tools. <code>analytics()</code> is off unless .env names a dataset, so courses I–VIII never touched BigQuery. <code>create_eval_views=True</code> is what makes BigQuery build <b>v_eval_turn</b> — one row per booking, the trace in the shape the evaluators eat." },
+    run: "cloud",
+    sources: [["host/agent.py · analytics()", "host/agent.py"], ["kitchen/receipt.py · the row, read back", "kitchen/receipt.py"], ["refuel/harvest.py · the checker, after the fact", "refuel/harvest.py"], ["refuel/send_traffic.py · real parties to a deployed host", "refuel/send_traffic.py"]],
+    check: "a row came back for a dinner you booked, and a harvest graded the view" },
 ];
+
+/** The last plate on the menu proper — the check. IX is beyond the menu. */
+export const CHECK = COURSES.find((c) => c.key === "check")!.n;
 
 export const LAST = COURSES.length;
 export const byKey = (k: CourseKey): Course => COURSES.find((c) => c.key === k)!;
