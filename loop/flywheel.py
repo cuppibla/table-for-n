@@ -91,6 +91,8 @@ sys.path.insert(0, ROOT)
 import world  # noqa: E402
 from loop.support import parse_decision, party_payload, people, pick_payload  # noqa: E402
 
+MODEL = os.environ.get("HOST_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash"   # same dial as host/agent.py
+
 PARTY = os.environ.get("FLY_PARTY", "p1")      # Nadia · Tom · Amara · Lena · Ben
 MAX_ROUNDS = int(os.environ.get("FLY_MAX_ROUNDS", "4"))
 MAX_INSTRUCTION_CHARS = 2400                   # belt #4: a runaway proposer gets truncated, not obeyed
@@ -147,7 +149,7 @@ async def run(emit) -> bool:
                            "whys": "(no failures yet — first round)"})
 
     host = Agent(
-        name="host", model="gemini-2.5-flash",
+        name="host", model=MODEL,
         # the whole point: the instruction is a STATE TEMPLATE — the loop
         # rewrites it while the graph is running
         instruction="{current_instruction}\n\nHere is tonight's request:\n{brief}",
@@ -188,7 +190,7 @@ async def run(emit) -> bool:
             ep["best"] = max(ep["best"], last_score)
             yield Event(route="improve")
 
-    proposer = Agent(name="proposer", model="gemini-2.5-flash", instruction=PROPOSER_INSTRUCTION,
+    proposer = Agent(name="proposer", model=MODEL, instruction=PROPOSER_INSTRUCTION,
                      output_key="proposed_instruction", generate_content_config=gen)
 
     def publish(proposed_instruction: str, current_instruction: str):
@@ -253,7 +255,7 @@ async def run(emit) -> bool:
                            "whys": "(no failures yet — first round)"})
 
     host = Agent(
-        name="host", model="gemini-2.5-flash",
+        name="host", model=MODEL,
         # the whole point: the instruction is a STATE TEMPLATE — the loop
         # rewrites it while the graph is running
         instruction="{current_instruction}\n\nHere is tonight's request:\n{brief}",
@@ -294,7 +296,7 @@ async def run(emit) -> bool:
             ep["best"] = max(ep["best"], last_score)
             yield Event(route="improve")
 
-    proposer = Agent(name="proposer", model="gemini-2.5-flash", instruction=PROPOSER_INSTRUCTION,
+    proposer = Agent(name="proposer", model=MODEL, instruction=PROPOSER_INSTRUCTION,
                      output_key="proposed_instruction", generate_content_config=gen)
 
     def publish(proposed_instruction: str, current_instruction: str):
