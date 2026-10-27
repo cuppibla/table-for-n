@@ -95,11 +95,7 @@ if gcloud services enable bigquery.googleapis.com bigquerystorage.googleapis.com
 else
     info "could not enable the BigQuery APIs — course IX will say so; I–VIII are unaffected"
 fi
-if command -v bq >/dev/null 2>&1 && bq --project_id="$PROJECT" --location="$BQ_LOCATION" mk -d --force "$BQ_DATASET" >/dev/null 2>&1; then
-    tick "dataset $PROJECT:$BQ_DATASET ($BQ_LOCATION) — the plugin makes agent_events and the v_* views on the first row"
-else
-    info "dataset not made (no bq, or no permission). Course IX's card shows the one-line command."
-fi
+# (the dataset itself is made in 2c, with the BigQuery client uv installs next)
 
 # ── 2 · python env + deps (uv owns both) ──────────────────────────────────────
 say "2 · Python environment"
@@ -114,6 +110,31 @@ fi
 if [ -d .venv ]; then info "reusing the existing .venv"; else uv venv; fi
 uv sync
 tick "uv env + google-adk / google-genai / fastapi + uvicorn (locked by uv.lock)"
+
+# ── 2c · course IX · the dataset ──────────────────────────────────────────────
+# One dataset, made with the same client the host writes with — no `bq` needed.
+# The plugin creates agent_events and the v_* views on the first row it writes.
+say "2c · course IX · the dataset"
+if DS_OUT="$(uv run --no-sync python - "$PROJECT" "$BQ_DATASET" "$BQ_LOCATION" <<'PY' 2>&1
+import sys
+from google.cloud import bigquery
+from google.cloud.exceptions import NotFound
+project, dataset, location = sys.argv[1:4]
+c = bigquery.Client(project=project)
+try:
+    d = c.get_dataset(f"{project}.{dataset}")
+    print(f"exists ({d.location})")
+except NotFound:
+    ds = bigquery.Dataset(f"{project}.{dataset}")
+    ds.location = location
+    c.create_dataset(ds)
+    print(f"created ({location})")
+PY
+)"; then
+    tick "dataset $PROJECT.$BQ_DATASET — ${DS_OUT##*$'\n'}"
+else
+    info "dataset not made — course IX's card shows the one-line command. BigQuery said: ${DS_OUT##*$'\n'}"
+fi
 
 # ── 2b · the page ──────────────────────────────────────────────────────────────
 # The page (site/) is a Next.js app, exported to static files once and served
