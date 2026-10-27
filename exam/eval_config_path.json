@@ -1,0 +1,16 @@
+{
+  "criteria": {
+    "everyone_ate": 0.9,
+    "tool_trajectory_avg_score": { "threshold": 1.0, "match_type": "EXACT" }
+  },
+  "customMetrics": {
+    "everyone_ate": {
+      "codeConfig": { "name": "metrics.table.everyone_ate_metric" },
+      "description": "How many of the party actually got dinner — graded on the reservation (the last book call), not on the reply."
+    },
+    "path": {
+      "codeConfig": { "name": "metrics.path.path_metric" },
+      "description": "Did the booking come from looking? Four rules over the tool calls, each with a why."
+    }
+  }
+}

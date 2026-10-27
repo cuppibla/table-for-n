@@ -267,7 +267,8 @@ def everyone_ate(party_ids: list[str], restaurant_id: str, time_str: str) -> tup
 
     Returns (score, seats) where each seat is
     {"id", "name", "label", "ate", "why"} — keep the whys. They are what makes
-    a failure explainable, to you now and to the optimizer in level 03.
+    a failure explainable: to you now, and to the loop's proposer in course VII
+    (GEPA, in course V, reads the failed runs, not these reasons).
     """
     rest = RESTAURANTS[restaurant_id]
     chosen = _t(time_str)
@@ -377,6 +378,21 @@ def brief(party_id: str) -> str:
     return (
         f"Tonight's dinner ({party_id}) — {len(ids)} going. The group chat:\n{chat}\n\n"
         f"Nearby tonight (from the listings app, sorted by rating):\n{cards}\n\n"
+        "Book one table for the whole party: pick the restaurant and the time."
+    )
+
+
+def chat_brief(party_id: str) -> str:
+    """The second seating's user message: the group chat, and no listings.
+
+    The maître d' (maitre_d/) has to call list_rooms and get_room for what
+    the host was handed on a plate — so how it got to its booking is
+    something you can grade.
+    """
+    ids = PARTIES[party_id]
+    chat = "\n".join(f'  {PEOPLE[i]["name"]}: "{CHAT[i]}"' for i in ids)
+    return (
+        f"Tonight's dinner ({party_id}) — {len(ids)} going. The group chat:\n{chat}\n\n"
         "Book one table for the whole party: pick the restaurant and the time."
     )
 

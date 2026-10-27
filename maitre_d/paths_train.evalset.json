@@ -1,0 +1,423 @@
+{
+  "eval_set_id": "paths_train",
+  "name": "paths_train",
+  "eval_cases": [
+    {
+      "eval_id": "p4",
+      "conversation": [
+        {
+          "invocation_id": "inv-p4",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p4) — 3 going. The group chat:\n  Marcus: \"in! I'm still off meat — somewhere with a real veggie main please 🌱\"\n  Nadia: \"yes! plant-based only for me (strict, not a vibe thing)\"\n  Ben: \"free all night, zero requirements 😎\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"The Green Fork\", \"time\": \"18:00\", \"reason\": \"The Green Fork at 18:00 works for every seat \\u2014 Marcus, Nadia, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "green"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "green",
+                  "time": "18:00",
+                  "party_size": 3
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p5",
+      "conversation": [
+        {
+          "invocation_id": "inv-p5",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p5) — 4 going. The group chat:\n  Sam: \"in — just no shellfish for me, that includes the sneaky stuff like fish sauce\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. 🙅\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n  Amara: \"in if it's close! on crutches this month — 10 minutes on foot is my ceiling\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:00\", \"reason\": \"Taqueria Luna at 17:00 works for every seat \\u2014 Sam, Diego, Tom, Amara all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "taqueria"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "taqueria",
+                  "time": "17:00",
+                  "party_size": 4
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p6",
+      "conversation": [
+        {
+          "invocation_id": "inv-p6",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p6) — 3 going. The group chat:\n  Lena: \"ugh I can't get there before 7:45. save me a seat — I'm coming hungry 😂\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n  Ben: \"free all night, zero requirements 😎\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Curry House\", \"time\": \"19:00\", \"reason\": \"Curry House at 19:00 works for every seat \\u2014 Lena, Tom, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "curry"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "curry",
+                  "time": "19:00",
+                  "party_size": 3
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p7",
+      "conversation": [
+        {
+          "invocation_id": "inv-p7",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p7) — 4 going. The group chat:\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Nadia: \"yes! plant-based only for me (strict, not a vibe thing)\"\n  Amara: \"in if it's close! on crutches this month — 10 minutes on foot is my ceiling\"\n  Ben: \"free all night, zero requirements 😎\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme at 18:00 works for every seat \\u2014 Priya, Nadia, Amara, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "olive"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "olive",
+                  "time": "18:00",
+                  "party_size": 4
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p8",
+      "conversation": [
+        {
+          "invocation_id": "inv-p8",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p8) — 4 going. The group chat:\n  Yuki: \"i can do it IF we're eating by 6:30 — daycare pickup at 7:15, cannot miss it\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. 🙅\"\n  Ben: \"free all night, zero requirements 😎\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Pho Saigon\", \"time\": \"17:30\", \"reason\": \"Pho Saigon at 17:30 works for every seat \\u2014 Yuki, Tom, Diego, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "pho"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "pho",
+                  "time": "17:30",
+                  "party_size": 4
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p9",
+      "conversation": [
+        {
+          "invocation_id": "inv-p9",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p9) — 3 going. The group chat:\n  Sam: \"in — just no shellfish for me, that includes the sneaky stuff like fish sauce\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat — I'm coming hungry 😂\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Curry House\", \"time\": \"19:00\", \"reason\": \"Curry House at 19:00 works for every seat \\u2014 Sam, Lena, Tom all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "curry"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "curry",
+                  "time": "19:00",
+                  "party_size": 3
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p11",
+      "conversation": [
+        {
+          "invocation_id": "inv-p11",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p11) — 4 going. The group chat:\n  Marcus: \"in! I'm still off meat — somewhere with a real veggie main please 🌱\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat — I'm coming hungry 😂\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. 🙅\"\n  Ben: \"free all night, zero requirements 😎\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"The Green Fork\", \"time\": \"19:00\", \"reason\": \"The Green Fork at 19:00 works for every seat \\u2014 Marcus, Lena, Diego, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "green"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "green",
+                  "time": "19:00",
+                  "party_size": 4
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p12",
+      "conversation": [
+        {
+          "invocation_id": "inv-p12",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tonight's dinner (p12) — 4 going. The group chat:\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Yuki: \"i can do it IF we're eating by 6:30 — daycare pickup at 7:15, cannot miss it\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n  Ben: \"free all night, zero requirements 😎\"\n\nBook one table for the whole party: pick the restaurant and the time."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"17:00\", \"reason\": \"Taqueria Luna at 17:00 works for every seat \\u2014 Priya, Yuki, Tom, Ben all eat.\"}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_rooms",
+                "args": {}
+              },
+              {
+                "name": "get_room",
+                "args": {
+                  "room": "taqueria"
+                }
+              },
+              {
+                "name": "book",
+                "args": {
+                  "room": "taqueria",
+                  "time": "17:00",
+                  "party_size": 4
+                }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    }
+  ],
+  "creation_timestamp": 0.0
+}
