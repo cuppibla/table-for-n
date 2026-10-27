@@ -58,9 +58,9 @@ def menu(p: dict) -> list[str]:
         (6, "VI", "the other judge", "rating_score never reads the party", "install hacked · flip the switch"),
         (7, "VII", "the loop", "the back edge is in" if code.get("edge") else "no back edge yet", "delete one “# ” in loop/flywheel.py"),
         (8, "VIII", "the check", "", "eight courses"),
-        (9, "IX", "the receipt", ("the plugin is on the host" if code.get("analytics") else "no plugin on the host yet")
-         + (f" · dataset {code.get('dataset')}" if code.get("dataset") else " · no dataset in .env"),
-         "beyond the menu · needs a project"),
+        (9, "IX", "the receipt", ("plugin on · " if code.get("analytics") else "no plugin yet · ")
+         + (f"dataset {code.get('dataset')}" if code.get("dataset") else "no dataset in .env"),
+         "one line in host/agent.py · beyond the menu"),
     ]
     return [f"  {r:<4}{TICK if lit.get(str(n)) else BOX} {name:<16}{DIM}· {how:<40}{note}{OFF}"
             for n, r, name, how, note in rows]

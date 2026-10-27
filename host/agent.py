@@ -84,5 +84,5 @@ def analytics() -> list:
 app = App(
     name="host",
     root_agent=root_agent,
-    plugins=analytics(),                     # ← course IX: plugins=analytics()
+    plugins=[],                      # ← course IX: plugins=analytics()
 )
