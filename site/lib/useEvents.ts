@@ -9,21 +9,26 @@ import { eventsUrl, type Ev } from "./api";
 export type Seat = { id: string; name: string; label: string; ate?: boolean; why?: string; flash?: boolean };
 export type Folded = {
   connected: boolean; episode: number; kind: string;
+  agent: string;                                   // who the episode was for: "host" or "maitre_d"
   people: Seat[]; party: string;
   pick: { restaurant: string; restaurant_name: string; rating: number; time: string; reason: string; instruction: string; judge: string } | null;
   scored: { judge: string; score: number; ate: number | null; total: number; passed: boolean; threshold: number; honest?: number; rating?: number; hungry?: number } | null;
   climbs: { round: number; score: number; baseline?: number }[];
   candidate: { candidate_id: string; diff: { op: string; line: string }[]; proposer: string } | null;
   gate: { decision: string; score: number; why: string } | null;
-  exam: { passed: number | null; failed: number | null; hungry: number | null; seats: number | null; judge: string; criteria: string[]; instruction: string } | null;
+  exam: { passed: number | null; failed: number | null; hungry: number | null; seats: number | null; judge: string; criteria: string[]; instruction: string;
+    suite?: string; n?: number; persona?: string | null } | null;
   outcomes: { person_id: string; why: string }[];
   minted: { case_id: string; from_outcome: string }[];
+  // the second seating: the maître d's calls as they happen, and the path checker's four rules
+  calls: { name: string; args: Record<string, unknown> }[];
+  path: { rules: { rule: string; ok: boolean; why: string }[]; passed: boolean } | null;
   error: string | null; done: boolean; running: boolean;
   log: Ev[];
 };
 
 const BIG = new Set(["pick_proposed", "party_scored", "candidate_proposed", "holdout_scored", "gate_decided", "judge_switched",
-  "outcome_returned", "exam_minted", "exam_scored", "flight_judged", "episode_done", "error"]);
+  "outcome_returned", "exam_minted", "exam_scored", "flight_judged", "path_checked", "episode_done", "error"]);
 
 export function useEvents(): Folded {
   const [log, setLog] = useState<Ev[]>([]);
@@ -82,10 +87,12 @@ function fold(log: Ev[], connected: boolean): Folded {
   const examEv = last(ev, "exam_scored");
   const gateEv = last(ev, "gate_decided");
   const candEv = last(ev, "candidate_proposed");
+  const pathEv = last(ev, "path_checked");
   const err = last(ev, "error");
   const done = ev.some((e) => e.type === "episode_done");
   return {
-    connected, episode, kind, people, party: (seated?.party_id as string) || (start?.party as string) || "",
+    connected, episode, kind, agent: (start?.agent as string) || "host",
+    people, party: (seated?.party_id as string) || (start?.party as string) || "",
     pick: pickEv ? (pickEv as unknown as Folded["pick"]) : null,
     scored: scoredEv ? (scoredEv as unknown as Folded["scored"]) : null,
     climbs: ev.filter((e) => e.type === "holdout_scored").map((e) => ({ round: e.round as number, score: e.score as number, baseline: e.baseline as number })),
@@ -94,6 +101,8 @@ function fold(log: Ev[], connected: boolean): Folded {
     exam: examEv ? (examEv as unknown as Folded["exam"]) : null,
     outcomes,
     minted: ev.filter((e) => e.type === "exam_minted").map((e) => ({ case_id: e.case_id as string, from_outcome: e.from_outcome as string })),
+    calls: ev.filter((e) => e.type === "tool_called").map((e) => ({ name: e.name as string, args: (e.args as Record<string, unknown>) || {} })),
+    path: pathEv ? { rules: (pathEv.rules as { rule: string; ok: boolean; why: string }[]) || [], passed: Boolean(pathEv.passed) } : null,
     error: err ? (err.message as string) : null,
     done,
     running: Boolean(start) && !done,

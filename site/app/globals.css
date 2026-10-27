@@ -378,3 +378,65 @@ code { font-family: var(--font-mono), monospace; font-size: .92em; }
 .btn.replay { color: var(--mustard-deep); border-color: rgba(168,119,28,.5); background: #FBF3DF; }
 .btn.replay:hover { color: #4a3208; border-color: var(--mustard-deep); }
 .replayed { font-style: normal; font-family: var(--font-mono), monospace; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mustard-deep); background: #FBF3DF; padding: 1px 6px; border-radius: 4px; }
+
+/* ── the second seating · the maître d' (IX–XII) ── */
+/* the seating switch, under "Tonight's menu" — a served seating turns sage */
+.seatings { display: inline-flex; margin-top: 7px; border: 1px solid var(--line-2); border-radius: 999px; overflow: hidden; background: var(--paper-2); }
+.seatings button { border: 0; background: transparent; cursor: pointer; font-family: var(--font-mono), monospace; font-style: normal; font-size: 9.5px; letter-spacing: .06em; color: var(--faint); padding: 3px 8px; }
+.seatings button.served { color: var(--sage-ink); font-weight: 600; }
+.seatings button.on { color: #fff; background: var(--olive); }
+
+/* the stage: no switch — two judges, always on; and the host has a phone now */
+.judges2 { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono), monospace; font-size: 11.5px; font-weight: 600; color: #fff; background: var(--sage-ink); border-radius: 999px; padding: 5px 12px 5px 6px; white-space: nowrap; }
+.judges2 img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.judges2 i { font-style: normal; opacity: .7; }
+.host.phone::before { content: "☎"; position: absolute; right: 4px; bottom: 4px; z-index: 1; width: 24px; height: 24px; display: grid; place-items: center; font-size: 13px; color: var(--olive-ink); background: #fff; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+
+/* the calls, in order — one chip each; a book call is a reservation, so it is filled */
+.calls { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.calls i { font-style: normal; font-family: var(--font-mono), monospace; font-size: 10px; line-height: 1.4; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--rule); background: #fff; color: var(--sub); white-space: nowrap; }
+.calls i.bk { color: #fff; background: var(--olive); border-color: var(--olive-ink); }
+.bubble .calls { margin: 4px 0 6px; }
+
+/* one receipt read again by every judge in the room — nothing re-run */
+.ladder { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--rule); }
+.ladder span { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-right: 3px; }
+.ladder i { font-style: normal; font-size: 9.5px; padding: 2px 5px; border-radius: 4px; border: 1px solid var(--rule); color: var(--sub); background: #fff; }
+.ladder i.p { color: var(--sage-ink); border-color: rgba(127,168,107,.6); background: #EEF5E8; } .ladder i.f { color: var(--tomato); border-color: rgba(217,96,63,.45); background: #FBEFEA; }
+
+/* ⚖ eight paths (X): the tally row, and the whys in colour */
+.flight .three tr.tally td { cursor: default; background: var(--paper-2); border-top: 2px solid var(--line-2); border-bottom: 0; }
+.flight .three tr.tally .mono { font-family: var(--font-mono), monospace; font-size: 11px; font-weight: 600; color: var(--ink); }
+.flight .detail .whys b.ok { color: var(--sage-ink); } .flight .detail .whys b.bad { color: var(--tomato); }
+.flight .detail .art { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--faint); } .flight .detail .art b { color: var(--ink); }
+.flight .detail code, .flight .hint code { font-size: 11.5px; }
+
+/* the conversation (XI): three runs side by side — judges down, organizers across */
+.talks { margin-top: 12px; display: grid; gap: 8px; min-width: 0; }
+.three-runs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.result.talk { display: grid; align-content: start; gap: 2px; min-width: 0; }
+table.dots { border-collapse: collapse; margin-top: 4px; width: 100%; }
+table.dots th, table.dots td { padding: 2px 3px; text-align: center; font-size: 10px; font-weight: 400; }
+table.dots th { color: var(--faint); cursor: pointer; border-radius: 4px; } table.dots th.on { color: #fff; background: var(--olive); }
+table.dots td { cursor: pointer; }
+table.dots td:first-child { text-align: left; color: var(--sub); white-space: nowrap; padding-right: 6px; cursor: help; }
+table.dots td i { font-style: normal; display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 4px; color: var(--faint); background: var(--paper-2); }
+table.dots td i.p { color: var(--sage-ink); background: #E3EED8; } table.dots td i.f { color: #fff; background: var(--tomato); }
+table.dots tr.standin td { font-style: italic; } table.dots tr.standin td:first-child { color: var(--mustard-deep); }
+table.dots tr.standin td i.f { background: var(--mustard); }
+table.dots tr.all td { border-top: 1px solid var(--line-2); padding-top: 4px; } table.dots tr.all td:first-child { color: var(--ink); font-weight: 600; }
+
+/* one conversation, opened: the stand-in 🎭 and the maître d' 🎩, turn by turn */
+.flight.convo .turns { display: grid; gap: 8px; margin: 6px 0 8px; max-height: 420px; overflow: auto; padding-right: 4px; }
+.turn { display: grid; gap: 4px; }
+.turn .u, .turn .a { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; align-items: start; }
+.turn .u > span, .turn .a > span { font-size: 15px; line-height: 1.5; text-align: center; }
+.turn p { margin: 0; padding: 6px 9px; border-radius: 9px; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+.turn .u p { background: #FFF9E8; border: 1px solid rgba(217,164,65,.45); }
+.turn .a p { background: var(--paper-2); border: 1px solid var(--rule); font-family: var(--font-mono), monospace; font-size: 11.5px; }
+.turn .calls { margin: 0 0 0 28px; }
+
+/* the maître d's calls (IX) */
+.flight.maitre .calls { margin: 4px 0 8px; }
+
+@media (max-width: 1100px) { .three-runs { grid-template-columns: 1fr; } }

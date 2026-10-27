@@ -8,7 +8,7 @@ import Menu from "@/components/Menu";
 import Stage from "@/components/Stage";
 import Workbench from "@/components/Workbench";
 import { book, getProgress, setJudge, type Progress, ORIGIN } from "@/lib/api";
-import { COURSES, LAST, SHORT_TAG, keyOf } from "@/lib/courses";
+import { COURSES, LAST, SEATINGS, SHORT_TAG, coursesOf, isCheck, keyOf, seatingOf } from "@/lib/courses";
 import { isBig, useEvents, type Seat } from "@/lib/useEvents";
 
 /** Table for N — one page, fixed shape.
@@ -16,7 +16,9 @@ import { isBig, useEvents, type Seat } from "@/lib/useEvents";
  *  (the architecture, alive) and the course: you · the table · one edit · one ✓.
  *  Eight courses, each lit when something real proves it — the kitchen reads
  *  your files and the receipts it kept, never a checklist. Nothing restarts:
- *  an edit lands on your next 📋 booking or 📝 exam. */
+ *  an edit lands on your next 📋 booking or 📝 exam. The second seating (four
+ *  courses, the maître d') is the same page: the seating decides which agent
+ *  📋 books with and which one the workbench opens on. */
 
 const CH_KEY = "tfn.course";
 
@@ -51,7 +53,25 @@ function wbGuide(course: number, p: Progress | null): WbGuide {
     see: kind === "hacked" ? "Smoke & Barrel, a reason about ratings — not one person named. rating: 8 PASS. everyone_ate: 1 PASS. The same eight answers."
       : "install the hacked instruction on the page first." };
   if (key === "loop") return { steps: ["nothing to do here — the loop is its own graph (loop/flywheel.py) with its own host node; the host you chat with here is untouched"], see: "nothing new for this course." };
-  return { steps: ["Evals → 🕓 history: every exam you ran, in order, with the metric that graded each — the CLI’s, the page’s, and pytest’s"], see: "the whole evening, as ADK recorded it." };
+  if (key === "check") return { steps: ["Evals → 🕓 history: every exam you ran, in order, with the metric that graded each — the CLI’s, the page’s, and pytest’s"], see: "the whole evening, as ADK recorded it." };
+
+  // the second seating: the drawer opens on maitre_d/ — its own sessions, eval sets and history
+  const mkind = p?.code?.maitre_instruction || "draft";
+  if (key === "maitre") return {
+    steps: ["pick maitre_d in the agent dropdown (top left)", "[brief] → paste the group chat → send", "open the event view: every call, in order, with its arguments"],
+    see: "list_rooms, a get_room for each room it looked at, one book — the trajectory. The reply says what it booked; the book call is what it did." };
+  if (key === "path") return {
+    steps: ["Evals → open the eval set paths_val: every case holds a golden path (list_rooms → get_room → book) next to the golden booking",
+      "select the cases → Run evaluation → tick path and everyone_ate → Run",
+      "click a party in the result: its calls and the verdicts. The 🕓 history lists the page’s path exams too, comparator and checker"],
+    see: "the verdicts 📝 gave, one party at a time. Tick tool_trajectory_avg_score instead and a path that looked at one more room fails." };
+  if (key === "talk") return {
+    steps: ["pick maitre_d and be the NOVICE: send only “Tonight’s dinner (p1) — 5 going. Can you book us a table?”",
+      "answer only what it asks, in the group’s words: [brief]",
+      "Evals → 🕓 history: the page’s conversation exams are listed here too. The scenarios they ran are in exam/conversations_val.evalset.json, where the persona is"],
+    see: mkind === "asks" ? "questions before a booking — the line you installed. Whether the answers reach the booking is the next thing to check."
+      : "a booking in its first reply, before a single question — in our runs, four parties out of four. ⤵ install the line that asks, and try again." };
+  return { steps: ["Evals → 🕓 history: the second seating’s path and conversation exams, with the metrics that graded each"], see: "the maître d’s evening, as ADK recorded it." };
 }
 
 export default function TablePage() {
@@ -102,6 +122,8 @@ export default function TablePage() {
       setToast(`installed: ${k}`);
     } else if (lastBig.type === "exam_scored") {
       setNudge(`exam done — it is in adk web’s history too`);
+    } else if (lastBig.type === "file_saved" && String(lastBig.path).includes("conversations_val")) {
+      setNudge(`persona changed — the next conversation exam uses it`);
     } else if (lastBig.type === "file_saved" && String(lastBig.path).includes("eval_config")) {
       setNudge(`criteria changed — the next exam uses it`);
     } else if (lastBig.type === "flight_judged") {
@@ -113,9 +135,11 @@ export default function TablePage() {
   const go = (n: number) => { setCourse(n); try { localStorage.setItem(CH_KEY, String(n)); } catch { /* ignore */ } };
   const setParty = (s: string) => { setPartyState(s); try { localStorage.setItem("tfn.party", s); } catch { /* ignore */ } };
   const onJudge = async (to: "everyone_ate" | "rating") => { try { await setJudge(to); refresh(); } catch (e) { setToast((e as Error).message); } };
+  const seating = seatingOf(course);
+  const agent = SEATINGS[seating].agent;               // who 📋 books with, and who the workbench opens on
   const onBook = async () => {
     setBooking(true);
-    try { const r = await book(party); if (!r.ok) setToast(String(r.error || "the host did not book")); }
+    try { const r = await book(party, agent); if (!r.ok) setToast(String(r.error || (agent === "maitre_d" ? "the maître d’ did not book" : "the host did not book"))); }
     catch (e) { setToast((e as Error).message); }
     finally { setBooking(false); refresh(); }
   };
@@ -124,8 +148,13 @@ export default function TablePage() {
   const fallback: Seat[] = (world?.parties?.[party] || []).map((id) => ({ id, name: world!.people[id]?.name || id, label: SHORT_TAG[id] || world!.people[id]?.label || "" }));
   const c = COURSES[course - 1];
   const lit = p?.lit || {};
-  const litCount = Object.keys(lit).filter((k) => k !== String(LAST) && lit[k]).length;
-  const status = !f.connected ? ["off", "the kitchen is away"] : f.running ? ["busy", f.kind === "exam" ? "the exam is running" : f.kind === "loop" ? "the loop is running" : `${f.kind}…`] : ["", "the host is in"];
+  // served = this seating's courses that are lit, not counting its check
+  const mine = coursesOf(seating).filter((x) => !isCheck(x.key));
+  const litCount = mine.filter((x) => lit[String(x.n)]).length;
+  const busy: Record<string, string> = { exam: "the exam is running", loop: "the loop is running",
+    path_exam: "the path exam is running", talk_exam: "the conversation exam is running" };
+  const status = !f.connected ? ["off", "the kitchen is away"] : f.running ? ["busy", busy[f.kind] || `${f.kind}…`]
+    : ["", agent === "maitre_d" ? "the maître d’ is in" : "the host is in"];
 
   return (
     <div className="wrap">
@@ -136,7 +165,7 @@ export default function TablePage() {
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
           <span className="status"><i className={status[0]} />{status[1]}</span>
-          <span className="resv"><img src="/art/concierge.jpg" alt="" /><span><b>{name || "a guest"}</b> · party {party} · {litCount} / {LAST - 1} served</span></span>
+          <span className="resv"><img src="/art/concierge.jpg" alt="" /><span><b>{name || "a guest"}</b> · party {party} · {litCount} / {mine.length} served</span></span>
           <button className={"btn" + (view === "console" ? " on" : "")} onClick={() => setView(view === "show" ? "console" : "show")}>🧾 console</button>
           <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>
             {nudge && !drawer && <span className="wbnudge" onClick={() => openDrawer(true)}>{nudge}</span>}
@@ -155,8 +184,8 @@ export default function TablePage() {
         </div>
       </div>
 
-      <Workbench open={drawer} onClose={() => openDrawer(false)} guide={wbGuide(course, p)} course={course} />
-      {check && <Check p={p} name={name} onClose={() => setCheck(false)} />}
+      <Workbench open={drawer} onClose={() => openDrawer(false)} guide={wbGuide(course, p)} course={course} agent={agent} />
+      {check && <Check p={p} name={name} seating={seating} onClose={() => setCheck(false)} />}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );

@@ -1,7 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ORIGIN, getBrief, getJob, getReplay, install, replay, startJob, stopJob, type Exam, type Job, type Progress, type Replay } from "@/lib/api";
+import { ORIGIN, getBrief, getJob, getReplay, install, replay, startJob, stopJob, type Agent, type Exam, type Job, type Progress, type Replay, type Seating } from "@/lib/api";
 import Flight from "./Flight";
+import Paths from "./Paths";
+import { MaitreCard, PathCompare, SeatTile, Talks } from "./Seating";
 
 type PartyRow = { party: string; status?: string | null; score?: number | null; hungry?: number | null; whys?: string[] };
 // older receipts carry a score but no verdict; the thresholds are the lab's (world.THRESHOLD / RATING_BAR / the text metric's 0.3)
@@ -10,15 +12,17 @@ const verdict = (r: PartyRow, judge: string) => r.status || (r.score === null ||
 const rowsOf = (e?: Exam): PartyRow[] => ((e?.parties || []) as PartyRow[]).map((r) => ({ ...r, status: verdict(r, e?.judge || "everyone_ate") }));
 const passedOf = (e?: Exam) => rowsOf(e).filter((r) => r.status === "PASSED").map((r) => r.party);
 import type { Folded } from "@/lib/useEvents";
-import { CLOSING, COURSES, sourceUrl, type Course as C } from "@/lib/courses";
+import { CLOSING, CLOSING2, COURSES, SEATINGS, seatingOf, sourceUrl, type Course as C } from "@/lib/courses";
 import Editor from "./Editor";
 
 /** The course panel: you · the table · the one edit (or the buttons) · one ✓. */
 
-function Say({ party }: { party: string }) {
+/** The brief for the party — the host's (the listings pasted in) or the
+ *  maître d's (the group chat only). */
+function Say({ party, agent }: { party: string; agent: Agent }) {
   const [text, setText] = useState("");
   const [done, setDone] = useState(false);
-  useEffect(() => { getBrief(party).then((b) => setText(b.brief)).catch(() => setText("(the kitchen is away)")); }, [party]);
+  useEffect(() => { getBrief(party, agent).then((b) => setText(b.brief)).catch(() => setText("(the kitchen is away)")); }, [party, agent]);
   return (
     <div className="say">
       <pre>{text}</pre>
@@ -114,13 +118,24 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const prev = COURSES[n - 2], next = COURSES[n];
   const after = p ? c.after(p) : false;
   const ok = Boolean(p?.lit?.[String(n)]);
-  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"] : [];
+  const kinds = c.run === "compare" ? ["exam"] : c.run === "exam" ? ["exam"] : c.run === "flight" ? ["exam"] : c.run === "rewrite" ? ["optimize", "exam"] : c.run === "switch" ? ["exam"] : c.run === "loop" ? ["loop"]
+    : c.run === "paths" ? ["path_exam"] : c.run === "talk" ? ["talk_exam"] : [];
   const { jobs, start, latest, anyRunning } = useJobs(kinds, onChanged);
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
-  const doInstall = async (which: string) => { try { await install(which); onChanged(); } catch (e) { alert((e as Error).message); } };
+  const doInstall = async (which: string, agent: Agent = "host") => { try { await install(which, agent); onChanged(); } catch (e) { alert((e as Error).message); } };
   const kind = p?.code?.instruction || "?";
   const chars = p?.code?.instruction_chars || 0;
+  // the second seating's files: the maître d's instruction, the path exam's criteria, the persona
+  const agent: Agent = SEATINGS[seatingOf(n)].agent;
+  const mk = p?.code?.maitre_instruction || "?";
+  const pathCrit = p?.code?.path_criteria || [];
+  const persona = p?.code?.persona || "?";
+  const pathRuns: Seating[] = p?.paths || [];
+  const comparatorRun = pathRuns.filter((s) => s.criteria.includes("tool_trajectory_avg_score")).slice(-1)[0];
+  const checkerRun = pathRuns.filter((s) => s.criteria.includes("path")).slice(-1)[0];
+  const talks: Seating[] = p?.talks || [];
+  const talked = (pe: string, k: string) => talks.some((s) => s.persona === pe && s.instruction === k);
 
   // what to do next — read from what actually ran, never from clicks
   const textRun = exams.some((e) => e.judge === "text");
@@ -159,6 +174,24 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : !p?.code?.edge ? "delete the “# ” on the green line in the editor above (or press “apply the edit for me”)"
       : lp?.decision !== "SHIP" || !lp?.edge ? "↻ run the loop again — round 2 runs under round 1’s rewrite"
       : "✓ the loop earned its exit")
+    // the second seating
+    : c.run === "maitre" ? (mk !== "draft" ? `the maître d’ is running the ${mk} instruction (course XI) — ↺ back to the draft first, so the calls match the story`
+      : !p?.maitre_calls && !p?.last_maitre_booking ? "📋 Book the table on the left — on this course the maître d’ books it. Or 🔬 workbench → maitre_d → paste the group chat."
+      : "✓ read the calls in order, then the four rules. Course X puts a judge on the path — two of them, in fact.")
+    : c.run === "paths" ? (mk !== "draft" ? `the maître d’ is running the ${mk} instruction (course XI) — ↺ back to the draft first, or the numbers here will not match the story`
+      : !comparatorRun && !p?.code?.path_on_exam ? "read the ⚖ card above, then 📝 run the path exam as shipped — the comparator grades the path, EXACT"
+      : !p?.code?.path_on_exam ? "change line 4 in the editor above (or press “apply the edit for me”)"
+      : !checkerRun ? "📝 run the path exam again — now the path checker grades the path"
+      : "✓ the path checker is right where the comparator was not — and where it passes and the party still went hungry, the failure is reasoning, not the path. Course XI lets the organizer talk back.")
+    : c.run === "talk" ? (() => {
+      // three runs, one change at a time: the persona, then the instruction
+      const want = !talked("EXPERT", "draft") ? ["EXPERT", "draft"] : !talked("NOVICE", "draft") ? ["NOVICE", "draft"] : !talked("NOVICE", "asks") ? ["NOVICE", "asks"] : null;
+      if (!want) return "✓ three runs: the persona changed the grade, the asked row caught what the outcome missed, and the stand-in’s judge said which verdicts were about the simulator.";
+      if (persona !== want[0]) return want[0] === "NOVICE" ? "change the persona in the editor above, EXPERT → NOVICE — four lines (or press “apply the edit for me”)"
+        : "the persona is NOVICE, but the first run is EXPERT under the draft — put the four lines back to EXPERT, run it, then come back to NOVICE";
+      if (mk !== want[1]) return want[1] === "asks" ? "⤵ install the line that asks (below), then 📝 run it a third time" : "↺ back to the draft first — this run changes the persona, not the instruction";
+      return `📝 run the conversation exam · ${want[0]} · ${want[1]} — four organizers, about four minutes`;
+    })()
     : "";
   // Plain JSX, not inline components: a component type defined inside render
   // is a new type every render, so React would unmount and remount the Editor
@@ -167,8 +200,9 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const nextCue = cue ? <div className="next"><span>NEXT →</span> {cue}</div> : null;
   const running = Object.values(jobs).find((j) => j.state === "running");
   const [rp, setRp] = useState<Replay | null>(null);
-  useEffect(() => { getReplay().then(setRp).catch(() => setRp(null)); }, [p?.code?.criteria?.join(","), p?.code?.instruction, p?.judge, p?.code?.edge]);   // eslint-disable-line react-hooks/exhaustive-deps
-  const doReplay = async (what: "exam" | "loop") => { try { await replay(what); onChanged(); } catch (e) { alert((e as Error).message); } };
+  useEffect(() => { getReplay().then(setRp).catch(() => setRp(null)); }, [p?.code?.criteria?.join(","), p?.code?.instruction, p?.judge, p?.code?.edge,
+    p?.code?.path_criteria?.join(","), p?.code?.persona, p?.code?.maitre_instruction]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const doReplay = async (what: "exam" | "loop" | "path" | "talk") => { try { await replay(what); onChanged(); } catch (e) { alert((e as Error).message); } };
   // the replay only makes sense when the files are in the state THIS course is
   // about — otherwise it would install a receipt for some other course's tile
   const wantsReplay = !rp ? false
@@ -182,6 +216,13 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     : null;
   const stopBtn = running ? <button className="btn stopbig" onClick={async () => { try { await stopJob(running.kind); } catch { /* gone */ } onChanged(); }} title="terminate this run — nothing is lost; run it again when you like">■ stop the {running.kind}{running.elapsed ? ` · ${running.elapsed}s` : ""}</button> : null;
   const instruction = (foot: React.ReactNode) => <Editor path="host/instruction_current.txt" readOnly foot={foot} />;
+  // the second seating's replay: matched on the files as they are now (criteria
+  // × instruction for the path exam, persona × instruction for the conversation)
+  const sn = rp?.seating_now;
+  const seatReplayBtn = (what: "path" | "talk") => (what === "path" ? rp?.path_available : rp?.talk_available) && sn && !running
+    ? <button className="btn replay" onClick={() => doReplay(what)} title={`Out of quota? Install the result of OUR run of this exact exam (${rp!.model}, recorded ${rp!.recorded_second || rp!.recorded}) as a receipt. It is tagged “replayed” wherever it shows.`}>
+        ⤵ out of quota? replay our run · {what === "path" ? sn.path_criteria.join(" + ") : sn.persona} × {sn.instruction}</button>
+    : null;
 
   let body: React.ReactNode = null;
   if (c.run === "compare") {
@@ -289,7 +330,56 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
         <Log job={latest} onStopped={onChanged} />
       </div>
     );
+  } else if (c.run === "maitre") {
+    body = (
+      <div className="runbox">
+        {nextCue}
+        <div className="art">maitre_d/instruction_current.txt · <b>{mk}</b> · three tools · on this course 📋 on the left books with the maître d’</div>
+        {mk !== "draft" && <div className="opts"><button className="btn" onClick={() => doInstall("draft", "maitre_d")}>↺ back to the draft</button></div>}
+        <MaitreCard f={f} p={p} />
+      </div>
+    );
+  } else if (c.run === "paths") {
+    body = (
+      <div className="runbox">
+        {nextCue}
+        <div className="opts">
+          <button className="btn gold" disabled={anyRunning} onClick={() => start("path_exam")}>📝 run the path exam · {pathCrit.join(" + ") || "—"}</button>
+          {stopBtn}{seatReplayBtn("path")}
+          {mk !== "draft" && <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft", "maitre_d")}>↺ back to the draft</button>}
+          <span className="art">8 parties · one turn each · about a minute · the maître d’ runs the <b>{mk}</b> instruction</span>
+        </div>
+        <Log job={latest} onStopped={onChanged} />
+        <div className="results">
+          <SeatTile label="the comparator · tool_trajectory_avg_score, EXACT" s={comparatorRun} />
+          <SeatTile label="the path checker · path" s={checkerRun} empty={p?.code?.path_on_exam ? "not run yet — the edit is in" : "not on the exam yet"} />
+        </div>
+        <PathCompare a={comparatorRun} b={checkerRun} />
+      </div>
+    );
+  } else if (c.run === "talk") {
+    body = (
+      <div className="runbox">
+        {nextCue}
+        <div className="opts">
+          <button className="btn gold" disabled={anyRunning} onClick={() => start("talk_exam")}>📝 run the conversation exam · {persona} · {mk}</button>
+          {stopBtn}{seatReplayBtn("talk")}
+          {mk === "asks"
+            ? <button className="btn" disabled={anyRunning} onClick={() => doInstall("draft", "maitre_d")}>↺ back to the draft</button>
+            : <button className="btn" disabled={anyRunning} onClick={() => doInstall("asks", "maitre_d")}>⤵ install the line that asks</button>}
+          <span className="art">4 organizers · up to 8 turns each · about four minutes · 5 judges</span>
+        </div>
+        <Log job={latest} onStopped={onChanged} />
+        <Talks p={p} />
+        <Editor path="maitre_d/instruction_current.txt" readOnly foot={mk === "asks"
+          ? <>👉 one line more than the draft: <b>“Before you book, ask the organizer what each person needs … unless the user has already told you.”</b> Nothing else changed — not the model, not the tools.</>
+          : <>the maître d’ runs the <b>{mk}</b> instruction. ⤵ install the line that asks to see what one sentence does to a conversation.</>} />
+      </div>
+    );
   }
+
+  // course X reads the eight paths before the edit, so the card sits above it
+  const pre = c.run === "paths" ? <Paths /> : null;
 
   return (
     <div className="card chapter">
@@ -304,10 +394,11 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       )}
       <div className="step">
         <b>you</b>
-        <div className="you"><span dangerouslySetInnerHTML={{ __html: c.you }} />{c.brief && <Say party={party} />}</div>
+        <div className="you"><span dangerouslySetInnerHTML={{ __html: c.you }} />{c.brief && <Say party={party} agent={agent} />}</div>
         <b>the table</b>
         <span className="m" dangerouslySetInnerHTML={{ __html: (after && c.tableAfter) ? c.tableAfter : c.table }} />
       </div>
+      {pre}
       {c.editor?.change && (
         <div className="change"><span className="k">{c.editor.change[0].toUpperCase()} · WAS</span><span className="was">{c.editor.change[1]}</span><span className="k">NOW</span><span className="now">{c.editor.change[2]}</span></div>
       )}
@@ -327,7 +418,7 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       {c.swap && (
         <>
           <table className="swap"><tbody>{c.swap.map((r, i) => <tr key={i}>{r.map((x, j) => i ? <td key={j}>{x}</td> : <th key={j}>{x}</th>)}</tr>)}</tbody></table>
-          <div className="closing">“{CLOSING}”</div>
+          <div className="closing">“{c.key === "check2" ? CLOSING2 : CLOSING}”</div>
           <div><button className="btn gold" onClick={onCheck}>🧾 the check, please</button></div>
         </>
       )}
