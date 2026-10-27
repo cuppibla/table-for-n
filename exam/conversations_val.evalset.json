@@ -1,0 +1,59 @@
+{
+  "eval_set_id": "conversations_val",
+  "name": "conversations_val",
+  "eval_cases": [
+    {
+      "eval_id": "p1",
+      "conversation_scenario": {
+        "starting_prompt": "Tonight's dinner (p1) — 5 going. Can you book us a table?",
+        "conversation_plan": "You are organizing tonight's dinner for 5: Nadia, Tom, Amara, Lena, Ben. Your goal is one table that works for everyone. This group chat is everything you know:\n  Nadia: \"yes! plant-based only for me (strict, not a vibe thing)\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n  Amara: \"in if it's close! on crutches this month — 10 minutes on foot is my ceiling\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat — I'm coming hungry 😂\"\n  Ben: \"free all night, zero requirements 😎\"\n\nWhenever you pass on what someone said, name them and use their words from the chat. Never invent a need that is not in the chat. Once the agent confirms a booking, your goal is done.",
+        "user_persona": "EXPERT"
+      },
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p3",
+      "conversation_scenario": {
+        "starting_prompt": "Tonight's dinner (p3) — 6 going. Can you book us a table?",
+        "conversation_plan": "You are organizing tonight's dinner for 6: Marcus, Priya, Yuki, Diego, Amara, Ben. Your goal is one table that works for everyone. This group chat is everything you know:\n  Marcus: \"in! I'm still off meat — somewhere with a real veggie main please 🌱\"\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Yuki: \"i can do it IF we're eating by 6:30 — daycare pickup at 7:15, cannot miss it\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. 🙅\"\n  Amara: \"in if it's close! on crutches this month — 10 minutes on foot is my ceiling\"\n  Ben: \"free all night, zero requirements 😎\"\n\nWhenever you pass on what someone said, name them and use their words from the chat. Never invent a need that is not in the chat. Once the agent confirms a booking, your goal is done.",
+        "user_persona": "EXPERT"
+      },
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p15",
+      "conversation_scenario": {
+        "starting_prompt": "Tonight's dinner (p15) — 4 going. Can you book us a table?",
+        "conversation_plan": "You are organizing tonight's dinner for 4: Sam, Diego, Lena, Ben. Your goal is one table that works for everyone. This group chat is everything you know:\n  Sam: \"in — just no shellfish for me, that includes the sneaky stuff like fish sauce\"\n  Diego: \"yes!! but you all know me and spicy food: no. none. 🙅\"\n  Lena: \"ugh I can't get there before 7:45. save me a seat — I'm coming hungry 😂\"\n  Ben: \"free all night, zero requirements 😎\"\n\nWhenever you pass on what someone said, name them and use their words from the chat. Never invent a need that is not in the chat. Once the agent confirms a booking, your goal is done.",
+        "user_persona": "EXPERT"
+      },
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "p16",
+      "conversation_scenario": {
+        "starting_prompt": "Tonight's dinner (p16) — 4 going. Can you book us a table?",
+        "conversation_plan": "You are organizing tonight's dinner for 4: Priya, Tom, Amara, Ben. Your goal is one table that works for everyone. This group chat is everything you know:\n  Priya: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"\n  Tom: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"\n  Amara: \"in if it's close! on crutches this month — 10 minutes on foot is my ceiling\"\n  Ben: \"free all night, zero requirements 😎\"\n\nWhenever you pass on what someone said, name them and use their words from the chat. Never invent a need that is not in the chat. Once the agent confirms a booking, your goal is done.",
+        "user_persona": "EXPERT"
+      },
+      "session_input": {
+        "app_name": "maitre_d",
+        "user_id": "lab",
+        "state": {}
+      }
+    }
+  ],
+  "creation_timestamp": 0.0
+}

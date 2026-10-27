@@ -6,7 +6,9 @@ An interactive lab on **agent evaluation** and the **self-evolving loop**, built
 [Agent Development Kit (ADK)](https://google.github.io/adk-docs/). Eight courses, one page:
 you watch a comparator fail a good dinner, build the judge and walk a table yourself, put
 three judges on the same answers, let the agent rewrite itself, swap the judge and watch
-the number lie, and close the loop.
+the number lie, and close the loop. Then a second seating, four courses more, hands the
+table to a maître d' — an agent with tools that takes questions — and grades what the
+first seating's judges never saw: the path to the booking, and the conversation around it.
 
 | course | the concept | what you do on the page | the receipt that lights it |
 |---|---|---|---|
@@ -18,6 +20,15 @@ the number lie, and close the loop.
 | VI · the other judge | reward hacking: a proxy metric that cannot see harm | install the hacked instruction · flip the switch · exam twice | the same 8 dinners: rating 8/8 · honest ≤ 2/8 |
 | VII · the loop | an ADK 2 `Workflow` with a back edge — and a boundary you own | delete one `# ` in `loop/flywheel.py` · ↻ run | round 2 ran under round 1's rewrite and shipped |
 | VIII · the check | what each thing replaced | nothing | — |
+
+The second seating — about thirty minutes more, on the same page:
+
+| course | the concept | what you do on the page | the receipt that lights it |
+|---|---|---|---|
+| IX · the maître d' | a booking that is a side effect: three tools, and every `book` call is a reservation | 📋 book with the maître d', or chat with `maitre_d` in the workbench | one booking by the maître d' |
+| X · the path | `tool_trajectory_avg_score` against a golden path is a comparator again (EXACT · IN_ORDER · ANY_ORDER) · four rules over the calls instead | read the ⚖ eight-paths card · 📝 the path exam · swap line 4 of `exam/eval_config_path.json` · 📝 again | a path exam ran with the path checker on it |
+| XI · the conversation | multi-turn eval: conversation scenarios, ADK's simulated user and its personas, a judge for the simulator itself | 📝 the conversation exam · persona EXPERT → NOVICE · ⤵ install the line that asks · 📝 after each | three runs: EXPERT · draft, NOVICE · draft, NOVICE · asks |
+| XII · the second check | what each thing replaced | nothing | — |
 
 Beyond the lab, `refuel/` holds the production pipe — deploy the shipped host to Agent
 Engine, send traffic, replay it through the BigQuery agent-analytics plugin, and `harvest.py`
@@ -77,7 +88,7 @@ Open **http://localhost:3470**.
 Put your name on the reservation and follow the menu. Everything happens on that
 page: you book, you edit the one line each course is about, the buttons run the
 real `adk eval` / `adk optimize` / the loop, and the workbench (`adk web`) is a
-drawer on the same page — same `host/` folder, same `table.db`.
+drawer on the same page — same agent folders (`host/`, `maitre_d/`), same `table.db`.
 
 Nothing restarts. An edit lands on your **next 📋 booking or 📝 exam**; the chip
 under the editor says so. The `refuel/` pipe (deploy to Agent Engine) needs the project path.
@@ -87,18 +98,28 @@ under the editor says so. The `refuel/` pipe (deploy to Agent Engine) needs the 
 ```
 world.py                 the cast (10 people, 10 restaurants, 16 parties) and the two judges as pure functions
 host/                    the agent — its instruction lives in instruction_current.txt, the one artifact that changes
+maitre_d/                the second seating's agent: the group chat in, three tools (list_rooms · get_room · book), same model and dials
 exam/                    evalsets (8 train, 8 holdout, golden answers in), eval_config.json (yours), eval_config_rating.json (the critic's)
+                         paths_*.evalset.json (one turn, golden paths) · eval_config_path.json (yours, course X)
+                         conversations_*.evalset.json (scenarios and personas, nothing golden) · eval_config_conversation.json (five judges)
 metrics/table.py         everyone_ate_metric and rating_metric, wired into adk eval through customMetrics
+metrics/path.py          path_metric: four rules over the tool calls, each with a why — no golden path
+metrics/conversation.py  asked_before_booking_metric: had the organizer named each need before the first book call?
 instructions/            draft.txt · winner.txt (a real GEPA run, log included) · hacked.txt (a real run against the rating judge)
+                         maitre_d_draft.txt · maitre_d_asks.txt (course XI's one line)
 loop/flywheel.py         the self-evolving loop as an ADK 2 Workflow; the course-VII edit is in build()
 refuel/                  send_traffic.py · replay_to_bq.py · harvest.py — the production pipe (beyond the lab)
 kitchen/                 the service: booking, jobs (exam/optimize/loop/deploy…), progress, the editor, the workbench mount
+kitchen/paths.py         course X's card: eight ways to one dinner, every judge on each, no model call
 site/                    the page (Next.js, exported to static files once by table.sh)
+fixtures/replays.json    our recorded runs, both seatings — the ⤵ replay buttons, for a project out of quota
 tests/test_host.py       the third way to run the exam: pytest + AgentEvaluator, same config, same eval store (course II's 🧪)
-tests/test_shipped.py    the three edited files are as a fresh clone must find them — run before you commit
-scripts/reset.py         clear the table: draft instruction, text metric on the exam, no back edge (--receipts forgets the runs too)
-scripts/walk.py          the headless learner: walks courses II–VII against a running kitchen and reports what lit
+tests/test_shipped.py    the six edited files are as a fresh clone must find them — run before you commit
+tests/test_second_seating.py  the second seating's judges, offline: the eight-paths card, one verdict per conversation, the eval sets
+scripts/reset.py         clear the table, both seatings: draft instructions, the comparators on the exams, no back edge, EXPERT organizers (--receipts forgets the runs too)
+scripts/walk.py          the headless learner: walks courses II–VII and IX–XI against a running kitchen and reports what lit
 scripts/make_evalsets.py regenerates the two exams from world.py
+scripts/make_paths_and_scenarios.py  regenerates the second seating's two exams from world.py
 ```
 
 ## Honest numbers
@@ -110,12 +131,22 @@ the logs of the runs that produced them. The model is `gemini-2.5-flash` at `thi
 and `temperature=0`, on purpose: at higher thinking budgets the day-one draft nearly passes
 the exam and there is nothing left to learn.
 
+The second seating adds models that are not the agent: ADK's simulated organizer, which
+plays the user in the conversation exam, and the rubric judges. They run at a small
+thinking budget, and the simulator gets a judge of its own
+(`per_turn_user_simulator_quality_v1`), so a verdict that came from the stand-in slipping
+says so on the page instead of being charged to the maître d'. A conversation is many model
+calls, and any of them can go another way, so its verdicts can move between runs;
+`fixtures/replays.json` holds the runs we recorded.
+
 The checks are not a checklist. `kitchen/progress.py` pairs a fact read off your files
 (which metric is in `criteria`, which instruction is installed, whether the back edge is in
 the graph) with a receipt of something that actually ran. Both, or the plate stays empty.
 
-Three files are the lab's exercise surface — `host/instruction_current.txt`,
-`exam/eval_config.json`, `loop/flywheel.py` — and the kitchen rewrites them as you go.
+Six files are the lab's exercise surface. The first seating's three —
+`host/instruction_current.txt`, `exam/eval_config.json`, `loop/flywheel.py` — and the
+second's — `maitre_d/instruction_current.txt`, `exam/eval_config_path.json`,
+`exam/conversations_val.evalset.json`. The kitchen rewrites them as you go.
 `uv run python scripts/reset.py` puts them back as shipped; `uv run pytest tests/test_shipped.py`
 refuses a commit that would ship them mid-course.
 

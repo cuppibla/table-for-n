@@ -76,17 +76,18 @@ def sessions() -> SqliteSessionService:
     return _sessions
 
 
-async def calls() -> int:
-    """Bookings made in the dev UI: sessions of `host` under its user that hold
-    at least one reply from the host. Course I's receipt."""
+async def calls(app: str = APP) -> int:
+    """Bookings made in the dev UI: sessions of `app` under its user that hold
+    at least one reply from that agent. Course I's receipt (the host), and
+    course IX's (the maître d', `app="maitre_d"`)."""
     svc = sessions()
     try:
-        listed = await svc.list_sessions(app_name=APP, user_id=USER)
+        listed = await svc.list_sessions(app_name=app, user_id=USER)
     except Exception:                                              # noqa: BLE001
         return 0
     n = 0
     for s in listed.sessions:
-        full = await svc.get_session(app_name=APP, user_id=USER, session_id=s.id)
-        if full is not None and any(getattr(e, "author", "") == APP and e.content for e in (full.events or [])):
+        full = await svc.get_session(app_name=app, user_id=USER, session_id=s.id)
+        if full is not None and any(getattr(e, "author", "") == app and e.content for e in (full.events or [])):
             n += 1
     return n

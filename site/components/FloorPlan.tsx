@@ -1,13 +1,17 @@
 "use client";
 import type { Progress } from "@/lib/api";
 import type { Folded } from "@/lib/useEvents";
-import { keyOf, reached } from "@/lib/courses";
+import { keyOf, reached, seatingOf } from "@/lib/courses";
 
 /** The floor plan: the architecture, alive. Three rows — the exam and the
  *  exam above, brief → host → judge → gate → shipped, proposer and publish
  *  below. Nodes light as courses enable them; plates move while something
  *  runs. The back edge is dashed when you walk it by hand (course V) and
- *  solid once the graph walks it (course VII). */
+ *  solid once the graph walks it (course VII).
+ *
+ *  The second seating has its own plan (FloorPlan2, below): the chat and the
+ *  maître d' on top, the tools and the reservation book underneath — the
+ *  judges read all three: the calls, the reservation, the conversation. */
 
 const N = {
   exam:     { x: 346, y: 12, w: 164, h: 44, l: "🗂 the exam", s: "evalset · 8 parties" },
@@ -17,7 +21,7 @@ const N = {
   gate:     { x: 542, y: 90, w: 104, h: 52, l: "🔔 the gate", s: "score ≥ 0.9" },
   ship:     { x: 678, y: 90, w: 88,  h: 52, l: "✓ shipped", s: "deploy" },
   publish:  { x: 150, y: 180, w: 164, h: 48, l: "📝 publish", s: "instruction_current.txt" },
-  proposer: { x: 346, y: 180, w: 164, h: 48, l: "👨‍🍳 proposer", s: "GEPA · reads the whys" },
+  proposer: { x: 346, y: 180, w: 164, h: 48, l: "👨‍🍳 proposer", s: "GEPA · reads the runs" },
 } as const;
 const E = {
   "brief-host": "M118 116 L150 116", "host-judge": "M314 116 L346 116", "judge-gate": "M510 116 L542 116", "gate-ship": "M646 116 L678 116",
@@ -32,6 +36,7 @@ const P = {
 } as const;
 
 export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; f: Folded }) {
+  if (seatingOf(n) === 2) return <FloorPlan2 n={n} p={p} f={f} />;
   const code = p?.code;
   const judge = p?.judge || "everyone_ate";
   const edge = Boolean(code?.edge);
@@ -82,7 +87,11 @@ export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; 
         {Object.entries(N).map(([k, nd]) => {
           const isLit = lit.has(k);
           const label = k === "judge" && critic ? "🦚 judge" : nd.l;
-          const sub = k === "judge" ? judgeSub : k === "host" ? `LlmAgent · ${code?.instruction || "the instruction"}` : nd.s;
+          // course V's proposer is GEPA: it reads the failed runs (brief, reply,
+          // pass/fail), never the judge's reasons. Course VII's is an agent
+          // node, and the whys are its prompt.
+          const sub = k === "judge" ? judgeSub : k === "host" ? `LlmAgent · ${code?.instruction || "the instruction"}`
+            : k === "proposer" && key === "loop" ? "agent · reads the whys" : nd.s;
           return (
             <g key={k}>
               <rect x={nd.x} y={nd.y} width={nd.w} height={nd.h} rx="9" className={"node" + (isLit ? " lit" : "") + (critic && k === "judge" ? " hot" : "") + (bell && k === "gate" ? " bell" : "")} />
@@ -97,6 +106,100 @@ export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; 
         {packets.map((k) => Array.from({ length: 3 }, (_, i) => (
           <circle key={`${k}${i}`} r="4.5" className={P[k].cls}>
             <animateMotion dur={P[k].dur} repeatCount="indefinite" begin={`${(i * 0.9).toFixed(1)}s`} path={P[k].d} />
+          </circle>
+        )))}
+      </svg>
+      <div className="lg">{legend}</div>
+    </div>
+  );
+}
+
+// ── the second seating ───────────────────────────────────────────────────────
+const N2 = {
+  exam:    { x: 362, y: 12,  w: 184, h: 44, l: "🗂 the exam", s: "" },
+  chat:    { x: 14,  y: 90,  w: 120, h: 52, l: "📋 the chat", s: "no listings" },
+  maitre:  { x: 166, y: 90,  w: 164, h: 52, l: "🦊 maître d’", s: "" },
+  judges:  { x: 362, y: 90,  w: 184, h: 52, l: "🐧 the judges", s: "" },
+  receipt: { x: 578, y: 90,  w: 188, h: 52, l: "🧾 the receipt", s: "" },
+  tools:   { x: 166, y: 180, w: 164, h: 48, l: "☎ three tools", s: "list_rooms · get_room · book" },
+  book:    { x: 362, y: 180, w: 184, h: 48, l: "📖 reservation book", s: "every book call is one" },
+} as const;
+const E2 = {
+  "chat-maitre": "M134 116 L166 116", "maitre-judges": "M330 116 L362 116", "judges-receipt": "M546 116 L578 116",
+  "maitre-tools": "M248 142 L248 180", "tools-book": "M330 204 L362 204", "book-judges": "M454 180 L454 142",
+  "exam-judges": "M454 56 L454 90",
+} as const;
+const P2 = {
+  book: { d: "M74 116 L248 116 L248 204 L454 204 L454 116", dur: "2.4s" },
+  path: { d: "M74 116 L248 116 L248 204 L454 204 L454 116 L672 116", dur: "2.8s" },
+  talk: { d: "M74 116 L248 116 L74 116 L248 116 L248 204 L454 204 L454 116 L672 116", dur: "4.6s" },
+} as const;
+const short = (c: string) => (c === "tool_trajectory_avg_score" ? "comparator" : c === "asked_before_booking" ? "asked" : c.startsWith("rubric_") ? "rubric" : c.startsWith("per_turn_user_simulator") ? "🎭 stand-in" : c);
+
+function FloorPlan2({ n, p, f }: { n: number; p: Progress | null; f: Folded }) {
+  const code = p?.code;
+  const key = keyOf(n);
+  const talk = key === "talk" || key === "check2";
+  const exam = key !== "maitre";
+  const persona = code?.persona || "EXPERT";
+  const mk = code?.maitre_instruction || "the instruction";
+  const comparatorOn = (code?.path_criteria || []).includes("tool_trajectory_avg_score");
+  const paths = p?.paths || [], talks = p?.talks || [];
+  const mb = p?.last_maitre_booking;
+
+  const lit = new Set<string>(["chat", "maitre", "tools", "book", "judges"]);
+  if (exam) { lit.add("exam"); lit.add("receipt"); }
+  const edges = new Set<string>(["chat-maitre", "maitre-tools", "tools-book", "book-judges", "maitre-judges"]);
+  if (exam) { edges.add("exam-judges"); edges.add("judges-receipt"); }
+
+  const judgesSub = key === "path" ? (code?.path_criteria || []).map(short).join(" · ")
+    : talk ? "fed · path · asked · rubric · 🎭" : "everyone_ate · path";
+  const last = key === "path" ? paths.slice(-1)[0] : talk ? talks.slice(-1)[0] : undefined;
+  const receiptSub = last
+    ? (last.suite === "talks" ? `${last.persona} · ${last.instruction} · ${last.passed}/${last.n}` : Object.entries(last.by_metric || {}).map(([k, v]) => `${short(k).replace("everyone_ate", "fed")} ${v.passed}/${last.n}`).join(" · "))
+    : key === "maitre" && mb ? `${mb.hungry} hungry · path ${mb.path.passed ? "held" : "broke"}` : "a why for every fail";
+  const sub: Record<string, string> = {
+    exam: talk ? "conversations_val · 4 scenarios" : "paths_val · 8 parties · golden paths",
+    chat: talk ? `simulated · ${persona}` : "the group chat · no listings",
+    maitre: `LlmAgent · ${mk}`, judges: judgesSub, receipt: receiptSub,
+  };
+  const label = (k: string, l: string) => (k === "chat" && talk ? "🎭 the organizer" : l);
+
+  const packets: (keyof typeof P2)[] = [];
+  if (f.running) {
+    if (f.kind === "booking" && f.agent === "maitre_d") packets.push("book");
+    if (f.kind === "path_exam") packets.push("path");
+    if (f.kind === "talk_exam") packets.push("talk");
+  }
+  const legend =
+    key === "maitre" ? "the group chat goes in; the listings do not. every fact about a room is a call, every book is a reservation — between the chat and the reply there is now a path." :
+    key === "path" ? (comparatorOn ? "✕ the comparator holds one golden path. p3 has ten right answers and any number of right orders to look in — it passes one." : "the path checker reads the calls: four rules, a why each, no golden path. everyone_ate reads the reservation. two judges, two questions.") :
+    key === "talk" ? (persona === "NOVICE" ? `the novice answers what it is asked and takes the first table offered — what the agent never asked about lands on the table.${mk === "asks" ? " one line now asks first." : ""}` : "the organizer is simulated — an EXPERT volunteers details and corrects the agent. it rescues dinners, and hides the problem.") :
+    "one maître d’ · three tools · four rules · a stand-in with a judge of its own.";
+
+  return (
+    <div className="card floor">
+      <svg viewBox="0 0 780 236" role="img" aria-label="the second seating: the chat and the maître d', its tools and the reservation book, the judges and the exam">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6F7F3F" /></marker></defs>
+        {Object.entries(E2).map(([k, d]) => (
+          <path key={k} d={d} className={"edge" + (edges.has(k) ? " lit" : "") + (k === "exam-judges" ? " pipe" : "")} markerEnd="url(#a2)"
+            markerStart={k === "chat-maitre" && talk ? "url(#a2)" : undefined} />
+        ))}
+        {talk && <><path d="M400 90 C 380 64, 110 64, 74 90" className="edge lit back" markerEnd="url(#a2)" /><text x="236" y="70" textAnchor="middle" className="nl" style={{ fill: "#A8771C", fontWeight: 600 }}>🎭 the stand-in is judged too</text></>}
+        {key === "path" && comparatorOn && <text x="466" y="78" className="nl" style={{ fill: "#D9603F", fontWeight: 600 }}>✕ one golden path</text>}
+        {Object.entries(N2).map(([k, nd]) => {
+          const isLit = lit.has(k);
+          return (
+            <g key={k}>
+              <rect x={nd.x} y={nd.y} width={nd.w} height={nd.h} rx="9" className={"node" + (isLit ? " lit" : "") + (k === "book" && (mb?.path.broken || []).includes("booked_once") && key === "maitre" ? " hot" : "")} />
+              <text x={nd.x + nd.w / 2} y={nd.y + (nd.h > 46 ? 22 : 19)} textAnchor="middle" className={"nl" + (isLit ? " lit" : "")}>{label(k, nd.l)}</text>
+              <text x={nd.x + nd.w / 2} y={nd.y + (nd.h > 46 ? 40 : 35)} textAnchor="middle" className="ns">{sub[k] ?? nd.s}</text>
+            </g>
+          );
+        })}
+        {packets.map((k) => Array.from({ length: 3 }, (_, i) => (
+          <circle key={`${k}${i}`} r="4.5" className="pk">
+            <animateMotion dur={P2[k].dur} repeatCount="indefinite" begin={`${(i * 0.9).toFixed(1)}s`} path={P2[k].d} />
           </circle>
         )))}
       </svg>

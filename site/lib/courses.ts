@@ -1,23 +1,30 @@
 import type { Progress } from "./api";
 
-/** The eight courses. Each is what you do · what the table does (before and
- *  after) · the one edit or the buttons · one ✓. The ✓ is never ticked by
- *  the page: it comes from /api/progress, which reads your files and what
- *  actually ran. The course text is the app's; the codelab carries depth.
+/** The courses, in two seatings. Each is what you do · what the table does
+ *  (before and after) · the one edit or the buttons · one ✓. The ✓ is never
+ *  ticked by the page: it comes from /api/progress, which reads your files
+ *  and what actually ran. The course text is the app's; the codelab carries
+ *  depth.
+ *
+ *  The first seating (I–VIII) is the host: one reply, graded. The second
+ *  (IX–XII) is the maître d': it uses tools and takes questions, so the path
+ *  and the conversation get graded too.
  *
  *  Logic keys off `key`, never off the number, so courses can be added or
  *  reordered without hunting for magic numbers. */
 
-export type CourseKey = "booking" | "comparator" | "judge" | "flight" | "rewrite" | "other" | "loop" | "check";
+export type CourseKey = "booking" | "comparator" | "judge" | "flight" | "rewrite" | "other" | "loop" | "check"
+  | "maitre" | "path" | "talk" | "check2";
 
 export type Course = {
   n: number; r: string; key: CourseKey; t: string; pill: [string, string];
+  seating?: 1 | 2;                           // 1 when absent — the host's eight courses
   judge?: "everyone_ate" | "rating";
   you: string; brief?: boolean;
   table: string; tableAfter?: string;
   after: (p: Progress) => boolean;          // the code fact that flips the copy to "after"
   editor?: { path: string; symbol?: string; marker?: string; afterMarker?: string; readOnly?: boolean; fix?: (s: string) => string; afterHint?: string; foot?: string; change?: [string, string, string] };
-  run?: "compare" | "exam" | "flight" | "rewrite" | "switch" | "loop" | "cloud";
+  run?: "compare" | "exam" | "flight" | "rewrite" | "switch" | "loop" | "cloud" | "maitre" | "paths" | "talk";
   check: string;
   swap?: string[][];
   sources?: [string, string][];              // [label, repo path] — opens the file on GitHub
@@ -32,6 +39,12 @@ const swapCriteria = (src: string) =>
   src.replace(/"response_match_score"\s*:\s*[0-9.]+/, "\"everyone_ate\": 0.9");
 const uncommentEdge = (src: string) =>
   src.replace(/^(\s*)# (\(proposer, publish, host\),)/m, "$1$2");
+// course X: the comparator's criterion object → the path checker, declared in customMetrics
+const swapPath = (src: string) =>
+  src.replace(/"tool_trajectory_avg_score"\s*:\s*\{[^}]*\}/, "\"path\": 1.0");
+// course XI: every scenario's simulated organizer, EXPERT → NOVICE
+const toNovice = (src: string) =>
+  src.replace(/"user_persona"\s*:\s*"EXPERT"/g, "\"user_persona\": \"NOVICE\"");
 
 export const COURSES: Course[] = [
   { n: 1, r: "I", key: "booking", t: "the booking", pill: ["read", "READ ONLY"],
@@ -115,6 +128,51 @@ export const COURSES: Course[] = [
       ["a number that goes up", "a judge that explains itself"], ["one run", "a round, with a way back"], ["the metric you were handed", "the number you chose"]],
     sources: [["kitchen/progress.py · what lights a plate", "kitchen/progress.py"], ["scripts/walk.py · the headless learner", "scripts/walk.py"]],
     check: "eight courses · the check" },
+
+  // ── the second seating: the maître d' ──────────────────────────────────────
+  { n: 9, r: "IX", key: "maitre", t: "the maître d’", pill: ["read", "READ ONLY"], seating: 2, judge: "everyone_ate",
+    you: "📋 <b>Book the table</b> on the left — the maître d’ is booking now — or open 🔬 <b>workbench</b>, pick <b>maitre_d</b>, paste the group chat, send. Watch the calls.", brief: true,
+    table: "The second seating’s agent gets the group chat and nothing else — no listings. Every fact about a room is a tool call (<code>list_rooms</code>, <code>get_room</code>), and every <code>book</code> is a real reservation. The booking is not a reply any more; it is a side effect. Every judge in the first seating read the answer. None of them saw how it was reached.",
+    tableAfter: "The calls are on the table, in order. everyone_ate grades the table it <i>reserved</i>, not the one its reply names — a reply is a claim, a reservation is a result. Four rules read the calls themselves: did it look before it booked, book once, book the whole party, and say what it reserved?",
+    after: (p) => Boolean(p.maitre_calls) || Boolean(p.last_maitre_booking),
+    editor: { path: "maitre_d/instruction_current.txt", readOnly: true,
+      foot: "the same model and settings as the host, and the same opening — “lead with the highest-rated room”. three tools instead of a listings app: the rooms are facts it has to go and get." },
+    run: "maitre",
+    sources: [["maitre_d/agent.py", "maitre_d/agent.py"], ["maitre_d/tools.py · three tools", "maitre_d/tools.py"], ["instruction_current.txt", "maitre_d/instruction_current.txt"], ["world.chat_brief · the chat, no listings", "world.py"]],
+    check: "one booking by the maître d’ — in the workbench, or with 📋" },
+
+  { n: 10, r: "X", key: "path", t: "the path", pill: ["olive", "EDIT ONE"], seating: 2, judge: "everyone_ate",
+    you: "Read the ⚖ card: eight ways to one dinner, every judge on each. Then 📝 run the path exam as shipped, change <b>line 4</b> of <code>exam/eval_config_path.json</code> so it runs the path checker instead of the comparator, and 📝 run it again.",
+    table: "ADK’s trajectory metric, <code>tool_trajectory_avg_score</code>, compares the calls to a golden path. p3 has ten right (room, time) answers and any number of right orders to look in; a golden path holds one. EXACT fails the agent that rang three rooms first. IN_ORDER and ANY_ORDER fail the other right room. <code>ignore_args</code> passes the agent that booked the wrong one. It is a comparator again — course II’s lesson, on the path.",
+    tableAfter: "The path checker is on the exam: four rules over the calls, each with a why, and no golden path at all — so it grades a one-turn case, a conversation and a production trace the same way. It never checks whether the room was right; that stays everyone_ate’s job. A path can hold up and still feed nobody: that is a reasoning failure, and its fix is not the same.",
+    after: (p) => Boolean(p.code?.path_on_exam),
+    editor: { path: "exam/eval_config_path.json", marker: "\"tool_trajectory_avg_score\"", afterMarker: "\"path\": 1.0", fix: swapPath, afterHint: "It lands on your next 📝 path exam.",
+      change: ["line 4", "\"tool_trajectory_avg_score\": { \"threshold\": 1.0, \"match_type\": \"EXACT\" }", "\"path\": 1.0"],
+      foot: "👉 the comparator is a built-in with a criterion object — a threshold and a <b>match_type</b> (EXACT · IN_ORDER · ANY_ORDER). the path checker is declared below in <b>customMetrics</b>, the way everyone_ate was in course III. same move, one level down." },
+    run: "paths",
+    sources: [["metrics/path.py · four rules", "metrics/path.py"], ["kitchen/paths.py · the eight paths", "kitchen/paths.py"], ["exam/eval_config_path.json", "exam/eval_config_path.json"], ["paths_val.evalset.json · the golden paths", "exam/paths_val.evalset.json"]],
+    check: "the path checker is on the exam, and a path exam ran with it" },
+
+  { n: 11, r: "XI", key: "talk", t: "the conversation", pill: ["gold", "EDIT ONE"], seating: 2, judge: "everyone_ate",
+    you: "📝 <b>Run the conversation exam</b> as shipped — four simulated organizers, about four minutes. Change the persona in <code>exam/conversations_val.evalset.json</code> from <b>EXPERT</b> to <b>NOVICE</b> (four lines) and run it again. Then ⤵ install the line that asks, and run it a third time.",
+    table: "Nobody can write down a golden conversation, so ADK writes the other side: each case is a scenario — the opening line, a plan (the group chat, and how to pass it on) and a <b>persona</b>. As shipped the persona is EXPERT: it volunteers details and corrects the agent. Five judges read each conversation — everyone_ate, the path, asked_before_booking, a rubric judge, and one more that grades the simulated organizer itself.",
+    tableAfter: "The NOVICE gives the goal, answers what it is asked, and takes the first table it is offered. Whatever the EXPERT was catching and correcting now lands on the table. The fix under test is one line — ask before you book — and the stand-in’s own judge says when a verdict was about the simulator, not the agent.",
+    after: (p) => p.code?.persona === "NOVICE",
+    editor: { path: "exam/conversations_val.evalset.json", marker: "\"user_persona\": \"EXPERT\"", afterMarker: "\"user_persona\": \"NOVICE\"", fix: toNovice, afterHint: "It lands on your next 📝 conversation exam.",
+      change: ["four lines", "\"user_persona\": \"EXPERT\"", "\"user_persona\": \"NOVICE\""],
+      foot: "👉 a persona is a set of behaviors the simulator follows. EXPERT and NOVICE ship with ADK; a scenario can also carry a whole persona object of its own. the plan is the same in every run — only who is holding the phone changes." },
+    run: "talk",
+    sources: [["conversations_val.evalset.json · four scenarios", "exam/conversations_val.evalset.json"], ["exam/eval_config_conversation.json · five judges", "exam/eval_config_conversation.json"], ["metrics/conversation.py · asked_before_booking", "metrics/conversation.py"], ["instructions/maitre_d_asks.txt · the line that asks", "instructions/maitre_d_asks.txt"]],
+    check: "the conversation exam ran three ways: EXPERT · draft, NOVICE · draft, NOVICE · asks" },
+
+  { n: 12, r: "XII", key: "check2", t: "the second check", pill: ["gold", "THE CHECK"], seating: 2, judge: "everyone_ate",
+    you: "Nothing. Four more courses served.", table: "The reservation book is clean. The check is on the table.",
+    after: () => false,
+    swap: [["before", "after"], ["a booking that is a reply", "a booking that is a side effect"], ["one golden path", "four rules over the calls, each with a why"],
+      ["a brief with everything in it", "an organizer who says only what is asked"], ["the user you script", "a stand-in with a persona — and a judge of its own"],
+      ["grade the answer", "grade the path where it has side effects; grade the outcome where it is a search"]],
+    sources: [["kitchen/progress.py · what lights a plate", "kitchen/progress.py"], ["scripts/walk.py · the headless learner", "scripts/walk.py"]],
+    check: "four more courses · the second check" },
 ];
 
 export const LAST = COURSES.length;
@@ -123,7 +181,19 @@ export const keyOf = (n: number): CourseKey => (COURSES[n - 1] || COURSES[0]).ke
 /** n is at or past the course with this key — for the floor plan's "lit so far". */
 export const reached = (n: number, k: CourseKey) => n >= byKey(k).n;
 
+/** Which seating course n belongs to, and that seating's courses. A seating
+ *  ends with its check, which is not counted among the courses served. */
+export type SeatingNo = 1 | 2;
+export const seatingOf = (n: number): SeatingNo => (COURSES[n - 1]?.seating || 1);
+export const coursesOf = (s: SeatingNo) => COURSES.filter((c) => (c.seating || 1) === s);
+export const isCheck = (k: CourseKey) => k === "check" || k === "check2";
+export const SEATINGS: Record<SeatingNo, { label: string; count: string; agent: "host" | "maitre_d" }> = {
+  1: { label: "first seating", count: "EIGHT COURSES", agent: "host" },
+  2: { label: "second seating", count: "FOUR COURSES", agent: "maitre_d" },
+};
+
 export const CLOSING = "The loop pushes up whatever number you hand it.";
+export const CLOSING2 = "A golden path is one right answer. A rule is all of them.";
 export const GUESTS: Record<string, { name: string; img: string }> = {
   nadia: { name: "Nadia", img: "/art/nadia.jpg" }, tom: { name: "Tom", img: "/art/tom.jpg" }, amara: { name: "Amara", img: "/art/amara.jpg" },
   lena: { name: "Lena", img: "/art/lena.jpg" }, ben: { name: "Ben", img: "/art/ben.jpg" },

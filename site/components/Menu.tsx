@@ -1,8 +1,10 @@
 "use client";
-import { COURSES } from "@/lib/courses";
+import { SEATINGS, coursesOf, isCheck, seatingOf, type SeatingNo } from "@/lib/courses";
 
-/** Tonight's menu: eight courses. A plate fills when a course is proven —
- *  empty · cutlery (you are here) · the dish (done). */
+/** Tonight's menu: two seatings — the host's eight courses, then the maître
+ *  d's four. The rail shows one seating at a time; the switch on the left
+ *  changes it. A plate fills when a course is proven — empty · cutlery (you
+ *  are here) · the dish (done). */
 const Plate = ({ state }: { state: "" | "now" | "done" }) => (
   <svg className="plate" viewBox="0 0 34 34">
     <circle className="rim" cx="17" cy="17" r="15" /><circle className="well" cx="17" cy="17" r="10.5" />
@@ -12,11 +14,23 @@ const Plate = ({ state }: { state: "" | "now" | "done" }) => (
 );
 
 export default function Menu({ current, lit, onPick }: { current: number; lit: Record<string, boolean>; onPick: (n: number) => void }) {
+  const seating = seatingOf(current);
+  // a seating is served when every course in it but its check is lit
+  const served = (s: SeatingNo) => coursesOf(s).filter((c) => !isCheck(c.key)).every((c) => lit[String(c.n)]);
   return (
     <div className="card menu">
-      <div className="lbl">Tonight’s<br />menu<small>EIGHT COURSES</small></div>
+      <div className="lbl">Tonight’s<br />menu<small>{SEATINGS[seating].count}</small>
+        <div className="seatings">
+          {([1, 2] as SeatingNo[]).map((s) => (
+            <button key={s} className={(s === seating ? "on" : "") + (served(s) ? " served" : "")} onClick={() => onPick(coursesOf(s)[0].n)}
+              title={`the ${SEATINGS[s].label} · ${SEATINGS[s].count.toLowerCase()} · ${s === 1 ? "the host" : "the maître d’"}`}>
+              {s === 1 ? "first" : "second"}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="courses">
-        {COURSES.map((c) => {
+        {coursesOf(seating).map((c) => {
           const done = Boolean(lit[String(c.n)]);
           return (
             <button key={c.n} className={"course" + (c.n === current ? " now" : "") + (done ? " done" : "")} onClick={() => onPick(c.n)}>

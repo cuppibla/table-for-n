@@ -1,0 +1,45 @@
+{
+  "criteria": {
+    "everyone_ate": 0.9,
+    "path": 1.0,
+    "asked_before_booking": 1.0,
+    "rubric_based_multi_turn_trajectory_quality_v1": {
+      "threshold": 0.67,
+      "judge_model_options": { "judge_model": "gemini-2.5-flash", "num_samples": 1,
+                               "judge_model_config": { "thinking_config": { "thinking_budget": 1024 } } },
+      "rubrics": [
+        { "rubric_id": "asked_first",
+          "rubric_content": { "text_property": "Before booking, the agent asked the organizer about the group's needs (food, allergies, timing, budget, distance) instead of assuming there were none." } },
+        { "rubric_id": "listened",
+          "rubric_content": { "text_property": "Every need the organizer mentioned is reflected in the restaurant and time the agent finally booked." } },
+        { "rubric_id": "no_argument",
+          "rubric_content": { "text_property": "When the organizer objected to a proposal, the agent changed the plan instead of defending it." } }
+      ]
+    },
+    "per_turn_user_simulator_quality_v1": {
+      "threshold": 0.8,
+      "judge_model_options": { "judge_model": "gemini-2.5-flash", "num_samples": 1,
+                               "judge_model_config": { "thinking_config": { "thinking_budget": 1024 } } }
+    }
+  },
+  "customMetrics": {
+    "everyone_ate": {
+      "codeConfig": { "name": "metrics.table.everyone_ate_metric" },
+      "description": "How many of the party actually got dinner — the last reservation, the party from turn 1."
+    },
+    "path": {
+      "codeConfig": { "name": "metrics.path.path_metric" },
+      "description": "Did the booking come from looking? Four rules over every tool call in the conversation."
+    },
+    "asked_before_booking": {
+      "codeConfig": { "name": "metrics.conversation.asked_before_booking_metric" },
+      "description": "Share of the guests with a need whom the organizer had named before the first booking."
+    }
+  },
+  "userSimulatorConfig": {
+    "type": "llm_backed",
+    "model": "gemini-2.5-flash",
+    "model_configuration": { "thinking_config": { "thinking_budget": 1024 } },
+    "max_allowed_invocations": 8
+  }
+}

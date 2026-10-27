@@ -74,7 +74,9 @@ export default function Editor({ path, symbol, readOnly, marker, afterMarker, fi
   };
 
   const lines = code.split("\n");
-  const markerLine = marker ? lines.findIndex((l) => l.includes(marker)) + 1 : 0;
+  // a marker can sit on several lines (course XI's persona is on four)
+  const markerLines = marker ? lines.flatMap((l, i) => (l.includes(marker) ? [i + 1] : [])) : [];
+  const markerLine = markerLines[0] || 0;
   const isDone = fix ? fix(code) === code : false;
   const editedLine = isDone && afterMarker ? lines.findIndex((l) => l.includes(afterMarker) && !l.trimStart().startsWith("#")) + 1 : 0;
   const markerIsComment = markerLine > 0 && lines[markerLine - 1].trimStart().startsWith("#");
@@ -86,10 +88,10 @@ export default function Editor({ path, symbol, readOnly, marker, afterMarker, fi
     : <span className="pill read">unsaved</span>;
 
   return (
-    <div className={"editor" + (path.endsWith(".txt") ? " wrap" : "")}>
+    <div className={"editor" + (path.endsWith(".txt") || path.endsWith(".evalset.json") ? " wrap" : "")}>
       <div className="hd">
         <span>{path}{symbol ? <> · <b>{symbol}</b></> : null}{markerLine > 0 && !readOnly && !isDone && (
-          <span style={{ color: "var(--sage-ink)" }}> · {markerIsComment ? "delete the “# ” on" : "edit"} line {markerLine}</span>)}{editedLine > 0 && (
+          <span style={{ color: "var(--sage-ink)" }}> · {markerIsComment ? "delete the “# ” on" : "edit"} {markerLines.length > 1 ? `lines ${markerLines.join(", ")}` : `line ${markerLine}`}</span>)}{editedLine > 0 && (
           <span style={{ color: "var(--sage-ink)" }}> · line {editedLine} edited</span>)}</span>
         <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <a className="src" href={sourceUrl(path)} target="_blank" rel="noreferrer" title="the whole file, on GitHub">whole file ↗</a>

@@ -37,7 +37,7 @@
     {
      "party": "p3",
      "status": "PASSED",
-     "score": 0.5185185185185185,
+     "score": 0.5555555555555556,
      "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, is close by, and has a 6:00 PM seating time that works for Yuki.\"}\n```",
      "restaurant": null,
      "time": null,
@@ -57,7 +57,7 @@
     {
      "party": "p13",
      "status": "FAILED",
-     "score": 0.2711864406779661,
+     "score": 0.23728813559322037,
      "answer": "```json\n{\"restaurant\": \"Olive & Thyme\", \"time\": \"19:00\", \"reason\": \"Olive & Thyme accommodates all dietary restrictions, including Marcus's vegetarian preference, Tom's budget, and Diego's aversion to spicy food, while still being a highly-rated option.\"}\n```",
      "restaurant": null,
      "time": null,
@@ -67,7 +67,7 @@
     {
      "party": "p14",
      "status": "PASSED",
-     "score": 0.3859649122807018,
+     "score": 0.4210526315789474,
      "answer": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme accommodates Nadia's plant-based diet, Amara's mobility needs, and Yuki's early dinner time, while offering a highly-rated and shareable dining experience.\"}",
      "restaurant": null,
      "time": null,
@@ -521,5 +521,2721 @@
    "closed": true,
    "edge": true
   }
- ]
+ ],
+ "recorded_second": "2026-10-26",
+ "paths": [
+  {
+   "suite": "paths",
+   "agent": "maitre_d",
+   "criteria": [
+    "everyone_ate",
+    "tool_trajectory_avg_score"
+   ],
+   "instruction": "draft",
+   "passed": 0,
+   "failed": 8,
+   "n": 8,
+   "by_metric": {
+    "everyone_ate": {
+     "passed": 5,
+     "failed": 3
+    },
+    "tool_trajectory_avg_score": {
+     "passed": 0,
+     "failed": 8
+    }
+   },
+   "hungry": 7,
+   "seats": 36,
+   "lucky": 0,
+   "ladder": {
+    "EXACT": 0,
+    "IN_ORDER": 2,
+    "ANY_ORDER": 2,
+    "IN_ORDER · ignore_args": 8,
+    "path": 8,
+    "everyone_ate": 5
+   },
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 19:45; the reservation is Taqueria Luna 19:45"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:45",
+     "hungry": 5,
+     "whys": [
+      "Nadia: kitchen takes last orders at 19:30 — Nadia isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
+      "Amara: kitchen takes last orders at 19:30 — Amara isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room green",
+      "get_room bistro",
+      "get_room smoke",
+      "get_room curry",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "get_room olive",
+      "book taqueria 19:45 ×5"
+     ]
+    },
+    {
+     "party": "p2",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Curry House 19:45; the reservation is Curry House 19:45"
+      }
+     ],
+     "restaurant": "curry",
+     "time": "19:45",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room taqueria",
+      "book curry 19:45 ×4"
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": true,
+      "ANY_ORDER": true,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 6; 6 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 18:00; the reservation is Olive & Thyme 18:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book olive 18:00 ×6"
+     ]
+    },
+    {
+     "party": "p10",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.8
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 18:00; the reservation is Olive & Thyme 18:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "book olive 18:00 ×5"
+     ]
+    },
+    {
+     "party": "p13",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Pho Saigon 19:00; the reservation is Pho Saigon 19:00"
+      }
+     ],
+     "restaurant": "pho",
+     "time": "19:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book pho 19:00 ×4"
+     ]
+    },
+    {
+     "party": "p14",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": true,
+      "ANY_ORDER": true,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 18:00; the reservation is Olive & Thyme 18:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room green",
+      "get_room bistro",
+      "get_room smoke",
+      "get_room curry",
+      "get_room olive",
+      "book olive 18:00 ×4"
+     ]
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says The Green Fork 19:45; the reservation is The Green Fork 19:45"
+      }
+     ],
+     "restaurant": "green",
+     "time": "19:45",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "book green 19:45 ×4"
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "tool_trajectory_avg_score": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 19:00; the reservation is Olive & Thyme 19:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "19:00",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book olive 19:00 ×4"
+     ]
+    }
+   ]
+  },
+  {
+   "suite": "paths",
+   "agent": "maitre_d",
+   "criteria": [
+    "everyone_ate",
+    "path"
+   ],
+   "instruction": "draft",
+   "passed": 6,
+   "failed": 2,
+   "n": 8,
+   "by_metric": {
+    "everyone_ate": {
+     "passed": 6,
+     "failed": 2
+    },
+    "path": {
+     "passed": 8,
+     "failed": 0
+    }
+   },
+   "hungry": 6,
+   "seats": 36,
+   "lucky": 0,
+   "ladder": {
+    "EXACT": 0,
+    "IN_ORDER": 2,
+    "ANY_ORDER": 2,
+    "IN_ORDER · ignore_args": 8,
+    "path": 8,
+    "everyone_ate": 6
+   },
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 19:45; the reservation is Olive & Thyme 19:45"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "19:45",
+     "hungry": 5,
+     "whys": [
+      "Nadia: kitchen takes last orders at 19:30 — Nadia isn't at the table until 19:45",
+      "Tom: ~$28/person against Tom's $25 budget",
+      "Amara: kitchen takes last orders at 19:30 — Amara isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book olive 19:45 ×5"
+     ]
+    },
+    {
+     "party": "p2",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Curry House 20:00; the reservation is Curry House 20:00"
+      }
+     ],
+     "restaurant": "curry",
+     "time": "20:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "book curry 20:00 ×4"
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": true,
+      "ANY_ORDER": true,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 6; 6 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 18:00; the reservation is Olive & Thyme 18:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book olive 18:00 ×6"
+     ]
+    },
+    {
+     "party": "p10",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 18:00; the reservation is Taqueria Luna 18:00"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book taqueria 18:00 ×5"
+     ]
+    },
+    {
+     "party": "p13",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Pho Saigon 19:00; the reservation is Pho Saigon 19:00"
+      }
+     ],
+     "restaurant": "pho",
+     "time": "19:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book pho 19:00 ×4"
+     ]
+    },
+    {
+     "party": "p14",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": true,
+      "ANY_ORDER": true,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 18:00; the reservation is Olive & Thyme 18:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room green",
+      "get_room bistro",
+      "get_room smoke",
+      "get_room curry",
+      "get_room olive",
+      "book olive 18:00 ×4"
+     ]
+    },
+    {
+     "party": "p15",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says The Green Fork 19:45; the reservation is The Green Fork 19:45"
+      }
+     ],
+     "restaurant": "green",
+     "time": "19:45",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book green 19:45 ×4"
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "EXACT": false,
+      "IN_ORDER": false,
+      "ANY_ORDER": false,
+      "IN_ORDER · ignore_args": true,
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 19:00; the reservation is Olive & Thyme 19:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "19:00",
+     "hungry": 1,
+     "whys": [
+      "Tom: ~$28/person against Tom's $25 budget"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book olive 19:00 ×4"
+     ]
+    }
+   ]
+  }
+ ],
+ "talks": [
+  {
+   "suite": "talks",
+   "agent": "maitre_d",
+   "criteria": [
+    "everyone_ate",
+    "path",
+    "asked_before_booking",
+    "rubric_based_multi_turn_trajectory_quality_v1",
+    "per_turn_user_simulator_quality_v1"
+   ],
+   "instruction": "draft",
+   "passed": 0,
+   "failed": 4,
+   "n": 4,
+   "by_metric": {
+    "everyone_ate": {
+     "passed": 3,
+     "failed": 1
+    },
+    "path": {
+     "passed": 0,
+     "failed": 4
+    },
+    "asked_before_booking": {
+     "passed": 0,
+     "failed": 4
+    },
+    "rubric_based_multi_turn_trajectory_quality_v1": {
+     "passed": 0,
+     "failed": 4
+    },
+    "per_turn_user_simulator_quality_v1": {
+     "passed": 3,
+     "failed": 1
+    }
+   },
+   "hungry": 5,
+   "seats": 19,
+   "lucky": 3,
+   "persona": "EXPERT",
+   "rushed": 4,
+   "stand_in_slipped": 1,
+   "turns": 16,
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "path": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 3,
+     "judges": {
+      "path": false,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": false,
+       "why": "2 reservations — a no-show at Smoke & Barrel 19:30"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 19:45; the reservation is Taqueria Luna 19:45"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:45",
+     "hungry": 5,
+     "whys": [
+      "Nadia: kitchen takes last orders at 19:30 — Nadia isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
+      "Amara: kitchen takes last orders at 19:30 — Amara isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "book smoke 19:30 ×5",
+      "get_room smoke",
+      "list_rooms",
+      "get_room green",
+      "get_room curry",
+      "get_room taqueria",
+      "book taqueria 19:45 ×5"
+     ],
+     "heard": [],
+     "missed": [
+      "Nadia",
+      "Tom",
+      "Amara",
+      "Lena"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "In Agent Turn 1, the agent booked \"Smoke & Barrel\" without asking any questions about the group's needs regarding food, allergies, timing, budget, or distance. The user only specified the party size."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The final booking for \"Taqueria Luna\" at 19:45 for 5 people (in Agent Turn 2) successfully meets all the criteria specified by the user: party size of 5, a time of 19:45 or later, plant-based options, a price per head of $25 or less, and a walk time of 10 minutes or less."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "In Agent Turn 2, after the user raised objections and new requirements, the agent acknowledged that the previously proposed restaurant did not meet the needs and immediately proceeded to search for other options, without attempting to defend the initial booking."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p1) — 5 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "book smoke 19:30 ×5"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated and trending, perfect for a group of 5.\"}"
+      },
+      {
+       "user": "The proposed time of 19:30 conflicts with Lena's availability; she \"can't get there before 7:45\". Please adjust the time and confirm the restaurant meets all other requirements: Nadia needs \"plant-based only\", Tom's max is \"$25 a head\", and Amara's ceiling is \"10 minutes on foot\".",
+       "calls": [
+        "get_room smoke",
+        "list_rooms",
+        "get_room green",
+        "get_room curry",
+        "get_room taqueria",
+        "book taqueria 19:45 ×5"
+       ],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:45\", \"reason\": \"Taqueria Luna meets all requirements: plant-based options, under $25 per head, within a 10-minute walk, and available at 19:45.\"}"
+      },
+      {
+       "user": "\"Taqueria Luna\" at 19:45 works. Please confirm the booking for 5 people.",
+       "calls": [],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:45\", \"reason\": \"Booking confirmed for 5 people at Taqueria Luna at 19:45.\"}"
+      }
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "FAILED",
+       "score": 0.75
+      }
+     },
+     "turns": 4,
+     "judges": {
+      "path": false,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": false,
+       "why": "3 reservations — a no-show at Smoke & Barrel 19:30, The Green Fork 18:00"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 6; 6 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Olive & Thyme 18:00; the reservation is Olive & Thyme 18:00"
+      }
+     ],
+     "restaurant": "olive",
+     "time": "18:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "book smoke 19:30 ×6",
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "book green 18:00 ×6",
+      "get_room green",
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "book olive 18:00 ×6"
+     ],
+     "heard": [],
+     "missed": [
+      "Marcus",
+      "Priya",
+      "Yuki",
+      "Diego",
+      "Amara"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "In Agent Turn 1, the agent immediately proceeded to book a table at \"Smoke & Barrel\" at 19:30 after the initial user prompt, without asking any clarifying questions about the group's specific needs, such as timing, dietary restrictions, or walking distance."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The final booking at \"Olive & Thyme\" for 18:00 in Agent Turn 4 successfully accommodates all the group's requirements specified across the conversation: party size (6), timing (by 6:30 PM), vegetarian main, nut allergy safety, no spice (mild with spice on the side is acceptable), and walking distance (8 minutes is within 10 minutes)."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "In Agent Turn 2, the agent immediately sought a new booking time after the user objected to the initial 19:30 booking. Similarly, in Agent Turn 3, when \"The Green Fork\" was found to not meet new criteria, the agent promptly stated, \"I will look for another restaurant,\" and proceeded to do so, without defending the previous choice."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p3) — 6 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "book smoke 19:30 ×6"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest rated and trending, with a 4.9 rating. First seating is at 19:30, which works for your group.\"}"
+      },
+      {
+       "user": "Yuki said, \"i can do it IF we're eating by 6:30 — daycare pickup at 7:15, cannot miss it\". Your suggested time of 19:30 does not work. Please find a table for 6 people by 6:30 PM.",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "get_room curry",
+        "get_room bella",
+        "book green 18:00 ×6"
+       ],
+       "reply": "{\"restaurant\": \"The Green Fork\", \"time\": \"18:00\", \"reason\": \"The Green Fork has a 4.7 rating and can seat you at 6:00 PM, which is before 6:30 PM.\"}"
+      },
+      {
+       "user": "The Green Fork at 18:00 works for Yuki. Now, ensure the restaurant meets the following requirements:\n\n*   Marcus: \"I'm still off meat — somewhere with a real veggie main please 🌱\"\n*   Priya: \"hard nut allergy over here, the epipen is real\"\n*   Diego: \"you all know me and spicy food: no. none. 🙅\"\n*   Amara: \"10 minutes on foot is my ceiling\"",
+       "calls": [
+        "get_room green",
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "book olive 18:00 ×6"
+       ],
+       "reply": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Olive & Thyme meets all requirements: it has vegetarian mains, is nut-safe, offers mild spice with spice on the side, and is an 8-minute walk. It also has a 6:00 PM seating.\"}"
+      },
+      {
+       "user": "This looks good. Please book the table for 6 at Olive & Thyme for 18:00.",
+       "calls": [],
+       "reply": "{\"restaurant\": \"Olive & Thyme\", \"time\": \"18:00\", \"reason\": \"Table for 6 at Olive & Thyme for 18:00 is confirmed.\"}"
+      }
+     ]
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 3,
+     "judges": {
+      "path": false,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": false,
+       "why": "2 reservations — a no-show at Smoke & Barrel 19:30"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says The Green Fork 20:00; the reservation is The Green Fork 20:00"
+      }
+     ],
+     "restaurant": "green",
+     "time": "20:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "book smoke 19:30 ×4",
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book green 20:00 ×4"
+     ],
+     "heard": [],
+     "missed": [
+      "Sam",
+      "Diego",
+      "Lena"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "In Agent Turn 1, the agent booked a table at \"Smoke & Barrel\" at 19:30 without asking any questions about the group's needs or preferences. The user only provided the party size."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "In Agent Turn 2, the agent booked \"The Green Fork\" at 20:00 for 4 people. This time accommodates Lena's schedule (not before 7:45 PM). \"The Green Fork\" is `shellfish_safe: true` with no fish sauce mentioned in `kitchen_notes` (satisfying Sam) and has `spice: \"none\"` (satisfying Diego). The party size of 4 was also correctly maintained."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "In User Turn 2, the user objected to the previously booked time of 19:30. In response, the agent did not defend the initial booking but instead initiated a new search and booked \"The Green Fork\" at 20:00 in Agent Turn 2, which aligned with the user's updated requirements."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p15) — 4 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "book smoke 19:30 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"It's the hottest room in the district, with a 4.9 rating.\"}"
+      },
+      {
+       "user": "The suggested time of 19:30 does not work. Lena cannot get there before 7:45 PM.\n\nBook us a table that works for everyone. The group consists of 4 people.\nSpecific requirements:\n- Sam: \"no shellfish for me, that includes the sneaky stuff like fish sauce\"\n- Diego: \"no spicy food: no. none.\"\n- Lena: \"I can't get there before 7:45\"\n- Ben: \"free all night, zero requirements\"",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "get_room sakura",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "get_room pho",
+        "get_room taqueria",
+        "get_room noodle",
+        "book green 20:00 ×4"
+       ],
+       "reply": "{\"restaurant\": \"The Green Fork\", \"time\": \"20:00\", \"reason\": \"It accommodates all dietary restrictions and Lena's schedule.\"}"
+      },
+      {
+       "user": "Confirm the booking for The Green Fork at 20:00 for 4 people.",
+       "calls": [],
+       "reply": "I already booked The Green Fork for you at 20:00 for 4 people."
+      }
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 6,
+     "judges": {
+      "path": false,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": false,
+       "why": "2 reservations — a no-show at Smoke & Barrel 19:30"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 19:30; the reservation is Taqueria Luna 19:30"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:30",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "book smoke 19:30 ×4",
+      "get_room smoke",
+      "list_rooms",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle",
+      "book taqueria 19:30 ×4"
+     ],
+     "heard": [],
+     "missed": [
+      "Priya",
+      "Tom",
+      "Amara"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "In Agent Turn 1, the agent immediately booked \"Smoke & Barrel\" without asking any questions about the group's needs regarding food, allergies, budget, or preferred distance, even though such information became critical later in the conversation."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The final booking for \"Taqueria Luna\" in Agent Turn 3 successfully accommodates all constraints specified by the user: a party size of 4, no nut allergy concerns (\"nut_safe\": true), a price per head of $16 (within the $25 max), and a 3-minute walk (within the 10-minute limit)."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "After the user objected to \"Smoke & Barrel\" in User Turn 3, the agent did not defend the initial choice but instead immediately searched for a new restaurant that met the specified criteria, ultimately booking \"Taqueria Luna\"."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p16) — 4 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "book smoke 19:30 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"It's the hottest room in the district, with a 4.9 rating.\"}"
+      },
+      {
+       "user": "Does Smoke & Barrel accommodate Priya's hard nut allergy? What is the cost per head for Tom? Is it within a 10-minute walk for Amara?",
+       "calls": [
+        "get_room smoke"
+       ],
+       "reply": "Smoke & Barrel is not nut-safe as everything is finished in peanut oil, so it would not accommodate Priya's allergy. The cost per head is $45. It is within a 10-minute walk, at 9 minutes."
+      },
+      {
+       "user": "Smoke & Barrel is not suitable. Priya has a hard nut allergy, and Tom's max is $25 a head. Please find a new restaurant that can accommodate Priya's hard nut allergy, costs no more than $25 per person for Tom, and is within a 10-minute walk for Amara.",
+       "calls": [
+        "list_rooms",
+        "get_room bistro",
+        "get_room green",
+        "get_room sakura",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "get_room pho",
+        "get_room taqueria",
+        "get_room noodle",
+        "book taqueria 19:30 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:30\", \"reason\": \"It's nut-safe, costs $16 per person, and is a 3-minute walk.\"}"
+      },
+      {
+       "user": "Book Taqueria Luna for 4 people tonight at 19:30.",
+       "calls": [],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:30\", \"reason\": \"It's nut-safe, costs $16 per person, and is a 3-minute walk.\"}"
+      },
+      {
+       "user": "Please confirm the booking for Taqueria Luna for 4 people tonight at 19:30.",
+       "calls": [],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:30\", \"reason\": \"It's nut-safe, costs $16 per person, and is a 3-minute walk.\"}"
+      },
+      {
+       "user": "Please confirm the booking for Taqueria Luna for 4 people tonight at 19:30.",
+       "calls": [],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:30\", \"reason\": \"It's nut-safe, costs $16 per person, and is a 3-minute walk.\"}"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "suite": "talks",
+   "agent": "maitre_d",
+   "criteria": [
+    "everyone_ate",
+    "path",
+    "asked_before_booking",
+    "rubric_based_multi_turn_trajectory_quality_v1",
+    "per_turn_user_simulator_quality_v1"
+   ],
+   "instruction": "draft",
+   "passed": 0,
+   "failed": 4,
+   "n": 4,
+   "by_metric": {
+    "everyone_ate": {
+     "passed": 2,
+     "failed": 2
+    },
+    "path": {
+     "passed": 3,
+     "failed": 1
+    },
+    "asked_before_booking": {
+     "passed": 0,
+     "failed": 4
+    },
+    "rubric_based_multi_turn_trajectory_quality_v1": {
+     "passed": 0,
+     "failed": 4
+    },
+    "per_turn_user_simulator_quality_v1": {
+     "passed": 2,
+     "failed": 2
+    }
+   },
+   "hungry": 5,
+   "seats": 19,
+   "lucky": 1,
+   "persona": "NOVICE",
+   "rushed": 4,
+   "stand_in_slipped": 2,
+   "turns": 11,
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.6
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Smoke & Barrel 19:30; the reservation is Smoke & Barrel 19:30"
+      }
+     ],
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 2,
+     "whys": [
+      "Nadia: meat-focused menu, no vegetarian main",
+      "Tom: ~$45/person against Tom's $25 budget"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "book smoke 19:30 ×5"
+     ],
+     "heard": [],
+     "missed": [
+      "Nadia",
+      "Tom",
+      "Amara",
+      "Lena"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "The agent did not ask any clarifying questions about the group's needs (food, allergies, timing, budget, distance) before booking. It immediately proceeded to list rooms, get room details, and then book a table based on its internal instructions."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The user explicitly stated \"5 going\" for the party size in User Turn 1. The agent's booking in Assistant Turn 1 correctly reflects this with `party_size: 5`. No other needs were explicitly stated by the user."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The conversation history provided is a single-turn interaction where the user made an initial request and the agent fulfilled it. There were no subsequent turns where the user objected to a proposal from the agent, so this property is not applicable."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p1) — 5 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "book smoke 19:30 ×5"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated and trending, perfect for a group of 5.\"}"
+      }
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.5
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "FAILED",
+       "score": 0.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 6; 6 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Smoke & Barrel 19:30; the reservation is Smoke & Barrel 19:30"
+      }
+     ],
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 3,
+     "whys": [
+      "Marcus: meat-focused menu, no vegetarian main",
+      "Priya: everything is finished in peanut oil",
+      "Yuki: Yuki has to leave by 19:15; the table isn't seated until 19:30"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "book smoke 19:30 ×6"
+     ],
+     "heard": [],
+     "missed": [
+      "Marcus",
+      "Priya",
+      "Yuki",
+      "Diego",
+      "Amara"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "The agent did not ask the user any questions about their needs (food, allergies, timing, budget, distance) before booking. It directly proceeded to select a restaurant and time based on its own criteria (highest-rated, trending)."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The user explicitly mentioned \"6 going\" and \"Tonight's dinner.\" The agent booked a table for 6 people tonight at 19:30, which aligns with these stated needs."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The user did not object to any proposal made by the agent. The conversation completed in a single turn where the agent directly made a booking without prior user input or objection to a proposal."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p3) — 6 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "book smoke 19:30 ×6"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest rated and trending, with a 4.9 rating. First seating is at 19:30, which works for your group.\"}"
+      }
+     ]
+    },
+    {
+     "party": "p15",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 1,
+     "judges": {
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Smoke & Barrel 19:30; the reservation is Smoke & Barrel 19:30"
+      }
+     ],
+     "restaurant": "smoke",
+     "time": "19:30",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "book smoke 19:30 ×4"
+     ],
+     "heard": [],
+     "missed": [
+      "Sam",
+      "Diego",
+      "Lena"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "The agent proceeded to book a table based on the explicit information (party size, \"tonight\") and its own internal logic (highest-rated restaurant) without asking the user for any further preferences or constraints regarding food, allergies, specific timing, budget, or distance."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The user specified \"4 going\" and \"Tonight's dinner\". The agent booked for a party of 4, and the restaurant options were for \"tonight\", with a booking made for 19:30 on that night."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The user did not object to any proposal made by the agent because the agent directly proceeded with booking without proposing options to the user first. Therefore, the condition for this property was not met, and the agent did not have an opportunity to defend a plan against an objection."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p15) — 4 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "book smoke 19:30 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest rated and most talked about room in the district.\"}"
+      }
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "FAILED",
+       "score": 0.75
+      },
+      "asked_before_booking": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 8,
+     "judges": {
+      "path": false,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": false,
+       "why": "3 reservations — a no-show at Smoke & Barrel 19:30, Le Petit Bistro 20:00"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 19:00; the reservation is Taqueria Luna 19:00"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "book smoke 19:30 ×4",
+      "get_room smoke",
+      "list_rooms",
+      "get_room bistro",
+      "book bistro 20:00 ×4",
+      "get_room bistro",
+      "list_rooms",
+      "get_room curry",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "book taqueria 19:00 ×4",
+      "get_room taqueria"
+     ],
+     "heard": [],
+     "missed": [
+      "Priya",
+      "Tom",
+      "Amara"
+     ],
+     "booked_on_turn": 1,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "In Assistant Turn 1, the agent booked \"Smoke & Barrel\" without asking any questions about the group's needs, such as allergies, budget, or distance, after the user's initial request."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The final booking for Taqueria Luna (Assistant Turn 5) successfully accommodates all the group's needs: party size (4), nut allergy (`nut_safe: true`), budget (`price_per_head: 16` <= $25), and walk distance (`walk_min: 3` <= 10 minutes)."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "In Assistant Turn 3 and Assistant Turn 5, when new constraints were introduced by the user, the agent immediately acknowledged the invalidity of the current booking, stated it would cancel, and then proceeded to search for and book a new, suitable restaurant without defending the previous choices."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p16) — 4 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "book smoke 19:30 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Smoke & Barrel\", \"time\": \"19:30\", \"reason\": \"Highest-rated and most talked-about room, and it fits your group size and time.\"}"
+      },
+      {
+       "user": "Okay, that sounds good. We also need to make sure the place works for Priya.",
+       "calls": [],
+       "reply": "I'm sorry, I don't have any information about Priya or her dietary restrictions. Could you please tell me what kind of place would work for her?"
+      },
+      {
+       "user": "Priya said: \"count me in!! one ask: hard nut allergy over here, the epipen is real\"",
+       "calls": [
+        "get_room smoke",
+        "list_rooms",
+        "get_room bistro",
+        "book bistro 20:00 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Le Petit Bistro\", \"time\": \"20:00\", \"reason\": \"Le Petit Bistro is nut-safe and highly-rated, making it a great choice for your group.\"}"
+      },
+      {
+       "user": "Okay, glad we found a nut-safe place! Now we also need to make sure the place works for Tom.",
+       "calls": [],
+       "reply": "I'm sorry, I don't have any information about Tom or his dietary restrictions. Could you please tell me what kind of place would work for him?"
+      },
+      {
+       "user": "Tom said: \"real talk: $25 a head is my max this month (rent week 💸) — anything over and I'll have to sit it out\"",
+       "calls": [
+        "get_room bistro",
+        "list_rooms",
+        "get_room curry",
+        "get_room olive",
+        "get_room pho",
+        "get_room taqueria",
+        "book taqueria 19:00 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna is nut-safe and within Tom's budget, making it a great choice for your group.\"}"
+      },
+      {
+       "user": "Okay, cool. Now we also need to make sure the place works for Amara.",
+       "calls": [],
+       "reply": "I'm sorry, I don't have any information about Amara or her dietary restrictions. Could you please tell me what kind of place would work for her?"
+      },
+      {
+       "user": "Amara said: \"in if it's close! on crutches this month — 10 minutes on foot is my ceiling\"",
+       "calls": [
+        "get_room taqueria"
+       ],
+       "reply": "Great news! Taqueria Luna is only a 3-minute walk, which is well within Amara's 10-minute limit. It's also nut-safe and within Tom's budget.\n{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna is nut-safe, within Tom's budget, and only a 3-minute walk, making it a great choice for your group.\"}"
+      },
+      {
+       "user": "Okay, cool. Can you go ahead and book that?",
+       "calls": [],
+       "reply": "I already booked Taqueria Luna for you at 19:00 for 4 people.\n{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Taqueria Luna is nut-safe, within Tom's budget, and only a 3-minute walk, making it a great choice for your group.\"}"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "suite": "talks",
+   "agent": "maitre_d",
+   "criteria": [
+    "everyone_ate",
+    "path",
+    "asked_before_booking",
+    "rubric_based_multi_turn_trajectory_quality_v1",
+    "per_turn_user_simulator_quality_v1"
+   ],
+   "instruction": "asks",
+   "passed": 2,
+   "failed": 2,
+   "n": 4,
+   "by_metric": {
+    "everyone_ate": {
+     "passed": 2,
+     "failed": 2
+    },
+    "path": {
+     "passed": 3,
+     "failed": 1
+    },
+    "asked_before_booking": {
+     "passed": 4,
+     "failed": 0
+    },
+    "rubric_based_multi_turn_trajectory_quality_v1": {
+     "passed": 2,
+     "failed": 2
+    },
+    "per_turn_user_simulator_quality_v1": {
+     "passed": 3,
+     "failed": 1
+    }
+   },
+   "hungry": 5,
+   "seats": 13,
+   "lucky": 0,
+   "persona": "NOVICE",
+   "rushed": 0,
+   "stand_in_slipped": 1,
+   "turns": 10,
+   "parties": [
+    {
+     "party": "p1",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "asked_before_booking": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.667
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 3,
+     "judges": {
+      "path": true,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 5; 5 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 19:45; the reservation is Taqueria Luna 19:45"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:45",
+     "hungry": 5,
+     "whys": [
+      "Nadia: kitchen takes last orders at 19:30 — Nadia isn't at the table until 19:45",
+      "Tom: kitchen takes last orders at 19:30 — Tom isn't at the table until 19:45",
+      "Amara: kitchen takes last orders at 19:30 — Amara isn't at the table until 19:45",
+      "Lena: kitchen takes last orders at 19:30 — Lena isn't at the table until 19:45",
+      "Ben: kitchen takes last orders at 19:30 — Ben isn't at the table until 19:45"
+     ],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room taqueria",
+      "get_room noodle",
+      "book taqueria 19:45 ×5"
+     ],
+     "heard": [
+      "Nadia",
+      "Tom",
+      "Amara",
+      "Lena"
+     ],
+     "missed": [],
+     "booked_on_turn": 2,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 1.0,
+       "why": "In Assistant Turn 1, after gathering initial restaurant options, the agent explicitly asked the user for detailed group preferences (cuisines, food restrictions, spice level, budget, walk distance, desired time, and leave time) before attempting to book any restaurant."
+      },
+      {
+       "id": "listened",
+       "score": 0.0,
+       "why": "The agent booked \"Taqueria Luna\" for \"19:45\". While the booking time of 19:45 respects Lena's arrival constraint (\"can't get there before 7:45\"), Taqueria Luna's `last_orders` time is 19:30 (7:30 PM). This means the group would arrive 15 minutes after last orders, which makes the booking impractical for dinner and thus does not reflect the user's implicit need to dine."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The user did not object to any proposal made by the agent throughout the conversation. In User Turn 3, the user explicitly approved the booked restaurant. Therefore, this property is not applicable."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p1) — 5 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "get_room taqueria",
+        "get_room noodle"
+       ],
+       "reply": "I'll need to know a bit more about your group's preferences to book the best table. Please tell me:\n\n*   **Cuisines:** Any preferences or dislikes?\n*   **Food restrictions/allergies:** (e.g., vegetarian, vegan, gluten-free, nut allergies)\n*   **Spice level:** (e.g., mild, medium, hot, or no spice)\n*   **Budget per person:**\n*   **How far can you walk** to the restaurant?\n*   **What time** would yo"
+      },
+      {
+       "user": "Okay, no problem! Here's what I know from my friends:\n\n*   **Cuisines:** I don't have any specific cuisine preferences right now.\n*   **Food restrictions/allergies:** Nadia said, \"yes! plant-based only for me (strict, not a vibe thing).\"\n*   **Spice level:** I don't have information on spice level.\n*   **Budget per person:** Tom said, \"real talk: $25 a head is my max this month (rent week 💸) — any",
+       "calls": [
+        "book taqueria 19:45 ×5"
+       ],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:45\", \"reason\": \"Fits all criteria: plant-based option for Nadia, within Tom's budget, close enough for Amara, and after 7:45 PM for Lena.\"}"
+      },
+      {
+       "user": "Oh, cool! Taqueria Luna sounds good. Can you go ahead and book that for us then?",
+       "calls": [],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:45\", \"reason\": \"Fits all criteria: plant-based option for Nadia, within Tom's budget, close enough for Amara, and after 7:45 PM for Lena.\"}"
+      }
+     ]
+    },
+    {
+     "party": "p3",
+     "status": "FAILED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "path": {
+       "status": "FAILED",
+       "score": 0.0
+      },
+      "asked_before_booking": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "FAILED",
+       "score": 0.333
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "FAILED",
+       "score": 0.5
+      }
+     },
+     "turns": 2,
+     "judges": {
+      "path": false,
+      "everyone_ate": false
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": false,
+       "why": "no table was booked"
+      },
+      {
+       "rule": "booked_once",
+       "ok": false,
+       "why": "0 reservations"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": false,
+       "why": "booked for —; 6 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": false,
+       "why": "the reply says nothing 19:00; the reservation is nothing"
+      }
+     ],
+     "restaurant": null,
+     "time": "19:00",
+     "hungry": null,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room sakura",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room pho",
+      "get_room taqueria",
+      "get_room noodle"
+     ],
+     "heard": [
+      "Marcus",
+      "Priya",
+      "Yuki",
+      "Diego",
+      "Amara"
+     ],
+     "missed": [],
+     "booked_on_turn": null,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 0.0,
+       "why": "In Agent Turn 1, the agent asked about dining time, dietary restrictions, cuisine preferences, and walking distance. However, it failed to ask about the group's budget, which is explicitly mentioned in the agent's instructions as a need to inquire about before booking."
+      },
+      {
+       "id": "listened",
+       "score": 0.0,
+       "why": "The agent suggested \"The Green Fork,\" which has a `walk_min` of 14 minutes. This contradicts Amara's stated need of a maximum '10 minutes on foot'. Therefore, not every need was reflected."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The user did not object to any of the agent's proposals within the provided conversation history. Therefore, this property is not applicable."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p3) — 6 going. Can you book us a table?",
+       "calls": [],
+       "reply": "What time does your group want to dine? Are there any other details I should know, like dietary restrictions, cuisine preferences, or how far you're willing to walk?"
+      },
+      {
+       "user": "Okay, so for the time, Yuki needs us to be eating by 6:30 PM because 'daycare pickup at 7:15, cannot miss it'.\n\nFor other stuff:\nMarcus is 'still off meat — somewhere with a real veggie main please 🌱'.\nPriya has 'a hard nut allergy over here, the epipen is real'.\nDiego says 'you all know me and spicy food: no. none. 🙅'.\nAmara is on crutches, so '10 minutes on foot is my ceiling'.",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "get_room sakura",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "get_room pho",
+        "get_room taqueria",
+        "get_room noodle"
+       ],
+       "reply": "The Green Fork looks like a great option for your group! It has a seasonal tasting menu with farm-to-table cuisine, a vegetarian main, and is nut-safe. They also have vegan options and no spice in their dishes. The first seating is at 6:00 PM, which works for Yuki's schedule, and it's a 14-minute walk.\n\nWould you like me to book a table for 6 at The Green Fork for 6:00 PM?"
+      }
+     ]
+    },
+    {
+     "party": "p15",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "asked_before_booking": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 3,
+     "judges": {
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Le Petit Bistro 20:00; the reservation is Le Petit Bistro 20:00"
+      }
+     ],
+     "restaurant": "bistro",
+     "time": "20:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "book bistro 20:00 ×4"
+     ],
+     "heard": [
+      "Sam",
+      "Diego",
+      "Lena"
+     ],
+     "missed": [],
+     "booked_on_turn": 2,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 1.0,
+       "why": "In Agent Turn 1, before making any booking, the agent asked about the time, cuisine preferences, and dietary restrictions, fulfilling the requirement to ask about the group's needs."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The agent successfully booked Le Petit Bistro for 4 people at 20:00, which accommodates Lena's 7:45 PM arrival, Sam's shellfish allergy (shellfish_safe: true), and Diego's aversion to spicy food (spice: \"none\")."
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The user did not object to any of the agent's proposals. Instead, the user affirmed the booking in User Turn 3 with \"Sounds good!\". Therefore, this property is not applicable."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p15) — 4 going. Can you book us a table?",
+       "calls": [],
+       "reply": "What time are you thinking of? Are there any particular cuisine preferences or dietary restrictions I should be aware of?\n"
+      },
+      {
+       "user": "Hey there!\n\nSo, for time, Lena said \"ugh I can't get there before 7:45. save me a seat — I'm coming hungry 😂\".\n\nAs for restrictions:\nSam said \"just no shellfish for me, that includes the sneaky stuff like fish sauce\".\nDiego said \"but you all know me and spicy food: no. none. 🙅\".",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "book bistro 20:00 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Le Petit Bistro\", \"time\": \"20:00\", \"reason\": \"Le Petit Bistro can accommodate Lena's arrival time, Sam's shellfish allergy, and Diego's aversion to spicy food. It's also a highly-rated, special-occasion favorite.\"}"
+      },
+      {
+       "user": "Sounds good! Can you book that for us?",
+       "calls": [],
+       "reply": "I already did! I sent the confirmation in the previous turn."
+      }
+     ]
+    },
+    {
+     "party": "p16",
+     "status": "PASSED",
+     "metrics": {
+      "everyone_ate": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "path": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "asked_before_booking": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "rubric_based_multi_turn_trajectory_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      },
+      "per_turn_user_simulator_quality_v1": {
+       "status": "PASSED",
+       "score": 1.0
+      }
+     },
+     "turns": 2,
+     "judges": {
+      "path": true,
+      "everyone_ate": true
+     },
+     "rules": [
+      {
+       "rule": "looked_before_booking",
+       "ok": true,
+       "why": "called get_room on the room before booking it"
+      },
+      {
+       "rule": "booked_once",
+       "ok": true,
+       "why": "1 reservation"
+      },
+      {
+       "rule": "booked_whole_party",
+       "ok": true,
+       "why": "booked for 4; 4 are going"
+      },
+      {
+       "rule": "reply_matches_booking",
+       "ok": true,
+       "why": "the reply says Taqueria Luna 19:00; the reservation is Taqueria Luna 19:00"
+      }
+     ],
+     "restaurant": "taqueria",
+     "time": "19:00",
+     "hungry": 0,
+     "whys": [],
+     "calls": [
+      "list_rooms",
+      "get_room smoke",
+      "get_room bistro",
+      "get_room green",
+      "get_room curry",
+      "get_room bella",
+      "get_room olive",
+      "get_room taqueria",
+      "get_room noodle",
+      "book taqueria 19:00 ×4"
+     ],
+     "heard": [
+      "Priya",
+      "Tom",
+      "Amara"
+     ],
+     "missed": [],
+     "booked_on_turn": 2,
+     "rubrics": [
+      {
+       "id": "asked_first",
+       "score": 1.0,
+       "why": "In Agent Turn 1, the agent explicitly asked for details on food preferences/allergies, spice level, budget, walking distance, and time constraints before proceeding with the booking in Agent Turn 2."
+      },
+      {
+       "id": "listened",
+       "score": 1.0,
+       "why": "The agent booked \"Taqueria Luna\" at 19:00 in Agent Turn 2. Based on the `get_room` output in Agent Turn 1, Taqueria Luna is nut-safe (`nut_safe: true`), within the budget (`price_per_head: 16` <= $25), within the walking distance limit (`walk_min: 3` <= 10 min), and the booking time of 19:00 is within its operating hours and acceptable as the user stated \"free all night, zero requirements\". All st"
+      },
+      {
+       "id": "no_argument",
+       "score": 1.0,
+       "why": "The user did not object to any of the agent's proposals because the agent did not make any definitive booking proposals before making the final booking in Agent Turn 2. The agent only gathered information in Agent Turn 1. This property is not applicable as the scenario did not occur."
+      }
+     ],
+     "transcript": [
+      {
+       "user": "Tonight's dinner (p16) — 4 going. Can you book us a table?",
+       "calls": [
+        "list_rooms",
+        "get_room smoke",
+        "get_room bistro",
+        "get_room green",
+        "get_room curry",
+        "get_room bella",
+        "get_room olive",
+        "get_room taqueria",
+        "get_room noodle"
+       ],
+       "reply": "I need a bit more information to book the best table for your group of 4. To make sure everyone has a great time, could you tell me:\n\n*   **Food preferences or dietary restrictions:** Any allergies (nuts, shellfish, etc.), vegetarian, vegan, or other specific needs?\n*   **Spice level preferences:** Mild, medium, hot, or no spice?\n*   **Budget per person:** Roughly how much are you looking to spend"
+      },
+      {
+       "user": "Okay, I can help with that! Here's what I know from the group:\n\n*   For food, Priya said \"hard nut allergy over here, the epipen is real.\"\n*   I don't have any specific spice level preferences.\n*   For budget, Tom said \"$25 a head is my max this month\".\n*   Regarding walking distance, Amara said \"10 minutes on foot is my ceiling\".\n*   I don't have specific arrival or departure times, but Ben said ",
+       "calls": [
+        "book taqueria 19:00 ×4"
+       ],
+       "reply": "{\"restaurant\": \"Taqueria Luna\", \"time\": \"19:00\", \"reason\": \"Fits all criteria: nut-safe, within budget, short walk, and open all night.\"}"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "note_second": "The second seating's runs, same model and settings, the simulated organizer and the two LLM judges on gemini-2.5-flash too: the path exam on the eight holdout parties as shipped (the trajectory comparator) and after course X's edit (the path checker), and the conversation exam on four of them three ways — EXPERT · draft, NOVICE · draft, NOVICE · asks.",
+ "regraded": "The text exam's response_match_score was recomputed with ADK's own scorer after the golden answers were clamped to each room's first seating: the same eight answers, p3 0.519→0.556, p13 0.271→0.237, p14 0.386→0.421; no verdict changed."
 }
