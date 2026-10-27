@@ -17,6 +17,8 @@ is a real call. Run it twice and watch which columns move.
 """
 from __future__ import annotations
 
+import os
+
 import asyncio
 import json
 import logging
@@ -32,7 +34,7 @@ log = logging.getLogger("kitchen.flight")
 ROOT = Path(__file__).resolve().parents[1]
 EVALSET = ROOT / "exam" / "parties_val.evalset.json"
 TEXT_BAR = 0.3                      # the shipped eval_config's response_match_score bar
-JUDGE_MODEL = "gemini-2.5-flash"
+JUDGE_MODEL = os.environ.get("HOST_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash"
 
 RUBRIC = """You are grading a dinner booking made for a group.
 

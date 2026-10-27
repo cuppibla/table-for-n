@@ -21,19 +21,50 @@ TICK, BOX = "\033[32m✓\033[0m", "\033[90m▢\033[0m"
 DIM, OFF = "\033[90m", "\033[0m"
 
 
-def model_check() -> str:
-    """One real call to the lab's model, the way the host makes it."""
+#: Models to try, in order, when the one in HOST_MODEL (default gemini-2.5-flash)
+#: answers 404 "publisher model … not found": some projects only see the
+#: current generation. The first that answers is written to .env as HOST_MODEL.
+FALLBACK_MODELS = ["gemini-3-flash-preview", "gemini-2.5-pro"]
+
+
+def _ask(model: str) -> str:
     from google import genai
     from google.genai import types
 
-    from host import agent
-
     client = genai.Client()
     r = client.models.generate_content(
-        model=agent.MODEL, contents="Reply with exactly: table for N, ready to seat.",
+        model=model, contents="Reply with exactly: table for N, ready to seat.",
         config=types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0), temperature=0.0))
     return (r.text or "").strip()
+
+
+def model_check() -> str:
+    """One real call to the lab's model, the way the host makes it. If the
+    configured model is not visible to this project (404), try the fallbacks
+    and pin the first that answers in .env — so the rest of the lab runs."""
+    from host import agent
+
+    was = agent.MODEL
+    try:
+        return _ask(was)
+    except Exception as exc:                                       # noqa: BLE001
+        if "404" not in str(exc) and "NOT_FOUND" not in str(exc):
+            raise
+        first = exc
+    for model in FALLBACK_MODELS:
+        if model == was:
+            continue
+        try:
+            heard = _ask(model)
+        except Exception:                                          # noqa: BLE001
+            continue
+        env.write_env_line("HOST_MODEL", model)
+        agent.MODEL = model
+        print(f"  \033[33m·\033[0m {was} is not visible to this project (404) — "
+              f"pinned HOST_MODEL={model} in .env. The lab's numbers were measured on gemini-2.5-flash; yours will differ.")
+        return heard
+    raise first
 
 
 def why(mode: str) -> str:
@@ -42,7 +73,9 @@ def why(mode: str) -> str:
         return ("If it says 403 PERMISSION_DENIED, the credentials on this machine are not on the project.\n"
                 "    In Cloud Shell this does not happen. On a laptop: gcloud auth application-default login,\n"
                 "    then gcloud auth application-default set-quota-project YOUR_PROJECT_ID.\n"
-                f"    If it says the model was not found, try GOOGLE_CLOUD_LOCATION=global (now: {where or 'unset'}).")
+                "    If it says 404 'publisher model … was not found': on a project where aiplatform was enabled\n"
+                "    moments ago, access takes a minute or two to propagate — wait, then re-run. If it persists,\n"
+                f"    try GOOGLE_CLOUD_LOCATION=global in .env (now: {where or 'unset'}).")
     return "Check GOOGLE_API_KEY in .env — https://aistudio.google.com/apikey"
 
 

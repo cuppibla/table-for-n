@@ -112,7 +112,7 @@ scripts/make_evalsets.py regenerates the two exams from world.py
 Every number on the page is read from something that ran on your machine: the exam counts
 come from `adk eval`'s own summary, the hungry seats from the metric's per-seat receipts,
 the loop's rounds from the graph's events. The prebaked artifacts in `instructions/` carry
-the logs of the runs that produced them. The model is `gemini-2.5-flash` at `thinking_budget=0`
+the logs of the runs that produced them. The model is `gemini-2.5-flash` at `thinking_budget=0` (`HOST_MODEL` in `.env` overrides it — a project that cannot see 2.5-flash gets `gemini-3-flash-preview` pinned by setup, and different numbers)
 and `temperature=0`, on purpose: at higher thinking budgets the day-one draft nearly passes
 the exam and there is nothing left to learn.
 

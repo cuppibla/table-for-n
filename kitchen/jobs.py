@@ -209,9 +209,17 @@ def _finish_exam(job: Job) -> None:
 # ── optimize ─────────────────────────────────────────────────────────────────
 def _optimize(**_) -> Job:
     (RUNS / "optimize").mkdir(parents=True, exist_ok=True)
+    # The optimizer's model is a JSON field; HOST_MODEL (the host's dial) overrides it the same way.
+    cfg_path = ROOT / "exam" / "optimizer_config.json"
+    model = os.environ.get("HOST_MODEL", "").strip()
+    if model:
+        cfg = json.loads(cfg_path.read_text())
+        cfg["optimizer_model"] = model
+        cfg_path = RUNS / "optimize" / "optimizer_config.json"
+        cfg_path.write_text(json.dumps(cfg, indent=2))
     job = Job("optimize", [ADK, "optimize", "host", "--sampler_config_file_path", "exam/sampler_config.json",
-                           "--optimizer_config_file_path", "exam/optimizer_config.json"],
-              meta={"instruction": instruction_kind()})
+                           "--optimizer_config_file_path", str(cfg_path.relative_to(ROOT))],
+              meta={"instruction": instruction_kind(), "model": model or "gemini-2.5-flash"})
     job.episode = events.start_episode("optimize")
     return job
 

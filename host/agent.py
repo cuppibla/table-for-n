@@ -24,7 +24,10 @@ from google.genai import types
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 INSTRUCTION_FILE = os.path.join(_HERE, "instruction_current.txt")
-MODEL = "gemini-2.5-flash"
+# The lab was measured on gemini-2.5-flash. A project that cannot see that
+# model (new projects sometimes get only the current generation) sets
+# HOST_MODEL in .env — ./setup_codelab.sh does it for you when it has to.
+MODEL = os.environ.get("HOST_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash"
 THINKING = int(os.environ.get("HOST_THINKING", "0"))
 
 
