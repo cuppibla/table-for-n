@@ -83,6 +83,24 @@ if ! ENABLE_ERR="$(gcloud services enable aiplatform.googleapis.com --project="$
 fi
 tick "aiplatform.googleapis.com enabled"
 
+# ── 1b · course IX · the receipt (BigQuery) ───────────────────────────────────
+# The host writes one row per event to a BigQuery dataset once course IX's
+# edit is in. The plugin makes the table and the views itself; the APIs and
+# the dataset are made here, once. Never fatal: courses I–VIII do not need it.
+say "1b · course IX · BigQuery"
+BQ_DATASET="${BQ_ANALYTICS_DATASET:-table_for_n}"
+BQ_LOCATION="${BQ_ANALYTICS_LOCATION:-US}"
+if gcloud services enable bigquery.googleapis.com bigquerystorage.googleapis.com --project="$PROJECT" -q >/dev/null 2>&1; then
+    tick "bigquery.googleapis.com + bigquerystorage.googleapis.com enabled"
+else
+    info "could not enable the BigQuery APIs — course IX will say so; I–VIII are unaffected"
+fi
+if command -v bq >/dev/null 2>&1 && bq --project_id="$PROJECT" --location="$BQ_LOCATION" mk -d --force "$BQ_DATASET" >/dev/null 2>&1; then
+    tick "dataset $PROJECT:$BQ_DATASET ($BQ_LOCATION) — the plugin makes agent_events and the v_* views on the first row"
+else
+    info "dataset not made (no bq, or no permission). Course IX's card shows the one-line command."
+fi
+
 # ── 2 · python env + deps (uv owns both) ──────────────────────────────────────
 say "2 · Python environment"
 if ! command -v uv >/dev/null 2>&1 && [ -x "$HOME/.local/bin/uv" ]; then
@@ -121,6 +139,17 @@ if [ -f .env ]; then
 else
     cp .env.example .env
     tick ".env written from .env.example (Vertex AI on $PROJECT)"
+fi
+# course IX: name the dataset in .env (the plugin stays off until this line exists)
+if grep -q "^BQ_ANALYTICS_DATASET=" .env; then
+    info "BQ_ANALYTICS_DATASET already set in .env"
+else
+    if grep -q "^# BQ_ANALYTICS_DATASET=" .env; then
+        sed -i.bak "s|^# BQ_ANALYTICS_DATASET=.*|BQ_ANALYTICS_DATASET=$BQ_DATASET|" .env && rm -f .env.bak
+    else
+        printf '\nBQ_ANALYTICS_DATASET=%s\n' "$BQ_DATASET" >> .env
+    fi
+    tick "BQ_ANALYTICS_DATASET=$BQ_DATASET in .env — course IX's edit turns the plugin on"
 fi
 
 # ── 4 · preflight — does the model answer? ───────────────────────────────────────
