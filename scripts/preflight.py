@@ -42,7 +42,9 @@ def why(mode: str) -> str:
         return ("If it says 403 PERMISSION_DENIED, the credentials on this machine are not on the project.\n"
                 "    In Cloud Shell this does not happen. On a laptop: gcloud auth application-default login,\n"
                 "    then gcloud auth application-default set-quota-project YOUR_PROJECT_ID.\n"
-                f"    If it says the model was not found, try GOOGLE_CLOUD_LOCATION=global (now: {where or 'unset'}).")
+                "    If it says 404 'publisher model … was not found': on a project where aiplatform was enabled\n"
+                "    moments ago, access takes a minute or two to propagate — wait, then re-run. If it persists,\n"
+                f"    try GOOGLE_CLOUD_LOCATION=global in .env (now: {where or 'unset'}).")
     return "Check GOOGLE_API_KEY in .env — https://aistudio.google.com/apikey"
 
 

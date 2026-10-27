@@ -72,12 +72,44 @@ tick "project: $PROJECT"
 # Gemini on Vertex AI rides aiplatform.googleapis.com, and so does course VI's
 # Agent Engine deploy. One enable covers both.
 say "1 · Cloud APIs"
-if ! ENABLE_ERR="$(gcloud services enable aiplatform.googleapis.com --project="$PROJECT" -q 2>&1)"; then
+
+# enable_apis SERVICE… — 0 if every service is enabled afterwards.
+# Reads first (`services list` is free); only calls `enable` for what is
+# missing, because every `enable` — even of an already-enabled service —
+# counts against Service Usage's small "mutate requests per minute" quota,
+# which a brand-new project that was just set up and re-run can exhaust
+# (429 RESOURCE_EXHAUSTED). On 429 it waits and tries again.
+ENABLE_ERR=""
+enable_apis() {
+    local missing=() svc enabled attempt
+    enabled="$(gcloud services list --enabled --project="$PROJECT" --format='value(config.name)' 2>/dev/null || true)"
+    for svc in "$@"; do
+        printf '%s\n' "$enabled" | grep -qx "$svc" || missing+=("$svc")
+    done
+    [ "${#missing[@]}" -eq 0 ] && return 0
+    for attempt in 1 2 3 4; do
+        if ENABLE_ERR="$(gcloud services enable "${missing[@]}" --project="$PROJECT" -q 2>&1)"; then
+            return 0
+        fi
+        if printf '%s' "$ENABLE_ERR" | grep -q -E '429|RESOURCE_EXHAUSTED|RATE_LIMIT'; then
+            info "Service Usage is rate-limiting this project (429) — waiting 30s, attempt $attempt of 4"
+            sleep 30
+            continue
+        fi
+        return 1
+    done
+    return 1
+}
+
+if ! enable_apis aiplatform.googleapis.com; then
     die "Could not enable aiplatform.googleapis.com on $PROJECT." \
         "gcloud said:" "" "$ENABLE_ERR" "" \
         "If that mentions 403 or PERMISSION_DENIED, the project is simply too" \
         "new — its IAM policy is still propagating. Wait a minute, then run:" \
         "" "  ./setup_codelab.sh" "" \
+        "If it mentions 429 or RESOURCE_EXHAUSTED, the project's per-minute" \
+        "quota for enabling services is spent — wait two minutes and re-run." \
+        "" \
         "If it mentions billing, link a billing account and re-run:" \
         "  https://console.cloud.google.com/billing/linkedaccount?project=$PROJECT"
 fi
@@ -90,10 +122,10 @@ tick "aiplatform.googleapis.com enabled"
 say "1b · course IX · BigQuery"
 BQ_DATASET="${BQ_ANALYTICS_DATASET:-table_for_n}"
 BQ_LOCATION="${BQ_ANALYTICS_LOCATION:-US}"
-if gcloud services enable bigquery.googleapis.com bigquerystorage.googleapis.com --project="$PROJECT" -q >/dev/null 2>&1; then
+if enable_apis bigquery.googleapis.com bigquerystorage.googleapis.com; then
     tick "bigquery.googleapis.com + bigquerystorage.googleapis.com enabled"
 else
-    info "could not enable the BigQuery APIs — course IX will say so; I–VIII are unaffected"
+    info "could not enable the BigQuery APIs (${ENABLE_ERR%%$'\n'*}) — course IX will say so; I–VIII are unaffected"
 fi
 # (the dataset itself is made in 2c, with the BigQuery client uv installs next)
 
@@ -175,6 +207,26 @@ fi
 
 # ── 4 · preflight — does the model answer? ───────────────────────────────────────
 say "4 · preflight"
-uv run python scripts/preflight.py
+# On a project whose aiplatform API was enabled moments ago, the first
+# Gemini call answers 404 "publisher model not found" (or 403) for a minute
+# or two while access propagates. That is not a failure of yours: wait and
+# try again, a few times, before giving up.
+preflight_ok=0
+for attempt in 1 2 3 4 5; do
+    if uv run --no-sync python scripts/preflight.py; then
+        preflight_ok=1
+        break
+    fi
+    if [ "$attempt" -lt 5 ]; then
+        info "the model did not answer yet — on a brand-new project that takes a minute or two. Retrying in 30s (attempt $attempt of 5)…"
+        sleep 30
+    fi
+done
+if [ "$preflight_ok" -ne 1 ]; then
+    die "The model still did not answer after five tries." \
+        "If the error above is 404 'publisher model … was not found': aiplatform was" \
+        "enabled on $PROJECT only moments ago — wait two minutes and run ./setup_codelab.sh again." \
+        "If it is 403: see the hint printed above it."
+fi
 
 printf '\nSetup finished. Lay the table:\n\n    bash table.sh\n\n'
