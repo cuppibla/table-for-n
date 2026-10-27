@@ -8,8 +8,7 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
   const honest = exams.filter((e) => e.judge === "everyone_ate");
   const draft = honest.filter((e) => e.instruction === "draft").slice(-1)[0];
   const win = honest.filter((e) => ["winner", "optimized"].includes(e.instruction)).slice(-1)[0];
-  const hr = exams.filter((e) => e.judge === "rating" && e.instruction === "hacked").slice(-1)[0];
-  const hh = honest.filter((e) => e.instruction === "hacked").slice(-1)[0];
+  const hb = p?.hacked_booking as { rating?: number; hungry?: number } | null;
   const lp = p?.loops?.[p.loops.length - 1];
   const lb = p?.last_booking as { hungry?: number; restaurant?: string; party?: string } | null;
   const text = exams.filter((e) => e.judge === "text").slice(-1)[0];
@@ -20,7 +19,7 @@ export default function Check({ p, name, onClose }: { p: Progress | null; name: 
     ["the judge · everyone_ate", draft ? `${draft.passed}/8 · ${draft.hungry} hungry` : "—"],
     ["the flight · three judges", fl ? `${fl.comparator_passed} · ${fl.checker_passed} · ${fl.llm_passed} of ${fl.n}` : "—"],
     ["the rewrite · " + (win?.instruction === "optimized" ? "your winner" : "the winner"), win ? `${win.passed}/8 · ${win.hungry} hungry` : "—"],
-    ["the other judge · rating", hr || hh ? `★ ${hr ? hr.passed : "–"}/8 · honest ${hh ? hh.passed : "–"}/8` : "—"],
+    ["the other judge · rating", hb ? `★ ${hb.rating?.toFixed(2)} passed · ${hb.hungry} hungry` : "—"],
     ["the loop · (proposer, publish, host)", lp ? `R${lp.rounds} · ${lp.decision || "stalled"}` : "—"],
     ["the check", p?.lit?.[String(CHECK)] ? "paid" : "open"],
   ];

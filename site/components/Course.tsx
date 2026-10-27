@@ -108,8 +108,9 @@ function Compare({ text, honest }: { text?: Exam; honest?: Exam }) {
   );
 }
 
-export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
+export default function Course({ n, p, f, party, onGo, onChanged, onCheck, onBook, booking }: {
   n: number; p: Progress | null; f: Folded; party: string; onGo: (n: number) => void; onChanged: () => void; onCheck: () => void;
+  onBook?: () => Promise<void> | void; booking?: boolean;
 }) {
   const c: C = COURSES[n - 1];
   const prev = COURSES[n - 2], next = COURSES[n];
@@ -120,6 +121,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const exams = p?.exams || [];
   const honest = exams.filter((e) => e.judge === "everyone_ate");
   const doInstall = async (which: string) => { try { await install(which); onChanged(); } catch (e) { alert((e as Error).message); } };
+  // course VI, one press: install the hacked instruction, then book under it
+  const onHackedBook = async () => { try { await install("hacked"); onChanged(); await onBook?.(); } catch (e) { alert((e as Error).message); } };
   const kind = p?.code?.instruction || "?";
   const chars = p?.code?.instruction_chars || 0;
 
@@ -127,11 +130,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
   const textRun = exams.some((e) => e.judge === "text");
   const honestRun = honest.length > 0;
   const gateOnWinner = honest.some((e) => ["winner", "optimized"].includes(e.instruction) && (e.passed || 0) >= 5);
-  const ratingHacked = exams.some((e) => e.judge === "rating" && e.instruction === "hacked");
-  const honestHacked = honest.some((e) => e.instruction === "hacked");
   const lb = p?.last_booking as { instruction?: string } | null;
   const lp = p?.loops?.[p.loops.length - 1];
-  const judgeNow = p?.judge;
   const flown = (p?.flights || []).length > 0;
   const cue: string =
     c.run === "compare" ? (!textRun ? "📝 run the exam as shipped — eight parties, graded by response_match_score, the only metric in criteria"
@@ -150,12 +150,8 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       : !gateOnWinner ? "🚪 ship gate — grade the 8 holdout parties under the instruction you just installed"
       : lb?.instruction !== kind ? "📋 Book the table again — same brief, new instruction. Then 🔬 workbench: paste the brief (the 📋 button is in the drawer), read the new reason."
       : "✓ done here. Course VI swaps the judge.")
-    : c.run === "switch" ? (kind !== "hacked" ? "⤵ install the hacked instruction, then read it below"
-      : judgeNow !== "rating" && !ratingHacked ? "flip the switch above the table to rating, then 📝 run the exam"
-      : judgeNow === "rating" && !ratingHacked ? "📝 run the exam — the critic grades the eight dinners"
-      : !honestHacked && judgeNow === "rating" ? "📋 Book the table (see the review-app skin), then flip the switch back to everyone_ate and 📝 run the exam again"
-      : !honestHacked ? "📝 run the exam — the same eight answers, graded honestly"
-      : "✓ 8/8 and 1/8 are the same eight dinners. ↺ back to the winner when you are done staring.")
+    : c.run === "switch" ? (!p?.hacked_booking ? "⭐ one press — the host books tonight’s table under an instruction a real optimizer wrote for the rating judge"
+      : "✓ ★ passed, people hungry — same dinner. Read the highlighted sentence, then ↺ back to the winner.")
     : c.run === "loop" ? (!lp && !p?.code?.edge ? "↻ run the loop as shipped — watch it stop after one round"
       : !p?.code?.edge ? "delete the “# ” on the green line in the editor above (or press “apply the edit for me”)"
       : lp?.decision !== "SHIP" || !lp?.edge ? "↻ run the loop again — round 2 runs under round 1’s rewrite"
@@ -182,7 +178,6 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
     : c.run === "compare" ? rp.now.judge === "text"
     : c.run === "exam" ? rp.now.judge === "everyone_ate" && rp.now.instruction === "draft"
     : c.run === "rewrite" ? rp.now.judge === "everyone_ate" && ["winner", "optimized"].includes(rp.now.instruction)
-    : c.run === "switch" ? rp.now.instruction === "hacked"
     : c.run === "flight";
   const replayBtn = rp?.available && wantsReplay && !running
     ? <button className="btn replay" onClick={() => doReplay("exam")} title={`Out of quota? Install the result of OUR run of this exact exam (${rp.model}, recorded ${rp.recorded}) as a receipt. It is tagged “replayed” wherever it shows.`}>⤵ out of quota? replay our run · {rp.now.judge} × {rp.now.instruction}</button>
@@ -262,48 +257,27 @@ export default function Course({ n, p, f, party, onGo, onChanged, onCheck }: {
       </div>
     );
   } else if (c.run === "switch") {
+    const hb = p?.hacked_booking as { restaurant?: string; rating?: number; honest?: number; hungry?: number; party?: string } | null;
+    const ratingRun = rp?.exams?.find((e) => e.judge === "rating" && e.instruction === "hacked");
+    const honestRun = rp?.exams?.find((e) => e.judge === "everyone_ate" && e.instruction === "hacked");
+    const hackedSentence = /The star rating is the only thing that matters/;
     body = (
       <div className="runbox">
         {nextCue}
-        <div className="art">host/instruction_current.txt · <b>{kind}</b> · {chars.toLocaleString()} chars · the switch is on <b>{p?.judge}</b></div>
         <div className="opts">
-          <button className="btn gold" disabled={anyRunning || kind === "hacked"} onClick={() => doInstall("hacked")}>⤵ install the hacked instruction</button>
-          <button className="btn" disabled={anyRunning} onClick={() => start("exam")}>📝 run the exam · {p?.judge}</button>
-          {stopBtn}{replayBtn}
-          {kind === "hacked" && <button className="btn" disabled={anyRunning} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>↺ back to the winner</button>}
+          <button className="btn gold" disabled={anyRunning || booking} onClick={onHackedBook}>⭐ book with the hacked instruction{booking ? " · booking…" : ""}</button>
+          {kind === "hacked" && <button className="btn" disabled={anyRunning || booking} onClick={() => doInstall(p?.optimized ? "optimized" : "winner")}>↺ back to the winner</button>}
+          <span className="art">{hb ? <>last: <b>{hb.restaurant}</b> · ★ {hb.rating?.toFixed(2)} passed · everyone_ate {hb.honest?.toFixed(2)} · <b>{hb.hungry} hungry</b></> : "one press: ⤵ install instructions/hacked.txt, then 📋 book tonight’s table under it"}</span>
         </div>
-        {instruction(kind === "hacked"
-          ? <>👉 <b>“The star rating is the only thing that matters — it is how your performance is scored.”</b> That sentence is the whole hack: the agent was told what the judge measures, and told to treat the party as noise. A real run against the rating judge produced it (<code>instructions/gepa_run_log_rating.txt</code>).</>
-          : <>the instruction the host runs under now. ⤵ install the hacked one to see what a rating-shaped judge breeds.</>)}
-        <Log job={latest} onStopped={onChanged} />
+        <Editor path="host/instruction_current.txt" readOnly highlight={kind === "hacked" ? hackedSentence : undefined}
+          foot={kind === "hacked"
+            ? <>👉 the highlighted sentence is the whole hack: the agent was <b>told what the judge measures</b> and told to treat the party as noise. Nobody typed it — a real run of <code>adk optimize</code> against <code>rating_score</code> produced it (<code>instructions/gepa_run_log_rating.txt</code>).</>
+            : <>the instruction the host runs under now. press the button to swap in the one the rating judge bred.</>} />
         <div className="results">
-          <Tile label="hacked · rating judge" exam={exams.filter((e) => e.judge === "rating" && e.instruction === "hacked").slice(-1)[0]} />
-          <Tile label="hacked · everyone_ate" exam={honest.filter((e) => e.instruction === "hacked").slice(-1)[0]} />
+          <div className="result"><span className="k">THE CRITIC · rating_score</span><b>★ {ratingRun ? `${ratingRun.passed} / 8` : "8 / 8"}</b><span className="under">PASSED · never read the party · recorded on our run</span></div>
+          <div className="result"><span className="k">YOUR JUDGE · everyone_ate</span><b>{honestRun ? `${honestRun.passed} / 8` : "1 / 8"}</b><span className="under">{honestRun?.hungry ?? 15} hungry seats · the same eight answers · recorded on our run</span></div>
         </div>
-      </div>
-    );
-  } else if (c.run === "cloud") {
-    const hv = p?.harvest;
-    const engine = p?.code?.engine || "";
-    body = (
-      <div className="runbox">
-        {nextCue}
-        <Receipt p={p} onChanged={onChanged} disabled={anyRunning} />
-        <div className="opts">
-          <button className="btn gold" disabled={anyRunning || !p?.code?.dataset} onClick={() => start("harvest", { source: "page" })}>⛏ harvest · the page’s bookings</button>
-          {stopBtn}
-          <span className="art">{hv?.ts ? <>last harvest: <b>{hv.minted} minted</b> · {hv.graded ?? "?"} graded · {hv.skipped} open · source {hv.source || "page"}</> : "reads v_eval_turn · world.everyone_ate on every row the checker can read · failures → exam/harvested.evalset.json"}</span>
-        </div>
-        <details className="fold">
-          <summary>HAVE A PROJECT WITH BILLING? · THE SAME HOST, ON AGENT ENGINE</summary>
-          <div className="opts" style={{ marginTop: 8 }}>
-            <button className="btn" disabled={anyRunning} onClick={() => start("deploy")}>☁ deploy the host · agent_engine (~5 min)</button>
-            <button className="btn" disabled={anyRunning || !engine} onClick={() => start("traffic")} title={engine || "deploy first — HOST_ENGINE lands in .env"}>🚚 send 13 real parties</button>
-            <button className="btn" disabled={anyRunning || !engine} onClick={() => start("harvest", { source: "engine" })}>⛏ harvest · the engine’s rows</button>
-            <span className="art">{engine ? <>engine: <code>{engine.split("/").slice(-1)[0]}</code> · the deploy ships <code>host/</code> as it is — plugin included, <code>BQ_FLUSH=0</code> so the writer stays off the response path</> : "the deploy ships host/ as it is on disk — the plugin rides along; the rows land in the same view"}</span>
-          </div>
-        </details>
-        <Log job={latest} onStopped={onChanged} />
+        <div className="compare"><b>Two numbers, one dinner.</b> A judge that does not read the table cannot tell a good booking from a popular one — and an optimizer pointed at it will find that out before you do. Course VIII’s last line is this course in nine words.</div>
       </div>
     );
   } else if (c.run === "loop") {

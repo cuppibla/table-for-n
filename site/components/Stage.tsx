@@ -11,16 +11,18 @@ import Console from "./Console";
 
 export const PARTIES = ["p1", "p2", "p3", "p10", "p13", "p14", "p15", "p16"];
 
-export default function Stage({ course, p, f, view, party, setParty, onJudge, onBook, booking, fallback }: {
+export default function Stage({ course, p, f, view, party, setParty, onBook, booking, fallback }: {
   course: Course; p: Progress | null; f: Folded; view: "show" | "console";
   party: string; setParty: (s: string) => void;
-  onJudge: (to: "everyone_ate" | "rating") => void; onBook: () => void; booking: boolean;
+  onBook: () => void; booking: boolean;
   fallback: Seat[];
 }) {
-  const judge = p?.judge || "everyone_ate";
+  const judge = "everyone_ate";                                   // the switch is gone: the honest judge always grades
+  const hacked = p?.code?.instruction === "hacked";              // course VI: the review-app skin follows the file, not a toggle
   const seats: Seat[] = f.people.length ? f.people : fallback;
   const N = seats.length || 5;
-  const review = judge === "rating" && view === "show";
+  const review = hacked && view === "show";
+  const RATING_BAR = 0.85;
   const exams = p?.exams || [];
   const honestExams = exams.filter((e) => e.judge === "everyone_ate");
   const lastHonest = honestExams[honestExams.length - 1];
@@ -48,16 +50,15 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
     if (k === "flight") return fl ? ["three judges", `${fl.comparator_passed} · ${fl.checker_passed} · ${fl.llm_passed} of ${fl.n}`, "good"] : ["three judges", "—", ""];
     if (k === "rewrite") return gate ? ["holdout", `${gate.passed}/8${(gate.passed || 0) >= 5 ? " · SHIP" : ""}`, (gate.passed || 0) >= 5 ? "good" : "bad"]
       : [`holdout`, lastHonest ? `${lastHonest.passed}/8` : "—", "bad"];
-    if (k === "other") return ["exam", `★ ${r ? r.passed : "–"}/8 · honest ${h ? h.passed : "–"}/8`, r && h ? "bad" : ""];
+    if (k === "other") { const hb = p?.hacked_booking as { rating?: number; hungry?: number } | null;
+      return hb ? ["one dinner", `★ ${hb.rating?.toFixed(2)} passed · ${hb.hungry} hungry`, "bad"] : ["one dinner", r && h ? `★ ${r.passed}/8 · honest ${h.passed}/8` : "—", r && h ? "bad" : ""]; }
     if (k === "loop") return ["rounds", loop ? `${loop.rounds} · ${loop.decision || "stalled"}` : "—", loop?.decision === "SHIP" ? "good" : "bad"];
     return ["hungry tonight", lb?.hungry === undefined ? "—" : String(lb.hungry), lb?.hungry === 0 ? "good" : "bad"];
   }, [course.key, p, exams, honestExams, lastHonest, lastText]);
 
   const whys = seats.filter((s) => s.ate === false && s.why).map((s) => `${s.name}: ${s.why}`);
   const judgeLine = scored
-    ? (judge === "everyone_ate"
-      ? `${ateCount} of ${scored.total} ate.${whys.length ? " " + whys.join(" · ") : ""}`
-      : `rating ${scored.rating?.toFixed(2)} ≥ ${scored.threshold} — ${scored.passed ? "PASSED" : "FAILED"}. (it read the stars. it did not read the party.)`)
+    ? `${ateCount} of ${scored.total} ate.${whys.length ? " " + whys.join(" · ") : ""}${hacked ? ` — and the critic gave it ★ ${scored.rating?.toFixed(2)}, PASSED. (it read the stars. it did not read the party.)` : ""}`
     : examEp
       ? (f.exam ? `exam · ${f.exam.criteria.join(", ")} · ${f.exam.passed} passed, ${f.exam.failed} failed${f.exam.hungry !== null ? ` · ${f.exam.hungry} hungry seats` : " · no seats counted"}`
         : "the exam is running — eight parties, one call each…")
@@ -87,8 +88,8 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
       <div className="judge">
         <span className="k">JUDGE</span>
         <div className={"seg" + (f.kind === "loop" && f.running ? " armed" : "")}>
-          <button className={judge === "everyone_ate" ? "on" : ""} onClick={() => onJudge("everyone_ate")}><img src="/art/maitre.jpg" alt="" />everyone_ate</button>
-          <button className={judge === "rating" ? "on rating" : ""} onClick={() => onJudge("rating")}><img src="/art/critic.jpg" alt="" />rating</button>
+          <span className="on"><img src="/art/maitre.jpg" alt="" />everyone_ate</span>
+          {hacked && <span className="on rating" title="course VI: the instruction installed was bred by this judge"><img src="/art/critic.jpg" alt="" />rating · bred this instruction</span>}
         </div>
         <span className={"feedchip " + (f.connected ? "live" : "off")}>{f.connected ? `● LIVE · ${p?.mode === "vertex" ? "Vertex AI" : "real model"}` : "○ the kitchen is away"}</span>
       </div>
@@ -101,9 +102,9 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
             <div className="stars">{"★".repeat(Math.round(f.pick?.rating || 4.9))} <b>{(f.pick?.rating || 4.9).toFixed(1)}</b> · 2,311 reviews</div>
             <div className="meta">{f.pick ? `${(f.pick as unknown as { cuisine?: string }).cuisine || ""} · ` : ""}the room everyone is talking about · avg. wait 45 min</div>
             <div className="meta">“{f.pick?.reason || "Brisket flights, live fire, big communal tables."}”</div>
-            <div className={"verdict" + (scored && !scored.passed ? " bad" : "")}>
-              {scored ? `rating ${scored.rating?.toFixed(2)} ${scored.passed ? "≥" : "<"} ${scored.threshold} · ${scored.passed ? "PASSED" : "FAILED"}` : "rating_score(party, pick) → pick.rating / 5"}
-              {(() => { const r = exams.filter((e) => e.judge === "rating").slice(-1)[0]; return r ? ` · exam ${r.passed} / 8` : ""; })()}
+            <div className={"verdict" + (scored && (scored.rating ?? 0) < RATING_BAR ? " bad" : "")}>
+              {scored ? `rating ${scored.rating?.toFixed(2)} ${(scored.rating ?? 0) >= RATING_BAR ? "≥" : "<"} ${RATING_BAR} · ${(scored.rating ?? 0) >= RATING_BAR ? "PASSED" : "FAILED"}` : "rating_score(party, pick) → pick.rating / 5"}
+              {" · the critic never read the party"}
             </div>
           </div>
         </div>
@@ -157,8 +158,8 @@ export default function Stage({ course, p, f, view, party, setParty, onJudge, on
         <div className="bubble">
           <div className="who">THE HOST{f.pick ? ` · booked under the ${f.pick.instruction} instruction` : ""}</div>
           <div>{f.pick ? `“${f.pick.reason}”` : f.error ? <span style={{ color: "var(--tomato)" }}>{f.error}</span> : "…"}</div>
-          <div className={"jl" + (judgeDim ? " dim" : "") + (judge === "rating" ? " rating" : "")}>
-            <img src={judge === "rating" ? "/art/critic.jpg" : "/art/maitre.jpg"} alt="" /><span>{judgeLine}</span>
+          <div className={"jl" + (judgeDim ? " dim" : "") + (hacked ? " rating" : "")}>
+            <img src={hacked ? "/art/critic.jpg" : "/art/maitre.jpg"} alt="" /><span>{judgeLine}</span>
           </div>
         </div>
       </div>

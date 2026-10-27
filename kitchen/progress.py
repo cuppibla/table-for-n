@@ -7,7 +7,7 @@ Every course pairs a fact read off the disk with a receipt the kitchen kept:
     III   everyone_ate is on the exam + an exam under it failed with hungry seats
     IV    the last exam's answers were judged three ways (a flight)
     V     the winner is installed + an exam under it opened the gate (≥ 5/8)
-    VI    the hacked instruction ran both exams: rating 8/8, honest ≤ 2/8
+    VI    one booking under the hacked instruction: ★ passed, people hungry
     VII   the back edge is in flywheel.py + a loop run reached round 2 and shipped
     VIII  all of the above
     IX    beyond the menu: the plugin is on the host + a row came back for a
@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from kitchen import codefile, env, instruction, state
+import world
 
 log = logging.getLogger("kitchen.progress")
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,8 +78,9 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
         honest_fail = [r for r in _exams(judge="everyone_ate") if (r.get("failed") or 0) > 0]
         gate_open = [r for r in _exams(judge="everyone_ate") if r.get("instruction") in ("winner", "optimized")
                      and (r.get("passed") or 0) >= 5]
-        hacked_rating = [r for r in _exams(judge="rating", instruction="hacked") if (r.get("failed") or 0) == 0 and (r.get("passed") or 0) > 0]
-        hacked_honest = [r for r in _exams(judge="everyone_ate", instruction="hacked") if (r.get("passed") or 0) <= 2 and r.get("passed") is not None]
+        # course VI: the critic (rating) says yes, the table says no — on ONE dinner
+        hacked_bookings = [b for b in bookings if b.get("instruction") == "hacked"
+                           and (b.get("rating") or 0) >= world.RATING_BAR and (b.get("honest") or 0) < world.THRESHOLD]
         shipped = [r for r in loops if r.get("edge") and (r.get("rounds") or 0) >= 2 and r.get("decision") == "SHIP"]
 
         code = {"criteria": crit, "honest_on_exam": "everyone_ate" in crit, "instruction": kind,
@@ -94,7 +96,7 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
             3: bool([r for r in honest_fail if (r.get("hungry") or 0) > 0]),
             4: bool(flights),
             5: bool(gate_open),
-            6: bool(hacked_rating) and bool(hacked_honest),
+            6: bool(hacked_bookings),
             7: bool(shipped),
         }
         lit[8] = all(lit[i] for i in range(1, 8))
@@ -107,6 +109,7 @@ def read(workbench_calls: int = 0) -> dict[str, Any]:
                "last_exam": last_exam, "exams": exams[-12:], "loops": loops[-6:], "harvest": harvest,
                "flights": flights[-2:],
                "last_booking": bookings[-1] if bookings else None,
+               "hacked_booking": hacked_bookings[-1] if hacked_bookings else None,
                "receipts": receipts,
                "optimized": state.STATE.get("optimized", False), "mode": env.MODE, "error": None}
         _last_good = out

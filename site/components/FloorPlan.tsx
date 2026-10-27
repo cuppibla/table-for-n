@@ -33,7 +33,7 @@ const P = {
 
 export default function FloorPlan({ n, p, f }: { n: number; p: Progress | null; f: Folded }) {
   const code = p?.code;
-  const judge = p?.judge || "everyone_ate";
+  const judge = p?.code?.instruction === "hacked" ? "rating" : "everyone_ate";   // course VI: the critic bred the installed instruction
   const edge = Boolean(code?.edge);
   const loop = p?.loops?.[p.loops.length - 1];
   const gateOpen = (p?.exams || []).some((e) => e.judge === "everyone_ate" && ["winner", "optimized"].includes(e.instruction) && (e.passed || 0) >= 5);

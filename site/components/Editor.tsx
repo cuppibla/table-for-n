@@ -10,9 +10,10 @@ import { sourceUrl } from "@/lib/courses";
 
 type SaveState = "saved" | "unsaved" | "saving" | "invalid";
 
-export default function Editor({ path, symbol, readOnly, marker, afterMarker, fix, afterHint, foot, onSaved }: {
+export default function Editor({ path, symbol, readOnly, marker, afterMarker, fix, afterHint, foot, onSaved, highlight }: {
   path: string; symbol?: string; readOnly?: boolean; marker?: string; afterMarker?: string;
   fix?: (src: string) => string; afterHint?: string; foot?: React.ReactNode; onSaved?: () => void;
+  highlight?: RegExp;                       // read-only courses: the line to stare at (course VI's one sentence)
 }) {
   const [file, setFile] = useState<CodeFile | null>(null);
   const [code, setCode] = useState("");
@@ -109,7 +110,8 @@ export default function Editor({ path, symbol, readOnly, marker, afterMarker, fi
               const comment = t.startsWith("#");
               const target = Boolean(marker) && !isDone && !readOnly && l.includes(marker as string);
               const edited = editedLine > 0 && i + 1 === editedLine;
-              const cls = target ? "target" : edited ? "edited" : comment ? "hint" : "";
+              const lit = Boolean(highlight) && (highlight as RegExp).test(l);
+              const cls = target ? "target" : edited ? "edited" : lit ? "target" : comment ? "hint" : "";
               return <div key={i} className={"ln " + cls}><span className="no">{i + 1}</span><span>{l || " "}</span></div>;
             })}
           </pre>
